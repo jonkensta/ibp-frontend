@@ -5,7 +5,6 @@
         <router-link to="/">Home</router-link>
         <router-link to="/inmates">Inmate Search</router-link>
         <router-link to="/units">Units List</router-link>
-        <router-link to="/about">About</router-link>
       </nav>
     </header>
     <main>
