@@ -1,14 +1,17 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-// Define interfaces based on your FastAPI schemas (simplified examples)
+// Define interfaces based on your FastAPI schemas
 export interface Inmate {
-  id: string
+  id: number
   jurisdiction: string
   first_name: string
   last_name: string
-  date_of_birth?: string
-  // Add other inmate fields as defined in your schemas.Unit
-  unit?: { name: string; jurisdiction: string } // Simplified Unit
+  race?: string
+  sex?: string
+  release?: string | Date
+  url?: string
+  datetime_fetched?: string
+  unit?: Unit
   requests?: InmateRequest[]
   comments?: InmateComment[]
   [key: string]: any // Allow other properties
@@ -17,15 +20,17 @@ export interface Inmate {
 export interface InmateRequest {
   index: number
   date_postmarked: string
-  // Add other request fields
+  date_processed: string
+  action: string
+  status: string
   [key: string]: any
 }
 
 export interface InmateComment {
   index: number
-  text: string
+  body: string
+  author: string
   datetime_created: string
-  // Add other comment fields
   [key: string]: any
 }
 
@@ -35,11 +40,15 @@ export interface InmateSearchResults {
 }
 
 export interface Unit {
-  id?: string // Assuming unit might have an ID
   name: string
   jurisdiction: string
-  address?: string
-  // Add other unit fields
+  street1: string
+  street2?: string
+  city: string
+  zipcode: string
+  state: string
+  url?: string
+  shipping_method?: string
   [key: string]: any
 }
 
