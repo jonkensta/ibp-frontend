@@ -3,15 +3,15 @@
     <header>
       <nav class="main-nav">
         <router-link to="/">Home</router-link>
-        <router-link to="/inmates">Inmate Search</router-link>
-        <router-link to="/units">Units List</router-link>
+        <router-link to="/inmates">Inmates</router-link>
+        <router-link to="/units">Units</router-link>
       </nav>
     </header>
     <main>
       <router-view />
     </main>
     <footer>
-      <p>&copy; {{ new Date().getFullYear() }} IBP Frontend</p>
+      <p>&copy; {{ new Date().getFullYear() }} Inside Books Project</p>
     </footer>
   </div>
 </template>
