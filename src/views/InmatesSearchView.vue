@@ -1,16 +1,32 @@
 <template>
-  <div class="inmates-search-view">
-    <h1>Search Inmates</h1>
-    <form @submit.prevent="handleSearch">
-      <input type="text" v-model="searchQuery" placeholder="Enter Inmate Name or ID" />
-      <button type="submit" :disabled="isLoading">Search</button>
+  <div class="p-4">
+    <h1 class="text-2xl font-bold mb-4">Search Inmates</h1>
+    <form @submit.prevent="handleSearch" class="mb-4 flex gap-2">
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Enter Inmate Name or ID"
+        class="flex-grow p-2 border rounded"
+      />
+      <button
+        type="submit"
+        :disabled="isLoading"
+        class="px-4 py-2 text-white bg-green-600 rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700"
+      >
+        Search
+      </button>
     </form>
 
-    <div v-if="isLoading" class="loading">Loading...</div>
-    <div v-if="error" class="error-message">{{ error }}</div>
+    <div v-if="isLoading" class="mt-4 p-4 text-center">Loading...</div>
+    <div
+      v-if="error"
+      class="mt-4 p-4 text-center text-red-600 bg-red-100 rounded border border-red-400"
+    >
+      {{ error }}
+    </div>
 
     <div v-if="searchResults.length > 0 && !isLoading">
-      <h2>Search Results</h2>
+      <h2 class="text-xl font-semibold mb-2">Search Results</h2>
       <simple-table
         :columns="inmateTableColumns"
         :data="searchResults"
@@ -18,12 +34,18 @@
         row-hover
       />
     </div>
-    <div v-else-if="!isLoading && hasSearched && searchResults.length === 0" class="no-results">
+    <div
+      v-else-if="!isLoading && hasSearched && searchResults.length === 0"
+      class="mt-4 p-4 text-center text-gray-500"
+    >
       No inmates found matching your query.
     </div>
-    <div v-if="apiErrors.length > 0" class="api-errors">
-      <h3>API Errors:</h3>
-      <ul>
+    <div
+      v-if="apiErrors.length > 0"
+      class="mt-4 p-4 bg-yellow-100 border border-yellow-300 text-yellow-700 rounded"
+    >
+      <h3 class="font-semibold mb-2">API Errors:</h3>
+      <ul class="list-disc pl-5">
         <li v-for="(err, index) in apiErrors" :key="index">{{ err.message || err }}</li>
       </ul>
     </div>
@@ -87,68 +109,3 @@ function viewInmateDetails(inmate: Inmate) {
   }
 }
 </script>
-
-<style scoped>
-.inmates-search-view {
-  padding: 1rem;
-}
-form {
-  margin-bottom: 1rem;
-  display: flex;
-  gap: 0.5rem;
-}
-input[type='text'] {
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  flex-grow: 1;
-}
-button {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background-color: var(--color-heading);
-  color: var(--vt-c-white);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-button:hover:not(:disabled) {
-  background-color: hsla(160, 100%, 37%, 0.8);
-}
-button:disabled {
-  background-color: var(--color-border);
-  cursor: not-allowed;
-}
-.loading,
-.error-message,
-.no-results {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 4px;
-}
-.loading {
-  color: var(--color-text);
-}
-.error-message {
-  color: red;
-  background-color: #ffe0e0;
-  border: 1px solid red;
-}
-.no-results {
-  color: var(--color-text-light-2);
-}
-.api-errors {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #fff3cd;
-  border: 1px solid #ffeeba;
-  color: #856404;
-  border-radius: 4px;
-}
-.api-errors ul {
-  list-style-type: disc;
-  padding-left: 20px;
-}
-</style>

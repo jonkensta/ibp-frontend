@@ -1,8 +1,13 @@
 <template>
-  <div class="units-list-view">
-    <h1>Correctional Units</h1>
-    <div v-if="isLoading" class="loading">Loading units...</div>
-    <div v-if="error" class="error-message">{{ error }}</div>
+  <div class="p-4">
+    <h1 class="text-2xl font-bold mb-4">Correctional Units</h1>
+    <div v-if="isLoading" class="mt-4 p-4 text-center">Loading units...</div>
+    <div
+      v-if="error"
+      class="mt-4 p-4 text-center text-red-600 bg-red-100 rounded border border-red-400"
+    >
+      {{ error }}
+    </div>
 
     <div v-if="units.length > 0 && !isLoading">
       <simple-table
@@ -12,7 +17,10 @@
         row-hover
       />
     </div>
-    <div v-else-if="!isLoading && units.length === 0 && !error" class="no-results">
+    <div
+      v-else-if="!isLoading && units.length === 0 && !error"
+      class="mt-4 p-4 text-center text-gray-500"
+    >
       No units found.
     </div>
   </div>
@@ -61,27 +69,3 @@ function viewUnitDetails(unit: Unit) {
 
 onMounted(fetchUnitsData)
 </script>
-
-<style scoped>
-.units-list-view {
-  padding: 1rem;
-}
-.units-list-view h1 {
-  margin-bottom: 1.5rem;
-}
-.loading,
-.error-message,
-.no-results {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 4px;
-}
-.error-message {
-  color: red;
-  background-color: #ffe0e0;
-  border: 1px solid red;
-}
-.no-results {
-  color: var(--color-text-light-2);
-}
-</style>
