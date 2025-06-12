@@ -1,6 +1,8 @@
 /* src/assets/main.css */
 @import './base.css';
 
+@import 'tailwindcss';
+
 #app {
   /* This is used by main.ts to mount the app */
   /* max-width: 1280px; Remove or adjust if #app-layout in App.vue handles max-width */
