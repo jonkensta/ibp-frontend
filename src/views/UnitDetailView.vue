@@ -43,7 +43,13 @@ const props = defineProps<{
 const unitInfoColumns: TableColumn[] = [
   { key: 'name', label: 'Name' },
   { key: 'jurisdiction', label: 'Jurisdiction' },
-  // Add other relevant fields from the Unit schema
+  { key: 'street1', label: 'Street 1' },
+  { key: 'street2', label: 'Street 2' },
+  { key: 'city', label: 'City' },
+  { key: 'state', label: 'State' },
+  { key: 'zipcode', label: 'Zipcode' },
+  { key: 'url', label: 'URL' },
+  { key: 'shipping_method', label: 'Shipping Method' },
 ]
 
 const unitInfoForTable = computed(() => {
@@ -51,7 +57,13 @@ const unitInfoForTable = computed(() => {
   return {
     name: unit.value.name,
     jurisdiction: unit.value.jurisdiction,
-    // Map other fields from unit.value
+    street1: unit.value.street1,
+    street2: unit.value.street2,
+    city: unit.value.city,
+    state: unit.value.state,
+    zipcode: unit.value.zipcode,
+    url: unit.value.url,
+    shipping_method: unit.value.shipping_method,
   }
 })
 

@@ -85,20 +85,26 @@ const inmateInfoColumns: TableColumn[] = [
   { key: 'jurisdiction', label: 'Jurisdiction' },
   { key: 'first_name', label: 'First Name' },
   { key: 'last_name', label: 'Last Name' },
-  // Add more relevant fields from the Inmate schema
+  { key: 'race', label: 'Race' },
+  { key: 'sex', label: 'Sex' },
+  { key: 'release', label: 'Release' },
+  { key: 'url', label: 'URL' },
+  { key: 'datetime_fetched', label: 'Fetched At' },
 ]
 
 const requestsTableColumns: TableColumn[] = [
   { key: 'index', label: 'Index' },
   { key: 'date_postmarked', label: 'Date Postmarked' },
-  // Add other relevant request fields
+  { key: 'date_processed', label: 'Date Processed' },
+  { key: 'action', label: 'Action' },
+  { key: 'status', label: 'Status' },
 ]
 
 const commentsTableColumns: TableColumn[] = [
   { key: 'index', label: 'Index' },
   { key: 'datetime_created', label: 'Date Created' },
-  { key: 'text', label: 'Comment' },
-  // Add other relevant comment fields
+  { key: 'body', label: 'Comment' },
+  { key: 'author', label: 'Author' },
 ]
 
 const inmateInfoForTable = computed(() => {
@@ -109,7 +115,11 @@ const inmateInfoForTable = computed(() => {
     jurisdiction: inmate.value.jurisdiction,
     first_name: inmate.value.first_name,
     last_name: inmate.value.last_name,
-    // Map other fields from inmate.value here
+    race: inmate.value.race,
+    sex: inmate.value.sex,
+    release: inmate.value.release,
+    url: inmate.value.url,
+    datetime_fetched: inmate.value.datetime_fetched,
   }
 })
 
