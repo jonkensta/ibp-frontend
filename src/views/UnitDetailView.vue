@@ -1,24 +1,21 @@
 <template>
-  <div class="p-4 flex flex-col gap-4">
-    <button
-      @click="$router.back()"
-      class="self-start px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-    >
+  <div class="p-4 d-flex flex-column gap-4">
+    <button @click="$router.back()" class="align-self-start btn btn-secondary">
       &larr; Back to Units List
     </button>
     <div v-if="isLoading" class="mt-4 p-4 text-center">Loading unit details...</div>
     <div
       v-if="error"
-      class="mt-4 p-4 text-center text-red-600 bg-red-100 rounded border border-red-400"
+      class="mt-4 p-4 text-center text-danger bg-danger-subtle rounded border border-danger"
     >
       {{ error }}
     </div>
 
-    <div v-if="unit && !isLoading" class="unit-content flex flex-col items-center gap-4">
-      <h1 class="text-2xl font-bold mb-2">Unit: {{ unit.name }}</h1>
-      <div class="flex flex-wrap justify-center gap-4 w-full">
-        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
-          <h2 class="text-xl font-semibold mb-2">Unit Information</h2>
+    <div v-if="unit && !isLoading" class="unit-content d-flex flex-column align-items-center gap-4">
+      <h1 class="h4 fw-bold mb-2">Unit: {{ unit.name }}</h1>
+      <div class="d-flex flex-wrap justify-content-center gap-4 w-100">
+        <section class="bg-white p-4 rounded shadow w-100 col-md-5">
+          <h2 class="h5 fw-semibold mb-2">Unit Information</h2>
           <simple-table :columns="unitInfoColumns" :data="[unitInfoForTable]" />
         </section>
       </div>
@@ -35,18 +32,11 @@ const unit = ref<Unit | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
-function createUrlAnchor(
-  url: string | null | undefined,
-  text?: string
-): string {
+function createUrlAnchor(url: string | null | undefined, text?: string): string {
   if (!url) return text || ''
   const label =
     text ||
-    (url.includes('tdcj.texas.gov')
-      ? 'TDCJ Page'
-      : url.includes('bop.gov')
-        ? 'FBOP page'
-        : url)
+    (url.includes('tdcj.texas.gov') ? 'TDCJ Page' : url.includes('bop.gov') ? 'FBOP page' : url)
   return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`
 }
 

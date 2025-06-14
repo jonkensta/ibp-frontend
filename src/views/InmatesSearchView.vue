@@ -1,32 +1,28 @@
 <template>
-  <div class="p-4 flex flex-col items-center justify-center flex-1 min-h-full">
-    <h1 class="text-2xl font-bold mb-4">Search Inmates</h1>
-    <form @submit.prevent="handleSearch" class="mb-4 flex gap-2 w-full max-w-md">
+  <div
+    class="p-4 d-flex flex-column align-items-center justify-content-center flex-grow-1 min-vh-100"
+  >
+    <h1 class="h4 fw-bold mb-4">Search Inmates</h1>
+    <form @submit.prevent="handleSearch" class="mb-4 d-flex gap-2 w-100" style="max-width: 28rem">
       <input
         type="text"
         v-model="searchQuery"
         placeholder="Enter Inmate Name or ID"
-        class="flex-grow w-full p-2 border rounded"
+        class="form-control flex-grow-1"
       />
-      <button
-        type="submit"
-        :disabled="isLoading"
-        class="px-4 py-2 text-white bg-green-600 rounded disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700"
-      >
-        Search
-      </button>
+      <button type="submit" :disabled="isLoading" class="btn btn-success">Search</button>
     </form>
 
     <div v-if="isLoading" class="mt-4 p-4 text-center">Loading...</div>
     <div
       v-if="error"
-      class="mt-4 p-4 text-center text-red-600 bg-red-100 rounded border border-red-400"
+      class="mt-4 p-4 text-center text-danger bg-danger-subtle rounded border border-danger"
     >
       {{ error }}
     </div>
 
     <div v-if="searchResults.length > 0 && !isLoading">
-      <h2 class="text-xl font-semibold mb-2">Search Results</h2>
+      <h2 class="h5 fw-semibold mb-2">Search Results</h2>
       <simple-table
         :columns="inmateTableColumns"
         :data="searchResults"
@@ -36,16 +32,16 @@
     </div>
     <div
       v-else-if="!isLoading && hasSearched && searchResults.length === 0"
-      class="mt-4 p-4 text-center text-gray-500"
+      class="mt-4 p-4 text-center text-muted"
     >
       No inmates found matching your query.
     </div>
     <div
       v-if="apiErrors.length > 0"
-      class="mt-4 p-4 bg-yellow-100 border border-yellow-300 text-yellow-700 rounded"
+      class="mt-4 p-4 bg-warning-subtle border border-warning text-warning rounded"
     >
-      <h3 class="font-semibold mb-2">API Errors:</h3>
-      <ul class="list-disc pl-5">
+      <h3 class="fw-semibold mb-2">API Errors:</h3>
+      <ul class="ps-4">
         <li v-for="(err, index) in apiErrors" :key="index">{{ err }}</li>
       </ul>
     </div>

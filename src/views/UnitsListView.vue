@@ -1,10 +1,10 @@
 <template>
   <div class="p-4">
-    <h1 class="text-2xl font-bold mb-4">Correctional Units</h1>
+    <h1 class="h4 fw-bold mb-4">Correctional Units</h1>
     <div v-if="isLoading" class="mt-4 p-4 text-center">Loading units...</div>
     <div
       v-if="error"
-      class="mt-4 p-4 text-center text-red-600 bg-red-100 rounded border border-red-400"
+      class="mt-4 p-4 text-center text-danger bg-danger-subtle rounded border border-danger"
     >
       {{ error }}
     </div>
@@ -19,7 +19,7 @@
     </div>
     <div
       v-else-if="!isLoading && units.length === 0 && !error"
-      class="mt-4 p-4 text-center text-gray-500"
+      class="mt-4 p-4 text-center text-muted"
     >
       No units found.
     </div>
