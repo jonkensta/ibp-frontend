@@ -55,11 +55,43 @@
               Create Request
             </button>
           </div>
-          <simple-table
-            v-if="inmate.requests && inmate.requests.length > 0"
-            :columns="requestsTableColumns"
-            :data="inmate.requests"
-          />
+          <div v-if="inmate.requests && inmate.requests.length > 0" class="simple-table-container">
+            <table class="simple-table">
+              <thead>
+                <tr>
+                  <th v-for="col in requestsTableColumns" :key="col.key">{{ col.label }}</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(req, i) in inmate.requests" :key="req.index">
+                  <td>{{ req.index }}</td>
+                  <td>{{ req.date_postmarked }}</td>
+                  <td>{{ req.date_processed }}</td>
+                  <td>{{ req.action }}</td>
+                  <td>{{ req.status }}</td>
+                  <td>
+                    <button
+                      v-if="confirmRequestIndex !== i"
+                      @click="confirmRequestIndex = i"
+                      aria-label="Delete request"
+                    >
+                      <TrashIcon class="w-5 h-5 text-red-600" />
+                    </button>
+                    <div v-else class="flex items-center gap-1">
+                      <span class="mr-1">Are you sure?</span>
+                      <button @click="confirmDeleteRequest(i)" aria-label="Confirm delete">
+                        <CheckIcon class="w-5 h-5 text-green-600" />
+                      </button>
+                      <button @click="confirmRequestIndex = null" aria-label="Cancel delete">
+                        <XMarkIcon class="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <p v-else>No requests found for this inmate.</p>
         </section>
 
@@ -73,11 +105,42 @@
               Create Comment
             </button>
           </div>
-          <simple-table
-            v-if="inmate.comments && inmate.comments.length > 0"
-            :columns="commentsTableColumns"
-            :data="inmate.comments"
-          />
+          <div v-if="inmate.comments && inmate.comments.length > 0" class="simple-table-container">
+            <table class="simple-table">
+              <thead>
+                <tr>
+                  <th v-for="col in commentsTableColumns" :key="col.key">{{ col.label }}</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(cmt, i) in inmate.comments" :key="cmt.index">
+                  <td>{{ cmt.index }}</td>
+                  <td>{{ cmt.datetime_created }}</td>
+                  <td>{{ cmt.body }}</td>
+                  <td>{{ cmt.author }}</td>
+                  <td>
+                    <button
+                      v-if="confirmCommentIndex !== i"
+                      @click="confirmCommentIndex = i"
+                      aria-label="Delete comment"
+                    >
+                      <TrashIcon class="w-5 h-5 text-red-600" />
+                    </button>
+                    <div v-else class="flex items-center gap-1">
+                      <span class="mr-1">Are you sure?</span>
+                      <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
+                        <CheckIcon class="w-5 h-5 text-green-600" />
+                      </button>
+                      <button @click="confirmCommentIndex = null" aria-label="Cancel delete">
+                        <XMarkIcon class="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <p v-else>No comments found for this inmate.</p>
         </section>
         <BaseModal :show="showCommentModal" @close="closeCommentModal">
@@ -111,8 +174,11 @@ import {
   getInmateDetails,
   addRequest,
   addComment,
+  deleteRequest,
+  deleteComment,
   type Inmate,
 } from '@/api'
+import { TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid'
 import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
 import BaseModal from '@/components/BaseModal.vue'
 const inmate = ref<Inmate | null>(null)
@@ -137,6 +203,8 @@ const showCommentModal = ref(false)
 const commentAuthor = ref('')
 const commentBody = ref('')
 const commentDate = ref('')
+const confirmRequestIndex = ref<number | null>(null)
+const confirmCommentIndex = ref<number | null>(null)
 
 watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 
@@ -250,6 +318,34 @@ async function createComment() {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to create comment.'
     error.value = message
+  }
+}
+
+async function confirmDeleteRequest(idx: number) {
+  if (!inmate.value || !inmate.value.requests) return
+  try {
+    const req = inmate.value.requests[idx]
+    await deleteRequest(inmate.value.jurisdiction, inmate.value.id, req.index)
+    inmate.value.requests.splice(idx, 1)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to delete request.'
+    error.value = message
+  } finally {
+    confirmRequestIndex.value = null
+  }
+}
+
+async function confirmDeleteComment(idx: number) {
+  if (!inmate.value || !inmate.value.comments) return
+  try {
+    const cmt = inmate.value.comments[idx]
+    await deleteComment(inmate.value.jurisdiction, inmate.value.id, cmt.index)
+    inmate.value.comments.splice(idx, 1)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to delete comment.'
+    error.value = message
+  } finally {
+    confirmCommentIndex.value = null
   }
 }
 
