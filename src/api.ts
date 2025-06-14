@@ -62,7 +62,7 @@ export async function searchInmates(query: string): Promise<InmateSearchResults>
 }
 
 export async function getInmateDetails(jurisdiction: string, inmateId: string): Promise<Inmate> {
-  return fetchAPI(`/inmates/${jurisdiction}/${inmateId}`)
+  return fetchAPI(`/inmates/${encodeURIComponent(jurisdiction)}/${encodeURIComponent(inmateId)}`)
 }
 
 export async function getAllUnits(): Promise<Unit[]> {
