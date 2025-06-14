@@ -25,7 +25,6 @@
           <simple-table :columns="inmateInfoColumns" :data="[inmateInfoForTable]" />
         </section>
 
-
         <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Requests</h2>
           <div class="flex items-center gap-2 mb-2">
@@ -42,7 +41,11 @@
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th v-for="col in requestsTableColumns" :key="col.key" class="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  <th
+                    v-for="col in requestsTableColumns"
+                    :key="col.key"
+                    class="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  >
                     {{ col.label }}
                   </th>
                   <th class="w-12"></th>
@@ -91,44 +94,34 @@
               Create Comment
             </button>
           </div>
-          <div v-if="inmate.comments && inmate.comments.length > 0" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th v-for="col in commentsTableColumns" :key="col.key" class="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {{ col.label }}
-                  </th>
-                  <th class="w-12"></th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-                <tr v-for="(cmt, i) in inmate.comments" :key="cmt.index" class="group">
-                  <td class="px-4 py-2">{{ cmt.index }}</td>
-                  <td class="px-4 py-2">{{ cmt.datetime_created }}</td>
-                  <td class="px-4 py-2">{{ cmt.body }}</td>
-                  <td class="px-4 py-2">{{ cmt.author }}</td>
-                  <td class="px-4 py-2">
-                    <button
-                      v-if="confirmCommentIndex !== i"
-                      @click="confirmCommentIndex = i"
-                      aria-label="Delete comment"
-                      class="text-red-600 opacity-0 group-hover:opacity-100"
-                    >
-                      <TrashIcon class="w-5 h-5" />
-                    </button>
-                    <div v-else class="flex items-center gap-1">
-                      <span class="mr-1">Are you sure?</span>
-                      <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
-                        <CheckIcon class="w-5 h-5 text-green-600" />
-                      </button>
-                      <button @click="confirmCommentIndex = null" aria-label="Cancel delete">
-                        <XMarkIcon class="w-5 h-5 text-gray-600" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div v-if="inmate.comments && inmate.comments.length > 0" class="space-y-4">
+            <div v-for="(cmt, i) in inmate.comments" :key="cmt.index" class="group">
+              <blockquote class="border-l-4 pl-4 italic">
+                <p>{{ cmt.body }}</p>
+                <footer class="mt-1 text-sm text-right text-gray-600 dark:text-gray-400">
+                  {{ cmt.author }} on {{ cmt.datetime_created.slice(0, 10) }}
+                </footer>
+              </blockquote>
+              <div class="mt-1">
+                <button
+                  v-if="confirmCommentIndex !== i"
+                  @click="confirmCommentIndex = i"
+                  aria-label="Delete comment"
+                  class="text-red-600 opacity-0 group-hover:opacity-100"
+                >
+                  <TrashIcon class="w-5 h-5" />
+                </button>
+                <div v-else class="flex items-center gap-1">
+                  <span class="mr-1">Are you sure?</span>
+                  <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
+                    <CheckIcon class="w-5 h-5 text-green-600" />
+                  </button>
+                  <button @click="confirmCommentIndex = null" aria-label="Cancel delete">
+                    <XMarkIcon class="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <p v-else>No comments found for this inmate.</p>
         </section>
@@ -144,10 +137,16 @@
           </div>
           <div class="mb-2 text-sm text-gray-600">Date: {{ commentDate }}</div>
           <div class="flex justify-end gap-2">
-            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300" @click="closeCommentModal">
+            <button
+              class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+              @click="closeCommentModal"
+            >
               Cancel
             </button>
-            <button class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" @click="createComment">
+            <button
+              class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+              @click="createComment"
+            >
               Save
             </button>
           </div>
@@ -197,18 +196,11 @@ const confirmCommentIndex = ref<number | null>(null)
 
 watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 
-function createUrlAnchor(
-  url: string | null | undefined,
-  text?: string
-): string {
+function createUrlAnchor(url: string | null | undefined, text?: string): string {
   if (!url) return text || ''
   const label =
     text ||
-    (url.includes('tdcj.texas.gov')
-      ? 'TDCJ Page'
-      : url.includes('bop.gov')
-        ? 'FBOP page'
-        : url)
+    (url.includes('tdcj.texas.gov') ? 'TDCJ Page' : url.includes('bop.gov') ? 'FBOP page' : url)
   return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`
 }
 
@@ -236,13 +228,6 @@ const requestsTableColumns: TableColumn[] = [
   { key: 'status', label: 'Status' },
 ]
 
-const commentsTableColumns: TableColumn[] = [
-  { key: 'index', label: 'Index' },
-  { key: 'datetime_created', label: 'Date Created' },
-  { key: 'body', label: 'Comment' },
-  { key: 'author', label: 'Author' },
-]
-
 const inmateInfoForTable = computed(() => {
   if (!inmate.value) return {}
   // Select specific fields for the inmate info table if needed, or transform them
@@ -251,16 +236,13 @@ const inmateInfoForTable = computed(() => {
     jurisdiction: inmate.value.jurisdiction,
     name: createUrlAnchor(
       inmate.value.url,
-      `${inmate.value.first_name ?? ''} ${inmate.value.last_name ?? ''}`.trim()
+      `${inmate.value.first_name ?? ''} ${inmate.value.last_name ?? ''}`.trim(),
     ),
     race: inmate.value.race,
     sex: inmate.value.sex,
     release: inmate.value.release,
     datetime_fetched: inmate.value.datetime_fetched,
-    unit_name: createUrlAnchor(
-      inmate.value.unit?.url,
-      inmate.value.unit?.name || ''
-    ),
+    unit_name: createUrlAnchor(inmate.value.unit?.url, inmate.value.unit?.name || ''),
   }
 })
 
@@ -269,6 +251,11 @@ async function fetchDetails() {
   error.value = null
   try {
     inmate.value = await getInmateDetails(props.jurisdiction, props.id)
+    if (inmate.value.comments) {
+      inmate.value.comments.sort(
+        (a, b) => new Date(b.datetime_created).getTime() - new Date(a.datetime_created).getTime(),
+      )
+    }
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : `Failed to fetch details for inmate ${props.id}.`
@@ -321,7 +308,9 @@ async function createComment() {
       inmate.value.comments = []
     }
     inmate.value.comments.push(newComment)
-    inmate.value.comments.sort((a, b) => a.index - b.index)
+    inmate.value.comments.sort(
+      (a, b) => new Date(b.datetime_created).getTime() - new Date(a.datetime_created).getTime(),
+    )
     closeCommentModal()
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to create comment.'
