@@ -43,7 +43,6 @@ const props = defineProps<{
 const unitInfoColumns: TableColumn[] = [
   { key: 'name', label: 'Name' },
   { key: 'jurisdiction', label: 'Jurisdiction' },
-  { key: 'address', label: 'Address' },
   // Add other relevant fields from the Unit schema
 ]
 
@@ -52,7 +51,6 @@ const unitInfoForTable = computed(() => {
   return {
     name: unit.value.name,
     jurisdiction: unit.value.jurisdiction,
-    address: unit.value.address || 'N/A',
     // Map other fields from unit.value
   }
 })
@@ -63,7 +61,8 @@ async function fetchDetails() {
   try {
     unit.value = await getUnitDetails(props.jurisdiction, props.name)
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : `Failed to fetch details for unit ${props.name}.`
+    const message =
+      err instanceof Error ? err.message : `Failed to fetch details for unit ${props.name}.`
     error.value = message
     unit.value = null
   } finally {

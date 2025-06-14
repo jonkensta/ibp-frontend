@@ -46,7 +46,7 @@
     >
       <h3 class="font-semibold mb-2">API Errors:</h3>
       <ul class="list-disc pl-5">
-        <li v-for="(err, index) in apiErrors" :key="index">{{ err.message || err }}</li>
+        <li v-for="(err, index) in apiErrors" :key="index">{{ err }}</li>
       </ul>
     </div>
   </div>
@@ -62,7 +62,7 @@ const searchQuery = ref('')
 const searchResults = ref<Inmate[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
-const apiErrors = ref<unknown[]>([])
+const apiErrors = ref<string[]>([])
 const router = useRouter()
 const hasSearched = ref(false)
 

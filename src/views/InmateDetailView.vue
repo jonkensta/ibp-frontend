@@ -85,7 +85,6 @@ const inmateInfoColumns: TableColumn[] = [
   { key: 'jurisdiction', label: 'Jurisdiction' },
   { key: 'first_name', label: 'First Name' },
   { key: 'last_name', label: 'Last Name' },
-  { key: 'date_of_birth', label: 'Date of Birth' },
   // Add more relevant fields from the Inmate schema
 ]
 
@@ -110,7 +109,6 @@ const inmateInfoForTable = computed(() => {
     jurisdiction: inmate.value.jurisdiction,
     first_name: inmate.value.first_name,
     last_name: inmate.value.last_name,
-    date_of_birth: inmate.value.date_of_birth || 'N/A',
     // Map other fields from inmate.value here
   }
 })
@@ -121,7 +119,8 @@ async function fetchDetails() {
   try {
     inmate.value = await getInmateDetails(props.jurisdiction, props.id)
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : `Failed to fetch details for inmate ${props.id}.`
+    const message =
+      err instanceof Error ? err.message : `Failed to fetch details for inmate ${props.id}.`
     error.value = message
     inmate.value = null
   } finally {
