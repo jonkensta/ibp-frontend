@@ -45,6 +45,16 @@
 
         <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Requests</h2>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="date" v-model="postmarkDate" class="border p-1 rounded" />
+            <button
+              ref="createButton"
+              @click="createRequest"
+              class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Create Request
+            </button>
+          </div>
           <simple-table
             v-if="inmate.requests && inmate.requests.length > 0"
             :columns="requestsTableColumns"
@@ -68,12 +78,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { getInmateDetails, type Inmate } from '@/api'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { getInmateDetails, addRequest, type Inmate } from '@/api'
 import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
 const inmate = ref<Inmate | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
+
+function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`))
+  return match ? decodeURIComponent(match[2]) : null
+}
+
+function setCookie(name: string, value: string, days = 365) {
+  const expires = new Date()
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`
+}
+
+const today = new Date().toISOString().slice(0, 10)
+const postmarkDate = ref(getCookie('postmarkDate') || today)
+const createButton = ref<HTMLButtonElement | null>(null)
+
+watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 
 const props = defineProps<{
   jurisdiction: string
@@ -138,7 +165,30 @@ async function fetchDetails() {
   }
 }
 
-onMounted(fetchDetails)
+async function createRequest() {
+  if (!inmate.value) return
+  try {
+    const newReq = await addRequest(inmate.value.jurisdiction, inmate.value.id, {
+      date_postmarked: postmarkDate.value,
+      date_processed: today,
+      action: 'Filled',
+    })
+    if (!inmate.value.requests) {
+      inmate.value.requests = []
+    }
+    inmate.value.requests.push(newReq)
+    inmate.value.requests.sort((a, b) => a.index - b.index)
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to create request.'
+    error.value = message
+  }
+}
+
+onMounted(async () => {
+  await fetchDetails()
+  await nextTick()
+  createButton.value?.focus()
+})
 
 // Watch for route param changes if navigating between inmate pages directly
 watch(() => [props.jurisdiction, props.id], fetchDetails, { immediate: false })
