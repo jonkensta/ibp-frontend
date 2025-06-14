@@ -55,28 +55,31 @@
               Create Request
             </button>
           </div>
-          <div v-if="inmate.requests && inmate.requests.length > 0" class="simple-table-container">
-            <table class="simple-table">
-              <thead>
+          <div v-if="inmate.requests && inmate.requests.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-300">
+              <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th v-for="col in requestsTableColumns" :key="col.key">{{ col.label }}</th>
-                  <th>Delete</th>
+                  <th v-for="col in requestsTableColumns" :key="col.key" class="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {{ col.label }}
+                  </th>
+                  <th class="w-12"></th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="(req, i) in inmate.requests" :key="req.index">
-                  <td>{{ req.index }}</td>
-                  <td>{{ req.date_postmarked }}</td>
-                  <td>{{ req.date_processed }}</td>
-                  <td>{{ req.action }}</td>
-                  <td>{{ req.status }}</td>
-                  <td>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                <tr v-for="(req, i) in inmate.requests" :key="req.index" class="group">
+                  <td class="px-4 py-2">{{ req.index }}</td>
+                  <td class="px-4 py-2">{{ req.date_postmarked }}</td>
+                  <td class="px-4 py-2">{{ req.date_processed }}</td>
+                  <td class="px-4 py-2">{{ req.action }}</td>
+                  <td class="px-4 py-2">{{ req.status }}</td>
+                  <td class="px-4 py-2">
                     <button
                       v-if="confirmRequestIndex !== i"
                       @click="confirmRequestIndex = i"
                       aria-label="Delete request"
+                      class="text-red-600 opacity-0 group-hover:opacity-100"
                     >
-                      <TrashIcon class="w-5 h-5 text-red-600" />
+                      <TrashIcon class="w-5 h-5" />
                     </button>
                     <div v-else class="flex items-center gap-1">
                       <span class="mr-1">Are you sure?</span>
@@ -105,27 +108,30 @@
               Create Comment
             </button>
           </div>
-          <div v-if="inmate.comments && inmate.comments.length > 0" class="simple-table-container">
-            <table class="simple-table">
-              <thead>
+          <div v-if="inmate.comments && inmate.comments.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-300">
+              <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th v-for="col in commentsTableColumns" :key="col.key">{{ col.label }}</th>
-                  <th>Delete</th>
+                  <th v-for="col in commentsTableColumns" :key="col.key" class="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {{ col.label }}
+                  </th>
+                  <th class="w-12"></th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="(cmt, i) in inmate.comments" :key="cmt.index">
-                  <td>{{ cmt.index }}</td>
-                  <td>{{ cmt.datetime_created }}</td>
-                  <td>{{ cmt.body }}</td>
-                  <td>{{ cmt.author }}</td>
-                  <td>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                <tr v-for="(cmt, i) in inmate.comments" :key="cmt.index" class="group">
+                  <td class="px-4 py-2">{{ cmt.index }}</td>
+                  <td class="px-4 py-2">{{ cmt.datetime_created }}</td>
+                  <td class="px-4 py-2">{{ cmt.body }}</td>
+                  <td class="px-4 py-2">{{ cmt.author }}</td>
+                  <td class="px-4 py-2">
                     <button
                       v-if="confirmCommentIndex !== i"
                       @click="confirmCommentIndex = i"
                       aria-label="Delete comment"
+                      class="text-red-600 opacity-0 group-hover:opacity-100"
                     >
-                      <TrashIcon class="w-5 h-5 text-red-600" />
+                      <TrashIcon class="w-5 h-5" />
                     </button>
                     <div v-else class="flex items-center gap-1">
                       <span class="mr-1">Are you sure?</span>
