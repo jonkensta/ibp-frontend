@@ -14,7 +14,6 @@ export interface Inmate {
   unit?: Unit
   requests?: InmateRequest[]
   comments?: InmateComment[]
-  [key: string]: unknown // Allow other properties
 }
 
 export interface InmateRequest {
@@ -23,7 +22,6 @@ export interface InmateRequest {
   date_processed: string
   action: string
   status: string
-  [key: string]: unknown
 }
 
 export interface InmateComment {
@@ -31,12 +29,11 @@ export interface InmateComment {
   body: string
   author: string
   datetime_created: string
-  [key: string]: unknown
 }
 
 export interface InmateSearchResults {
   inmates: Inmate[]
-  errors: unknown[]
+  errors: string[]
 }
 
 export interface Unit {
@@ -49,7 +46,6 @@ export interface Unit {
   state: string
   url?: string
   shipping_method?: string
-  [key: string]: unknown
 }
 
 async function fetchAPI(url: string, options: RequestInit = {}) {
