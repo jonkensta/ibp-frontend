@@ -35,14 +35,19 @@ const unit = ref<Unit | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
-function createUrlAnchor(url: string | null | undefined): string {
-  if (!url) return ''
-  const text = url.includes('tdcj.texas.gov')
-    ? 'TDCJ Page'
-    : url.includes('bop.gov')
-      ? 'FBOP page'
-      : url
-  return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`
+function createUrlAnchor(
+  url: string | null | undefined,
+  text?: string
+): string {
+  if (!url) return text || ''
+  const label =
+    text ||
+    (url.includes('tdcj.texas.gov')
+      ? 'TDCJ Page'
+      : url.includes('bop.gov')
+        ? 'FBOP page'
+        : url)
+  return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`
 }
 
 const props = defineProps<{

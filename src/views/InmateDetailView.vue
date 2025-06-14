@@ -123,14 +123,19 @@ const commentDate = ref('')
 
 watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 
-function createUrlAnchor(url: string | null | undefined): string {
-  if (!url) return ''
-  const text = url.includes('tdcj.texas.gov')
-    ? 'TDCJ Page'
-    : url.includes('bop.gov')
-      ? 'FBOP page'
-      : url
-  return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`
+function createUrlAnchor(
+  url: string | null | undefined,
+  text?: string
+): string {
+  if (!url) return text || ''
+  const label =
+    text ||
+    (url.includes('tdcj.texas.gov')
+      ? 'TDCJ Page'
+      : url.includes('bop.gov')
+        ? 'FBOP page'
+        : url)
+  return `<a href="${url}" target="_blank" rel="noopener">${label}</a>`
 }
 
 const props = defineProps<{
@@ -141,22 +146,12 @@ const props = defineProps<{
 const inmateInfoColumns: TableColumn[] = [
   { key: 'id', label: 'Inmate ID' },
   { key: 'jurisdiction', label: 'Jurisdiction' },
-  { key: 'first_name', label: 'First Name' },
-  { key: 'last_name', label: 'Last Name' },
+  { key: 'name', label: 'Name' },
   { key: 'race', label: 'Race' },
   { key: 'sex', label: 'Sex' },
   { key: 'release', label: 'Release' },
-  { key: 'url', label: 'URL' },
   { key: 'datetime_fetched', label: 'Fetched At' },
   { key: 'unit_name', label: 'Unit Name' },
-  { key: 'unit_jurisdiction', label: 'Unit Jurisdiction' },
-  { key: 'unit_street1', label: 'Unit Street 1' },
-  { key: 'unit_street2', label: 'Unit Street 2' },
-  { key: 'unit_city', label: 'Unit City' },
-  { key: 'unit_state', label: 'Unit State' },
-  { key: 'unit_zipcode', label: 'Unit Zipcode' },
-  { key: 'unit_url', label: 'Unit URL' },
-  { key: 'unit_shipping_method', label: 'Unit Shipping Method' },
 ]
 
 const requestsTableColumns: TableColumn[] = [
@@ -180,22 +175,18 @@ const inmateInfoForTable = computed(() => {
   return {
     id: inmate.value.id,
     jurisdiction: inmate.value.jurisdiction,
-    first_name: inmate.value.first_name,
-    last_name: inmate.value.last_name,
+    name: createUrlAnchor(
+      inmate.value.url,
+      `${inmate.value.first_name ?? ''} ${inmate.value.last_name ?? ''}`.trim()
+    ),
     race: inmate.value.race,
     sex: inmate.value.sex,
     release: inmate.value.release,
-    url: createUrlAnchor(inmate.value.url),
     datetime_fetched: inmate.value.datetime_fetched,
-    unit_name: inmate.value.unit?.name,
-    unit_jurisdiction: inmate.value.unit?.jurisdiction,
-    unit_street1: inmate.value.unit?.street1,
-    unit_street2: inmate.value.unit?.street2,
-    unit_city: inmate.value.unit?.city,
-    unit_state: inmate.value.unit?.state,
-    unit_zipcode: inmate.value.unit?.zipcode,
-    unit_url: createUrlAnchor(inmate.value.unit?.url),
-    unit_shipping_method: inmate.value.unit?.shipping_method,
+    unit_name: createUrlAnchor(
+      inmate.value.unit?.url,
+      inmate.value.unit?.name || ''
+    ),
   }
 })
 
