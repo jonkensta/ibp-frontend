@@ -1,15 +1,27 @@
 <template>
-  <div class="unit-detail-view">
-    <button @click="$router.back()" class="back-button">&larr; Back to Units List</button>
-    <div v-if="isLoading" class="loading">Loading unit details...</div>
-    <div v-if="error" class="error-message">{{ error }}</div>
+  <div class="p-4 flex flex-col gap-4">
+    <button
+      @click="$router.back()"
+      class="self-start px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+    >
+      &larr; Back to Units List
+    </button>
+    <div v-if="isLoading" class="mt-4 p-4 text-center">Loading unit details...</div>
+    <div
+      v-if="error"
+      class="mt-4 p-4 text-center text-red-600 bg-red-100 rounded border border-red-400"
+    >
+      {{ error }}
+    </div>
 
-    <div v-if="unit && !isLoading" class="unit-content">
-      <h1>Unit: {{ unit.name }}</h1>
-      <section class="detail-section">
-        <h2>Unit Information</h2>
-        <simple-table :columns="unitInfoColumns" :data="[unitInfoForTable]" />
-      </section>
+    <div v-if="unit && !isLoading" class="unit-content flex flex-col items-center gap-4">
+      <h1 class="text-2xl font-bold mb-2">Unit: {{ unit.name }}</h1>
+      <div class="flex flex-wrap justify-center gap-4 w-full">
+        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
+          <h2 class="text-xl font-semibold mb-2">Unit Information</h2>
+          <simple-table :columns="unitInfoColumns" :data="[unitInfoForTable]" />
+        </section>
+      </div>
     </div>
   </div>
 </template>
@@ -63,51 +75,3 @@ async function fetchDetails() {
 onMounted(fetchDetails)
 watch(() => [props.jurisdiction, props.name], fetchDetails, { immediate: false })
 </script>
-
-<style scoped>
-.unit-detail-view {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-.back-button {
-  align-self: flex-start;
-  margin-bottom: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--color-border);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.back-button:hover {
-  background-color: var(--color-border-hover);
-}
-.unit-content h1 {
-  margin-bottom: 1.5rem;
-  color: var(--color-heading);
-}
-.detail-section {
-  margin-bottom: 2rem;
-  background-color: var(--color-background-soft);
-  padding: 1rem;
-  border-radius: 8px;
-}
-.detail-section h2 {
-  margin-bottom: 1rem;
-  border-bottom: 2px solid var(--color-border);
-  padding-bottom: 0.5rem;
-}
-.loading,
-.error-message {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 4px;
-  text-align: center;
-}
-.error-message {
-  color: red;
-  background-color: #ffe0e0;
-  border: 1px solid red;
-}
-</style>
