@@ -43,7 +43,7 @@
           </p>
         </section>
 
-        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
+        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%] overflow-y-auto max-h-96">
           <h2 class="text-xl font-semibold mb-2">Requests</h2>
           <div class="flex items-center gap-2 mb-2">
             <input type="date" v-model="postmarkDate" class="border p-1 rounded" />
@@ -63,7 +63,7 @@
           <p v-else>No requests found for this inmate.</p>
         </section>
 
-        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
+        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%] overflow-y-auto max-h-96">
           <h2 class="text-xl font-semibold mb-2">Comments</h2>
           <div class="flex items-center gap-2 mb-2">
             <button
