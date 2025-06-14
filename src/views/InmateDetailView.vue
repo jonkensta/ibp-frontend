@@ -22,7 +22,12 @@
       <div class="flex flex-wrap justify-center gap-4 w-full">
         <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Inmate Information</h2>
-          <simple-table :columns="inmateInfoColumns" :data="[inmateInfoForTable]" />
+          <div class="flex flex-col items-start space-y-1">
+            <div v-for="info in inmateInfoEntries" :key="info.label">
+              <span class="font-semibold">{{ info.label }}:</span>
+              <span class="ml-1" v-html="info.value" />
+            </div>
+          </div>
         </section>
 
 
@@ -168,7 +173,7 @@ import {
   type Inmate,
 } from '@/api'
 import { TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid'
-import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
+import { type TableColumn } from '@/components/SimpleTable.vue'
 import BaseModal from '@/components/BaseModal.vue'
 const inmate = ref<Inmate | null>(null)
 const isLoading = ref(false)
@@ -256,12 +261,22 @@ const inmateInfoForTable = computed(() => {
     race: inmate.value.race,
     sex: inmate.value.sex,
     release: inmate.value.release,
-    datetime_fetched: inmate.value.datetime_fetched,
+    datetime_fetched: inmate.value.datetime_fetched
+      ? inmate.value.datetime_fetched.slice(0, 10)
+      : null,
     unit_name: createUrlAnchor(
       inmate.value.unit?.url,
       inmate.value.unit?.name || ''
     ),
   }
+})
+
+const inmateInfoEntries = computed(() => {
+  const info = inmateInfoForTable.value as Record<string, unknown>
+  return inmateInfoColumns.map((col) => ({
+    label: col.label,
+    value: info[col.key] ?? '',
+  }))
 })
 
 async function fetchDetails() {
