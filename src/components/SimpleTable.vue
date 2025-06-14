@@ -36,27 +36,27 @@ export interface TableColumn {
 
 interface Props {
   columns: TableColumn[]
-  data: any[]
+  data: Record<string, unknown>[]
   rowHover?: boolean
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits(['row-click'])
 
-function onRowClick(item: any) {
+function onRowClick(item: Record<string, unknown>) {
   if (props.rowHover) {
     emit('row-click', item)
   }
 }
 
 // Helper to get nested values using dot notation
-function getNestedValue(obj: any, path: string): any {
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   if (!path) return obj
   const keys = path.split('.')
-  let result = obj
+  let result: unknown = obj
   for (const key of keys) {
     if (result && typeof result === 'object' && key in result) {
-      result = result[key]
+      result = (result as Record<string, unknown>)[key]
     } else {
       return undefined // Or a default value like 'N/A' or null
     }

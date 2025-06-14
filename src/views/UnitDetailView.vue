@@ -28,11 +28,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
 import { getUnitDetails, type Unit } from '@/api'
 import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
 
-const route = useRoute()
 const unit = ref<Unit | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
@@ -64,8 +62,9 @@ async function fetchDetails() {
   error.value = null
   try {
     unit.value = await getUnitDetails(props.jurisdiction, props.name)
-  } catch (err: any) {
-    error.value = err.message || `Failed to fetch details for unit ${props.name}.`
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : `Failed to fetch details for unit ${props.name}.`
+    error.value = message
     unit.value = null
   } finally {
     isLoading.value = false

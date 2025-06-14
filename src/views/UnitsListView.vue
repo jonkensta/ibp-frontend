@@ -48,8 +48,9 @@ async function fetchUnitsData() {
   error.value = null
   try {
     units.value = await getAllUnits()
-  } catch (err: any) {
-    error.value = err.message || 'Failed to fetch units.'
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to fetch units.'
+    error.value = message
     units.value = []
   } finally {
     isLoading.value = false
