@@ -20,7 +20,7 @@ import { RouterView } from 'vue-router'
         </nav>
       </div>
     </header>
-    <main class="flex-1 p-8 overflow-y-auto">
+    <main class="flex flex-col flex-1 p-8 overflow-y-auto">
       <RouterView />
     </main>
   </div>
