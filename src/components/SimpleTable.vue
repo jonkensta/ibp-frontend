@@ -86,6 +86,9 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 .simple-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background-color: var(--color-background-mute);
   font-weight: bold;
   color: var(--color-heading);
@@ -111,6 +114,9 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
     color: var(--vt-c-text-dark-1);
   }
   .simple-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     background-color: var(--vt-c-black-mute);
     color: var(--vt-c-text-dark-1);
   }
