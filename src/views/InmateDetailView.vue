@@ -65,6 +65,14 @@
 
         <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Comments</h2>
+          <div class="flex items-center gap-2 mb-2">
+            <button
+              @click="openCommentModal"
+              class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Create Comment
+            </button>
+          </div>
           <simple-table
             v-if="inmate.comments && inmate.comments.length > 0"
             :columns="commentsTableColumns"
@@ -72,6 +80,26 @@
           />
           <p v-else>No comments found for this inmate.</p>
         </section>
+        <BaseModal :show="showCommentModal" @close="closeCommentModal">
+          <h3 class="text-lg font-semibold mb-2">New Comment</h3>
+          <div class="mb-2">
+            <label class="block mb-1">Author</label>
+            <input v-model="commentAuthor" type="text" class="w-full border p-1 rounded" />
+          </div>
+          <div class="mb-2">
+            <label class="block mb-1">Comment</label>
+            <textarea v-model="commentBody" class="w-full border p-1 rounded" rows="3"></textarea>
+          </div>
+          <div class="mb-2 text-sm text-gray-600">Date: {{ commentDate }}</div>
+          <div class="flex justify-end gap-2">
+            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300" @click="closeCommentModal">
+              Cancel
+            </button>
+            <button class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" @click="createComment">
+              Save
+            </button>
+          </div>
+        </BaseModal>
       </div>
     </div>
   </div>
@@ -79,8 +107,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { getInmateDetails, addRequest, type Inmate } from '@/api'
+import {
+  getInmateDetails,
+  addRequest,
+  addComment,
+  type Inmate,
+} from '@/api'
 import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
+import BaseModal from '@/components/BaseModal.vue'
 const inmate = ref<Inmate | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
@@ -99,6 +133,10 @@ function setCookie(name: string, value: string, days = 365) {
 const today = new Date().toISOString().slice(0, 10)
 const postmarkDate = ref(getCookie('postmarkDate') || today)
 const createButton = ref<HTMLButtonElement | null>(null)
+const showCommentModal = ref(false)
+const commentAuthor = ref('')
+const commentBody = ref('')
+const commentDate = ref('')
 
 watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 
@@ -180,6 +218,37 @@ async function createRequest() {
     inmate.value.requests.sort((a, b) => a.index - b.index)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to create request.'
+    error.value = message
+  }
+}
+
+function openCommentModal() {
+  commentDate.value = new Date().toISOString()
+  showCommentModal.value = true
+}
+
+function closeCommentModal() {
+  showCommentModal.value = false
+  commentAuthor.value = ''
+  commentBody.value = ''
+}
+
+async function createComment() {
+  if (!inmate.value) return
+  try {
+    const newComment = await addComment(inmate.value.jurisdiction, inmate.value.id, {
+      body: commentBody.value,
+      author: commentAuthor.value,
+      datetime_created: commentDate.value,
+    })
+    if (!inmate.value.comments) {
+      inmate.value.comments = []
+    }
+    inmate.value.comments.push(newComment)
+    inmate.value.comments.sort((a, b) => a.index - b.index)
+    closeCommentModal()
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to create comment.'
     error.value = message
   }
 }
