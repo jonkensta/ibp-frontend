@@ -43,7 +43,7 @@
           </p>
         </section>
 
-        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%] overflow-y-auto max-h-96">
+        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Requests</h2>
           <div class="flex items-center gap-2 mb-2">
             <input type="date" v-model="postmarkDate" class="border p-1 rounded" />
@@ -55,15 +55,18 @@
               Create Request
             </button>
           </div>
-          <simple-table
-            v-if="inmate.requests && inmate.requests.length > 0"
-            :columns="requestsTableColumns"
-            :data="inmate.requests"
-          />
+<template v-if="inmate.requests && inmate.requests.length > 0">
+  <div class="overflow-y-auto max-h-96">
+    <simple-table
+      :columns="requestsTableColumns"
+      :data="inmate.requests"
+    />
+  </div>
+</template>
           <p v-else>No requests found for this inmate.</p>
         </section>
 
-        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%] overflow-y-auto max-h-96">
+        <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Comments</h2>
           <div class="flex items-center gap-2 mb-2">
             <button
@@ -73,11 +76,14 @@
               Create Comment
             </button>
           </div>
-          <simple-table
-            v-if="inmate.comments && inmate.comments.length > 0"
-            :columns="commentsTableColumns"
-            :data="inmate.comments"
-          />
+<template v-if="inmate.comments && inmate.comments.length > 0">
+  <div class="overflow-y-auto max-h-96">
+    <simple-table
+      :columns="commentsTableColumns"
+      :data="inmate.comments"
+    />
+  </div>
+</template>
           <p v-else>No comments found for this inmate.</p>
         </section>
         <BaseModal :show="showCommentModal" @close="closeCommentModal">
