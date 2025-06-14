@@ -22,10 +22,16 @@
       <div class="flex flex-wrap justify-center gap-4 w-full">
         <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Inmate Information</h2>
-          <div class="flex flex-col items-start space-y-1">
-            <div v-for="info in inmateInfoEntries" :key="info.label">
-              <span class="font-semibold">{{ info.label }}:</span>
-              <span class="ml-1" v-html="info.value" />
+          <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            <div
+              v-for="info in inmateInfoEntries"
+              :key="info.label"
+              class="grid grid-cols-[max-content_1fr] items-start gap-x-2 py-1"
+            >
+              <span class="font-semibold text-gray-800 text-right pr-2">
+                {{ info.label }}
+              </span>
+              <span class="pl-2 border-l border-gray-300" v-html="info.value" />
             </div>
           </div>
         </section>
