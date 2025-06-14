@@ -55,11 +55,16 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { searchInmates, type Inmate, type InmateSearchResults } from '@/api'
+import {
+  searchInmates,
+  type Inmate,
+  type InmateSearchResult,
+  type InmateSearchResults,
+} from '@/api'
 import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
 
 const searchQuery = ref('')
-const searchResults = ref<Inmate[]>([])
+const searchResults = ref<InmateSearchResult[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const apiErrors = ref<string[]>([])
