@@ -69,11 +69,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { getInmateDetails, type Inmate, type InmateRequest, type InmateComment } from '@/api'
+import { getInmateDetails, type Inmate } from '@/api'
 import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
-
-const route = useRoute()
 const inmate = ref<Inmate | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
@@ -123,8 +120,9 @@ async function fetchDetails() {
   error.value = null
   try {
     inmate.value = await getInmateDetails(props.jurisdiction, props.id)
-  } catch (err: any) {
-    error.value = err.message || `Failed to fetch details for inmate ${props.id}.`
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : `Failed to fetch details for inmate ${props.id}.`
+    error.value = message
     inmate.value = null
   } finally {
     isLoading.value = false

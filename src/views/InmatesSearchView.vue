@@ -62,7 +62,7 @@ const searchQuery = ref('')
 const searchResults = ref<Inmate[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
-const apiErrors = ref<any[]>([])
+const apiErrors = ref<unknown[]>([])
 const router = useRouter()
 const hasSearched = ref(false)
 
@@ -90,8 +90,9 @@ async function handleSearch() {
     const results: InmateSearchResults = await searchInmates(searchQuery.value)
     searchResults.value = results.inmates
     apiErrors.value = results.errors
-  } catch (err: any) {
-    error.value = err.message || 'Failed to fetch search results.'
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to fetch search results.'
+    error.value = message
     searchResults.value = []
   } finally {
     isLoading.value = false
