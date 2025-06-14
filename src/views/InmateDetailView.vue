@@ -50,11 +50,8 @@
               </thead>
               <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                 <tr v-for="(req, i) in inmate.requests" :key="req.index" class="group">
-                  <td class="px-4 py-2">{{ req.index }}</td>
                   <td class="px-4 py-2">{{ req.date_postmarked }}</td>
-                  <td class="px-4 py-2">{{ req.date_processed }}</td>
                   <td class="px-4 py-2">{{ req.action }}</td>
-                  <td class="px-4 py-2">{{ req.status }}</td>
                   <td class="px-4 py-2">
                     <button
                       v-if="confirmRequestIndex !== i"
@@ -229,11 +226,8 @@ const inmateInfoColumns: TableColumn[] = [
 ]
 
 const requestsTableColumns: TableColumn[] = [
-  { key: 'index', label: 'Index' },
   { key: 'date_postmarked', label: 'Date Postmarked' },
-  { key: 'date_processed', label: 'Date Processed' },
   { key: 'action', label: 'Action' },
-  { key: 'status', label: 'Status' },
 ]
 
 const commentsTableColumns: TableColumn[] = [
@@ -264,11 +258,19 @@ const inmateInfoForTable = computed(() => {
   }
 })
 
+function sortRequests() {
+  if (!inmate.value || !inmate.value.requests) return
+  inmate.value.requests.sort(
+    (a, b) => new Date(b.date_postmarked).getTime() - new Date(a.date_postmarked).getTime(),
+  )
+}
+
 async function fetchDetails() {
   isLoading.value = true
   error.value = null
   try {
     inmate.value = await getInmateDetails(props.jurisdiction, props.id)
+    sortRequests()
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : `Failed to fetch details for inmate ${props.id}.`
@@ -291,7 +293,7 @@ async function createRequest() {
       inmate.value.requests = []
     }
     inmate.value.requests.push(newReq)
-    inmate.value.requests.sort((a, b) => a.index - b.index)
+    sortRequests()
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to create request.'
     error.value = message
@@ -335,6 +337,7 @@ async function confirmDeleteRequest(idx: number) {
     const req = inmate.value.requests[idx]
     await deleteRequest(inmate.value.jurisdiction, inmate.value.id, req.index)
     inmate.value.requests.splice(idx, 1)
+    sortRequests()
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to delete request.'
     error.value = message
