@@ -35,6 +35,16 @@ const unit = ref<Unit | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
+function createUrlAnchor(url: string | null | undefined): string {
+  if (!url) return ''
+  const text = url.includes('tdcj.texas.gov')
+    ? 'TDCJ Page'
+    : url.includes('bop.gov')
+      ? 'FBOP page'
+      : url
+  return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`
+}
+
 const props = defineProps<{
   jurisdiction: string
   name: string
@@ -62,7 +72,7 @@ const unitInfoForTable = computed(() => {
     city: unit.value.city,
     state: unit.value.state,
     zipcode: unit.value.zipcode,
-    url: unit.value.url,
+    url: createUrlAnchor(unit.value.url),
     shipping_method: unit.value.shipping_method,
   }
 })

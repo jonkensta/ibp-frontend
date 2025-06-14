@@ -25,23 +25,6 @@
           <simple-table :columns="inmateInfoColumns" :data="[inmateInfoForTable]" />
         </section>
 
-        <section
-          class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]"
-          v-if="inmate.unit"
-        >
-          <h2 class="text-xl font-semibold mb-2">Assigned Unit</h2>
-          <p>
-            <router-link
-              :to="{
-                name: 'unit-detail',
-                params: { jurisdiction: inmate.unit.jurisdiction, name: inmate.unit.name },
-              }"
-              class="text-blue-600 hover:underline"
-            >
-              {{ inmate.unit.name }} ({{ inmate.unit.jurisdiction }})
-            </router-link>
-          </p>
-        </section>
 
         <section class="bg-white dark:bg-gray-800 p-4 rounded shadow w-full md:w-[48%]">
           <h2 class="text-xl font-semibold mb-2">Requests</h2>
@@ -140,6 +123,16 @@ const commentDate = ref('')
 
 watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 
+function createUrlAnchor(url: string | null | undefined): string {
+  if (!url) return ''
+  const text = url.includes('tdcj.texas.gov')
+    ? 'TDCJ Page'
+    : url.includes('bop.gov')
+      ? 'FBOP page'
+      : url
+  return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`
+}
+
 const props = defineProps<{
   jurisdiction: string
   id: string
@@ -155,6 +148,15 @@ const inmateInfoColumns: TableColumn[] = [
   { key: 'release', label: 'Release' },
   { key: 'url', label: 'URL' },
   { key: 'datetime_fetched', label: 'Fetched At' },
+  { key: 'unit_name', label: 'Unit Name' },
+  { key: 'unit_jurisdiction', label: 'Unit Jurisdiction' },
+  { key: 'unit_street1', label: 'Unit Street 1' },
+  { key: 'unit_street2', label: 'Unit Street 2' },
+  { key: 'unit_city', label: 'Unit City' },
+  { key: 'unit_state', label: 'Unit State' },
+  { key: 'unit_zipcode', label: 'Unit Zipcode' },
+  { key: 'unit_url', label: 'Unit URL' },
+  { key: 'unit_shipping_method', label: 'Unit Shipping Method' },
 ]
 
 const requestsTableColumns: TableColumn[] = [
@@ -183,8 +185,17 @@ const inmateInfoForTable = computed(() => {
     race: inmate.value.race,
     sex: inmate.value.sex,
     release: inmate.value.release,
-    url: inmate.value.url,
+    url: createUrlAnchor(inmate.value.url),
     datetime_fetched: inmate.value.datetime_fetched,
+    unit_name: inmate.value.unit?.name,
+    unit_jurisdiction: inmate.value.unit?.jurisdiction,
+    unit_street1: inmate.value.unit?.street1,
+    unit_street2: inmate.value.unit?.street2,
+    unit_city: inmate.value.unit?.city,
+    unit_state: inmate.value.unit?.state,
+    unit_zipcode: inmate.value.unit?.zipcode,
+    unit_url: createUrlAnchor(inmate.value.unit?.url),
+    unit_shipping_method: inmate.value.unit?.shipping_method,
   }
 })
 

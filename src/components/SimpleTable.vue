@@ -14,11 +14,13 @@
           :class="{ 'clickable-row': rowHover }"
         >
           <td v-for="column in columns" :key="`${rowIndex}-${column.key}`">
-            {{
-              getNestedValue(item, column.key) !== undefined
-                ? getNestedValue(item, column.key)
-                : 'N/A'
-            }}
+            <span
+              v-html="
+                getNestedValue(item, column.key) !== undefined
+                  ? String(getNestedValue(item, column.key))
+                  : 'N/A'
+              "
+            />
           </td>
         </tr>
       </tbody>
