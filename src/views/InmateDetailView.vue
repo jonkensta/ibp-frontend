@@ -63,15 +63,15 @@
                           aria-label="Delete request"
                           class="btn btn-link text-danger p-0"
                         >
-                          <TrashIcon class="w-5 h-5" />
+                          <i class="bi bi-trash"></i>
                         </button>
                         <div v-else class="flex items-center gap-1">
                           <span class="mr-1">Are you sure?</span>
                           <button @click="confirmDeleteRequest(i)" aria-label="Confirm delete">
-                            <CheckIcon class="w-5 h-5 text-success" />
+                            <i class="bi bi-check text-success"></i>
                           </button>
                           <button @click="confirmRequestIndex = null" aria-label="Cancel delete">
-                            <XMarkIcon class="w-5 h-5 text-secondary" />
+                            <i class="bi bi-x text-secondary"></i>
                           </button>
                         </div>
                       </td>
@@ -122,15 +122,15 @@
                       aria-label="Delete comment"
                       class="btn btn-link text-danger p-0"
                     >
-                      <TrashIcon class="w-5 h-5" />
+                      <i class="bi bi-trash"></i>
                     </button>
                     <div v-else class="flex items-center gap-1">
                       <span class="mr-1">Are you sure?</span>
                       <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
-                        <CheckIcon class="w-5 h-5 text-success" />
+                        <i class="bi bi-check text-success"></i>
                       </button>
                       <button @click="confirmCommentIndex = null" aria-label="Cancel delete">
-                        <XMarkIcon class="w-5 h-5 text-secondary" />
+                        <i class="bi bi-x text-secondary"></i>
                       </button>
                     </div>
                   </div>
@@ -176,7 +176,6 @@ import {
   deleteComment,
   type Inmate,
 } from '@/api'
-import { TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid'
 import type { TableColumn } from '@/components/SimpleTable.vue'
 import BaseModal from '@/components/BaseModal.vue'
 const inmate = ref<Inmate | null>(null)
