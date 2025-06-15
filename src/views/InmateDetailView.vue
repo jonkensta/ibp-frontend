@@ -21,7 +21,15 @@
           <div class="card flex-fill">
             <div class="card-body">
               <h2 class="h5 fw-semibold mb-2">Inmate Data</h2>
-              <simple-table :columns="inmateInfoColumns" :data="[inmateInfoForTable]" />
+              <dl class="row mb-0">
+                <template v-for="(item, idx) in inmateInfoList" :key="idx">
+                  <dt class="col-sm-3 fw-semibold">{{ item.label }}</dt>
+                  <dd
+                    class="col-sm-9 mb-2 text-start"
+                    v-html="item.value !== undefined ? item.value : 'N/A'"
+                  />
+                </template>
+              </dl>
             </div>
           </div>
         </div>
@@ -168,7 +176,7 @@ import {
   type Inmate,
 } from '@/api'
 import { TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/solid'
-import SimpleTable, { type TableColumn } from '@/components/SimpleTable.vue'
+import type { TableColumn } from '@/components/SimpleTable.vue'
 import BaseModal from '@/components/BaseModal.vue'
 const inmate = ref<Inmate | null>(null)
 const isLoading = ref(false)
@@ -249,6 +257,14 @@ const inmateInfoForTable = computed(() => {
     datetime_fetched: inmate.value.datetime_fetched,
     unit_name: createUrlAnchor(inmate.value.unit?.url, inmate.value.unit?.name || ''),
   }
+})
+
+const inmateInfoList = computed(() => {
+  const info = inmateInfoForTable.value as Record<string, unknown>
+  return inmateInfoColumns.map((col) => ({
+    label: col.label,
+    value: info[col.key],
+  }))
 })
 
 function sortRequests() {
