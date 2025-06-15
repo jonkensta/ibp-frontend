@@ -17,7 +17,7 @@
     >
       <h1 class="h4 fw-bold mb-2">Inmate: {{ inmate.first_name }} {{ inmate.last_name }}</h1>
       <div class="row g-4 w-100 justify-content-center">
-        <div class="col-12 col-lg-4 d-flex">
+        <div class="col-12 col-lg-4 d-flex" style="height: 500px">
           <div class="card flex-fill">
             <div class="card-body">
               <h2 class="h5 fw-semibold mb-2">Inmate Data</h2>
