@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="p-4 d-flex flex-column align-items-center justify-content-center flex-grow-1 min-vh-100"
-  >
+  <div class="d-flex flex-column align-items-center pt-5">
     <h1 class="h4 fw-bold mb-4">Search Inmates</h1>
     <form @submit.prevent="handleSearch" class="mb-4 d-flex gap-2 w-100" style="max-width: 28rem">
       <input
