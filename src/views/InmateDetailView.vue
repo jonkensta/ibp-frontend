@@ -37,12 +37,20 @@
         <div class="col-12 col-lg-4 d-flex">
           <div class="card flex-fill">
             <div class="card-body">
-              <h2 class="h5 fw-semibold mb-2">Requests</h2>
-              <div class="flex items-center gap-2 mb-2">
-                <input type="date" v-model="postmarkDate" class="form-control p-1" />
-                <button ref="createButton" @click="createRequest" class="btn btn-primary">
-                  Create Request
-                </button>
+              <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="flex-fill">
+                  <h2 class="h5 fw-semibold mb-0">Requests</h2>
+                </div>
+
+                <div class="flex-fill">
+                  <input type="date" v-model="postmarkDate" class="form-control p-1 w-100" />
+                </div>
+
+                <div class="flex-fill">
+                  <button ref="createButton" @click="createRequest" class="btn btn-primary w-100">
+                    Create Request
+                  </button>
+                </div>
               </div>
               <div v-if="inmate.requests && inmate.requests.length > 0" class="overflow-x-auto">
                 <table class="table table-sm">
