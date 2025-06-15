@@ -106,47 +106,35 @@
             <div class="card-body">
               <h2 class="h5 card-title">Comments</h2>
               <div v-if="inmate.comments && inmate.comments.length > 0">
-                <table class="table table-sm">
-                  <thead class="table-light">
-                    <tr>
-                      <th
-                        v-for="col in commentsTableColumns"
-                        :key="col.key"
-                        class="px-2 py-2 text-start"
-                      >
-                        {{ col.label }}
-                      </th>
-                      <th class="w-12"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="(cmt, i) in inmate.comments" :key="cmt.index">
-                      <td class="px-2 py-2">{{ cmt.index }}</td>
-                      <td class="px-2 py-2">{{ cmt.datetime_created }}</td>
-                      <td class="px-2 py-2">{{ cmt.body }}</td>
-                      <td class="px-2 py-2">{{ cmt.author }}</td>
-                      <td class="px-2 py-2">
-                        <button
-                          v-if="confirmCommentIndex !== i"
-                          @click="confirmCommentIndex = i"
-                          aria-label="Delete comment"
-                          class="btn btn-link text-danger p-0"
-                        >
-                          <TrashIcon class="w-5 h-5" />
-                        </button>
-                        <div v-else class="flex items-center gap-1">
-                          <span class="mr-1">Are you sure?</span>
-                          <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
-                            <CheckIcon class="w-5 h-5 text-success" />
-                          </button>
-                          <button @click="confirmCommentIndex = null" aria-label="Cancel delete">
-                            <XMarkIcon class="w-5 h-5 text-secondary" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div v-for="(cmt, i) in inmate.comments" :key="cmt.index" class="mb-3">
+                  <figure>
+                    <blockquote class="blockquote">
+                      <p>{{ cmt.body }}</p>
+                    </blockquote>
+                    <figcaption class="blockquote-footer">
+                      By {{ cmt.author }} on {{ new Date(cmt.datetime_created).toISOString().slice(0, 10) }}
+                    </figcaption>
+                  </figure>
+                  <div>
+                    <button
+                      v-if="confirmCommentIndex !== i"
+                      @click="confirmCommentIndex = i"
+                      aria-label="Delete comment"
+                      class="btn btn-link text-danger p-0"
+                    >
+                      <TrashIcon class="w-5 h-5" />
+                    </button>
+                    <div v-else class="flex items-center gap-1">
+                      <span class="mr-1">Are you sure?</span>
+                      <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
+                        <CheckIcon class="w-5 h-5 text-success" />
+                      </button>
+                      <button @click="confirmCommentIndex = null" aria-label="Cancel delete">
+                        <XMarkIcon class="w-5 h-5 text-secondary" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <p v-else>No comments found for this inmate.</p>
             </div>
@@ -247,12 +235,6 @@ const requestsTableColumns: TableColumn[] = [
   { key: 'action', label: 'Action' },
 ]
 
-const commentsTableColumns: TableColumn[] = [
-  { key: 'index', label: 'Index' },
-  { key: 'datetime_created', label: 'Date Created' },
-  { key: 'body', label: 'Comment' },
-  { key: 'author', label: 'Author' },
-]
 
 const inmateInfoForTable = computed(() => {
   if (!inmate.value) return {}
