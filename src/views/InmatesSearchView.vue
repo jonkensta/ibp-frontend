@@ -19,6 +19,16 @@
       {{ error }}
     </div>
 
+    <div
+      v-if="apiErrors.length > 0"
+      class="mt-4 p-4 bg-warning-subtle border border-warning text-warning rounded"
+    >
+      <h3 class="fw-semibold mb-2">API Errors:</h3>
+      <ul class="ps-4">
+        <li v-for="(err, index) in apiErrors" :key="index">{{ err }}</li>
+      </ul>
+    </div>
+
     <div v-if="searchResults.length > 0 && !isLoading">
       <h2 class="h5 fw-semibold mb-2">Search Results</h2>
       <simple-table
@@ -28,20 +38,12 @@
         row-hover
       />
     </div>
+
     <div
       v-else-if="!isLoading && hasSearched && searchResults.length === 0"
       class="mt-4 p-4 text-center text-muted"
     >
       No inmates found matching your query.
-    </div>
-    <div
-      v-if="apiErrors.length > 0"
-      class="mt-4 p-4 bg-warning-subtle border border-warning text-warning rounded"
-    >
-      <h3 class="fw-semibold mb-2">API Errors:</h3>
-      <ul class="ps-4">
-        <li v-for="(err, index) in apiErrors" :key="index">{{ err }}</li>
-      </ul>
     </div>
   </div>
 </template>
