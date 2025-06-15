@@ -25,7 +25,7 @@
                 <li
                   v-for="(item, idx) in inmateInfoList"
                   :key="idx"
-                  class="mb-2 text-start"
+                  class="mb-2 d-flex align-items-start gap-2"
                 >
                   <div class="fw-semibold">{{ item.label }}</div>
                   <div class="text-start" v-html="item.value !== undefined ? item.value : 'N/A'" />
