@@ -53,19 +53,24 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(req, i) in inmate.requests" :key="req.index">
+                    <tr
+                      v-for="(req, i) in inmate.requests"
+                      :key="req.index"
+                      @mouseenter="hoverRequestIndex = i"
+                      @mouseleave="hoverRequestIndex = null"
+                    >
                       <td class="px-2 py-2">{{ req.date_postmarked }}</td>
                       <td class="px-2 py-2">{{ req.action }}</td>
                       <td class="px-2 py-2">
                         <button
-                          v-if="confirmRequestIndex !== i"
+                          v-if="hoverRequestIndex === i && confirmRequestIndex !== i"
                           @click="confirmRequestIndex = i"
                           aria-label="Delete request"
                           class="btn btn-link text-danger p-0"
                         >
                           <TrashIcon class="w-5 h-5" />
                         </button>
-                        <div v-else class="flex items-center gap-1">
+                        <div v-else-if="confirmRequestIndex === i" class="flex items-center gap-1">
                           <span class="mr-1">Are you sure?</span>
                           <button @click="confirmDeleteRequest(i)" aria-label="Confirm delete">
                             <CheckIcon class="w-5 h-5 text-success" />
@@ -120,21 +125,26 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(cmt, i) in inmate.comments" :key="cmt.index">
+                    <tr
+                      v-for="(cmt, i) in inmate.comments"
+                      :key="cmt.index"
+                      @mouseenter="hoverCommentIndex = i"
+                      @mouseleave="hoverCommentIndex = null"
+                    >
                       <td class="px-2 py-2">{{ cmt.index }}</td>
                       <td class="px-2 py-2">{{ cmt.datetime_created }}</td>
                       <td class="px-2 py-2">{{ cmt.body }}</td>
                       <td class="px-2 py-2">{{ cmt.author }}</td>
                       <td class="px-2 py-2">
                         <button
-                          v-if="confirmCommentIndex !== i"
+                          v-if="hoverCommentIndex === i && confirmCommentIndex !== i"
                           @click="confirmCommentIndex = i"
                           aria-label="Delete comment"
                           class="btn btn-link text-danger p-0"
                         >
                           <TrashIcon class="w-5 h-5" />
                         </button>
-                        <div v-else class="flex items-center gap-1">
+                        <div v-else-if="confirmCommentIndex === i" class="flex items-center gap-1">
                           <span class="mr-1">Are you sure?</span>
                           <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
                             <CheckIcon class="w-5 h-5 text-success" />
@@ -215,6 +225,8 @@ const commentBody = ref('')
 const commentDate = ref('')
 const confirmRequestIndex = ref<number | null>(null)
 const confirmCommentIndex = ref<number | null>(null)
+const hoverRequestIndex = ref<number | null>(null)
+const hoverCommentIndex = ref<number | null>(null)
 
 watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 
@@ -358,8 +370,7 @@ async function confirmDeleteRequest(idx: number) {
   try {
     const req = inmate.value.requests[idx]
     await deleteRequest(inmate.value.jurisdiction, inmate.value.id, req.index)
-    inmate.value.requests.splice(idx, 1)
-    sortRequests()
+    await fetchDetails()
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to delete request.'
     error.value = message
@@ -373,7 +384,7 @@ async function confirmDeleteComment(idx: number) {
   try {
     const cmt = inmate.value.comments[idx]
     await deleteComment(inmate.value.jurisdiction, inmate.value.id, cmt.index)
-    inmate.value.comments.splice(idx, 1)
+    await fetchDetails()
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to delete comment.'
     error.value = message
