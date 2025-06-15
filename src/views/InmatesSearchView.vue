@@ -1,53 +1,55 @@
 <template>
   <div class="d-flex flex-column align-items-center pt-5">
     <h1 class="h4 fw-bold mb-4">Search Inmates</h1>
-    <form @submit.prevent="handleSearch" class="mb-4 d-flex gap-2 w-100" style="max-width: 28rem">
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="Enter Inmate Name or ID"
-        class="form-control flex-grow-1"
-      />
-      <button type="submit" :disabled="isLoading" class="btn btn-success">Search</button>
-    </form>
 
-    <div v-if="isLoading" class="mt-4 p-4 text-center">Loading...</div>
-    <div
-      v-if="error"
-      class="mt-4 p-4 text-center text-danger bg-danger-subtle rounded border border-danger"
-    >
-      {{ error }}
-    </div>
+    <div class="d-flex flex-column gap-4 w-100" style="max-width: 28rem">
+      <form @submit.prevent="handleSearch" class="d-flex gap-2">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Enter Inmate Name or ID"
+          class="form-control flex-grow-1"
+        />
+        <button type="submit" :disabled="isLoading" class="btn btn-success">Search</button>
+      </form>
 
-    <div
-      v-if="apiErrors.length > 0"
-      class="mt-4 p-4 bg-warning-subtle border border-warning text-warning rounded"
-    >
-      <h3 class="fw-semibold mb-2">API Errors:</h3>
-      <ul class="ps-4">
-        <li v-for="(err, index) in apiErrors" :key="index">{{ err }}</li>
-      </ul>
-    </div>
+      <div v-if="isLoading" class="p-4 text-center">Loading...</div>
 
-    <div v-if="searchResults.length > 0 && !isLoading">
-      <h2 class="h5 fw-semibold mb-2">Search Results</h2>
-      <simple-table
-        :columns="inmateTableColumns"
-        :data="searchResults"
-        @row-click="viewInmateDetails"
-        row-hover
-      />
-    </div>
+      <div v-if="error" class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
 
-    <div
-      v-else-if="!isLoading && hasSearched && searchResults.length === 0"
-      class="mt-4 p-4 text-center text-muted"
-    >
-      No inmates found matching your query.
+      <div v-if="apiErrors.length > 0">
+        <h2 class="h5 fw-semibold mb-2">Search Errors:</h2>
+        <div
+          v-for="(err, index) in apiErrors"
+          :key="index"
+          class="alert alert-warning"
+          role="alert"
+        >
+          {{ err }}
+        </div>
+      </div>
+
+      <div v-if="searchResults.length > 0 && !isLoading">
+        <h2 class="h5 fw-semibold mb-2">Search Results:</h2>
+        <simple-table
+          :columns="inmateTableColumns"
+          :data="searchResults"
+          @row-click="viewInmateDetails"
+          row-hover
+        />
+      </div>
+
+      <div
+        v-else-if="!isLoading && hasSearched && searchResults.length === 0"
+        class="p-4 text-center text-muted"
+      >
+        No inmates found matching your query.
+      </div>
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
