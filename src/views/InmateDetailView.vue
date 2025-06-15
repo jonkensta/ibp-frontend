@@ -20,7 +20,7 @@
         <div class="col-12 col-lg-4 d-flex" style="height: 500px">
           <div class="card flex-fill">
             <div class="card-body">
-              <h2 class="h5 fw-semibold mb-2">Inmate Data</h2>
+              <h2 class="h5 card-title">Inmate Data</h2>
               <dl class="row mb-0">
                 <template v-for="(item, idx) in inmateInfoList" :key="idx">
                   <dt class="col-sm-3 fw-semibold">{{ item.label }}</dt>
@@ -35,24 +35,10 @@
         </div>
 
         <div class="col-12 col-lg-4 d-flex">
-          <div class="card flex-fill">
+          <div class="card flex-fill d-flex flex-column">
             <div class="card-body">
-              <div class="d-flex align-items-center gap-3 mb-2">
-                <div class="flex-fill">
-                  <h2 class="h5 fw-semibold mb-0">Requests</h2>
-                </div>
-
-                <div class="flex-fill">
-                  <input type="date" v-model="postmarkDate" class="form-control p-1 w-100" />
-                </div>
-
-                <div class="flex-fill">
-                  <button ref="createButton" @click="createRequest" class="btn btn-primary w-100">
-                    Create Request
-                  </button>
-                </div>
-              </div>
-              <div v-if="inmate.requests && inmate.requests.length > 0" class="overflow-x-auto">
+              <h2 class="h5 card-title">Requests</h2>
+              <div v-if="inmate.requests && inmate.requests.length > 0">
                 <table class="table table-sm">
                   <thead class="table-light">
                     <tr>
@@ -95,17 +81,31 @@
               </div>
               <p v-else>No requests found for this inmate.</p>
             </div>
+
+            <div class="card-footer">
+              <div class="d-flex align-items-center gap-3 mb-2">
+                <div class="flex-fill">
+                  <div class="input-group">
+                    <span class="input-group-text">Postmark Date</span>
+                    <input type="date" v-model="postmarkDate" class="form-control" />
+                  </div>
+                </div>
+
+                <div class="flex-fill">
+                  <button ref="createButton" @click="createRequest" class="btn btn-primary w-100">
+                    Create Request
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="col-12 col-lg-4 d-flex">
           <div class="card flex-fill">
             <div class="card-body">
-              <h2 class="h5 fw-semibold mb-2">Comments</h2>
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <button @click="openCommentModal" class="btn btn-primary">Create Comment</button>
-              </div>
-              <div v-if="inmate.comments && inmate.comments.length > 0" class="overflow-x-auto">
+              <h2 class="h5 card-title">Comments</h2>
+              <div v-if="inmate.comments && inmate.comments.length > 0">
                 <table class="table table-sm">
                   <thead class="table-light">
                     <tr>
@@ -149,6 +149,11 @@
                 </table>
               </div>
               <p v-else>No comments found for this inmate.</p>
+            </div>
+            <div class="card-footer">
+              <div class="d-flex justify-content-end gap-3 mb-2">
+                <button @click="openCommentModal" class="btn btn-primary">Create Comment</button>
+              </div>
             </div>
           </div>
         </div>
