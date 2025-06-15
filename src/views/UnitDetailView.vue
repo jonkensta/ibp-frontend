@@ -11,7 +11,7 @@
       {{ error }}
     </div>
 
-    <div v-if="unit && !isLoading" class="unit-content d-flex flex-column align-items-center gap-4">
+    <div v-if="unit && !isLoading" class="d-flex flex-column align-items-center gap-4">
       <h1 class="h4 fw-bold mb-2">Unit: {{ unit.name }}</h1>
       <div class="d-flex flex-wrap justify-content-center gap-4 w-100">
         <section class="bg-white p-4 rounded shadow w-100 col-md-5">
