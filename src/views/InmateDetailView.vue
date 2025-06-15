@@ -21,16 +21,15 @@
           <div class="card flex-fill">
             <div class="card-body">
               <h2 class="h5 fw-semibold mb-2">Inmate Data</h2>
-              <ul class="list-unstyled mb-0">
-                <li
-                  v-for="(item, idx) in inmateInfoList"
-                  :key="idx"
-                  class="mb-2 d-flex align-items-start gap-2"
-                >
-                  <div class="fw-semibold">{{ item.label }}</div>
-                  <div class="text-start" v-html="item.value !== undefined ? item.value : 'N/A'" />
-                </li>
-              </ul>
+              <dl class="row mb-0">
+                <template v-for="(item, idx) in inmateInfoList" :key="idx">
+                  <dt class="col-sm-3 fw-semibold">{{ item.label }}</dt>
+                  <dd
+                    class="col-sm-9 mb-2 text-start"
+                    v-html="item.value !== undefined ? item.value : 'N/A'"
+                  />
+                </template>
+              </dl>
             </div>
           </div>
         </div>
