@@ -13,7 +13,7 @@
 
     <div
       v-if="inmate && !isLoading"
-      class="inmate-content d-flex flex-column align-items-center gap-4"
+      class="d-flex flex-column align-items-center gap-4"
     >
       <h1 class="h4 fw-bold mb-2">Inmate: {{ inmate.first_name }} {{ inmate.last_name }}</h1>
       <div class="row g-4 w-100 justify-content-center">
@@ -49,7 +49,7 @@
                       >
                         {{ col.label }}
                       </th>
-                      <th class="w-12"></th>
+                      <th style="width: 12%"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -65,8 +65,8 @@
                         >
                           <i class="bi bi-trash"></i>
                         </button>
-                        <div v-else class="flex items-center gap-1">
-                          <span class="mr-1">Are you sure?</span>
+                        <div v-else class="d-flex align-items-center gap-1">
+                          <span class="me-1">Are you sure?</span>
                           <button @click="confirmDeleteRequest(i)" aria-label="Confirm delete">
                             <i class="bi bi-check text-success"></i>
                           </button>
@@ -124,8 +124,8 @@
                     >
                       <i class="bi bi-trash"></i>
                     </button>
-                    <div v-else class="flex items-center gap-1">
-                      <span class="mr-1">Are you sure?</span>
+                    <div v-else class="d-flex align-items-center gap-1">
+                      <span class="me-1">Are you sure?</span>
                       <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
                         <i class="bi bi-check text-success"></i>
                       </button>
