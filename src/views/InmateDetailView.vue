@@ -53,24 +53,19 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(req, i) in inmate.requests"
-                      :key="req.index"
-                      @mouseenter="hoverRequestIndex = i"
-                      @mouseleave="hoverRequestIndex = null"
-                    >
+                    <tr v-for="(req, i) in inmate.requests" :key="req.index">
                       <td class="px-2 py-2">{{ req.date_postmarked }}</td>
                       <td class="px-2 py-2">{{ req.action }}</td>
                       <td class="px-2 py-2">
                         <button
-                          v-if="hoverRequestIndex === i && confirmRequestIndex !== i"
+                          v-if="confirmRequestIndex !== i"
                           @click="confirmRequestIndex = i"
                           aria-label="Delete request"
-                          class="btn btn-link text-danger p-0"
+                          class="btn btn-link text-danger p-0 row-action-btn"
                         >
                           <TrashIcon class="w-5 h-5" />
                         </button>
-                        <div v-else-if="confirmRequestIndex === i" class="flex items-center gap-1">
+                        <div v-else class="flex items-center gap-1">
                           <span class="mr-1">Are you sure?</span>
                           <button @click="confirmDeleteRequest(i)" aria-label="Confirm delete">
                             <CheckIcon class="w-5 h-5 text-success" />
@@ -125,26 +120,21 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="(cmt, i) in inmate.comments"
-                      :key="cmt.index"
-                      @mouseenter="hoverCommentIndex = i"
-                      @mouseleave="hoverCommentIndex = null"
-                    >
+                    <tr v-for="(cmt, i) in inmate.comments" :key="cmt.index">
                       <td class="px-2 py-2">{{ cmt.index }}</td>
                       <td class="px-2 py-2">{{ cmt.datetime_created }}</td>
                       <td class="px-2 py-2">{{ cmt.body }}</td>
                       <td class="px-2 py-2">{{ cmt.author }}</td>
                       <td class="px-2 py-2">
                         <button
-                          v-if="hoverCommentIndex === i && confirmCommentIndex !== i"
+                          v-if="confirmCommentIndex !== i"
                           @click="confirmCommentIndex = i"
                           aria-label="Delete comment"
-                          class="btn btn-link text-danger p-0"
+                          class="btn btn-link text-danger p-0 row-action-btn"
                         >
                           <TrashIcon class="w-5 h-5" />
                         </button>
-                        <div v-else-if="confirmCommentIndex === i" class="flex items-center gap-1">
+                        <div v-else class="flex items-center gap-1">
                           <span class="mr-1">Are you sure?</span>
                           <button @click="confirmDeleteComment(i)" aria-label="Confirm delete">
                             <CheckIcon class="w-5 h-5 text-success" />
@@ -225,8 +215,6 @@ const commentBody = ref('')
 const commentDate = ref('')
 const confirmRequestIndex = ref<number | null>(null)
 const confirmCommentIndex = ref<number | null>(null)
-const hoverRequestIndex = ref<number | null>(null)
-const hoverCommentIndex = ref<number | null>(null)
 
 watch(postmarkDate, (val) => setCookie('postmarkDate', val))
 

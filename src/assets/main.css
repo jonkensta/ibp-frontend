@@ -21,3 +21,12 @@
   color: var(--color-text-light-2);
   margin: 1rem 0;
 }
+
+/* Show row action buttons only on hover */
+.row-action-btn {
+  visibility: hidden;
+}
+
+tr:hover .row-action-btn {
+  visibility: visible;
+}
