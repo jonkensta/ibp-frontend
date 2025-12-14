@@ -6,9 +6,15 @@ interface InmateProfileProps {
   inmate: Inmate;
 }
 
+function parseDate(value: string | null): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? null : date;
+}
+
 export function InmateProfile({ inmate }: InmateProfileProps) {
-  const releaseDate = inmate.release ? new Date(inmate.release) : null;
-  const fetchedDate = inmate.datetime_fetched ? new Date(inmate.datetime_fetched) : null;
+  const releaseDate = parseDate(inmate.release);
+  const fetchedDate = parseDate(inmate.datetime_fetched);
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -41,10 +47,12 @@ export function InmateProfile({ inmate }: InmateProfileProps) {
               <p className="font-medium">{inmate.sex}</p>
             </div>
           )}
-          {releaseDate && (
+          {inmate.release && (
             <div>
               <p className="text-sm text-muted-foreground">Release Date</p>
-              <p className="font-medium">{format(releaseDate, 'MMMM d, yyyy')}</p>
+              <p className="font-medium">
+                {releaseDate ? format(releaseDate, 'MMMM d, yyyy') : inmate.release}
+              </p>
             </div>
           )}
           {inmate.url && (
