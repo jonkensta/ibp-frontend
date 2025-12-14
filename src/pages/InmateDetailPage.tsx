@@ -1,14 +1,62 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { InmateProfile } from '@/components/inmates';
+import { useInmate } from '@/hooks';
+import type { Jurisdiction } from '@/types';
 
 export function InmateDetailPage() {
   const { jurisdiction, id } = useParams<{ jurisdiction: string; id: string }>();
 
+  const inmateId = id ? parseInt(id, 10) : 0;
+  const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
+
+  if (isLoading) {
+    return (
+      <div className="py-8 text-center">
+        <p className="text-muted-foreground">Loading inmate information...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-md bg-destructive/10 p-4">
+          <p className="text-sm text-destructive">
+            {error instanceof Error ? error.message : 'Failed to load inmate information.'}
+          </p>
+        </div>
+        <Link to="/search" className="text-primary underline">
+          Back to search
+        </Link>
+      </div>
+    );
+  }
+
+  if (!inmate) {
+    return (
+      <div className="space-y-4">
+        <p className="text-muted-foreground">Inmate not found.</p>
+        <Link to="/search" className="text-primary underline">
+          Back to search
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Inmate Details</h1>
-      <p className="mt-2 text-muted-foreground">
-        Viewing inmate: {jurisdiction} / {id}
-      </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <Link to="/search" className="text-sm text-muted-foreground hover:underline">
+            &larr; Back to search
+          </Link>
+          <h1 className="mt-2 text-2xl font-bold">
+            {inmate.last_name}, {inmate.first_name}
+          </h1>
+        </div>
+      </div>
+
+      <InmateProfile inmate={inmate} />
     </div>
   );
 }
