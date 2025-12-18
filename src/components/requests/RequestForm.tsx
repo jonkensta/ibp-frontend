@@ -99,7 +99,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
     if (action === 'Tossed') {
       try {
         await createRequestMutation.mutateAsync(requestData);
-        reset();
+        // Don't reset - keep the date_postmarked value
       } catch (error) {
         console.error('Failed to create request:', error);
       }
@@ -121,7 +121,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
         setShowWarningDialog(true);
       } else {
         await createRequestMutation.mutateAsync(requestData);
-        reset();
+        // Don't reset - keep the date_postmarked value
       }
     } catch (error) {
       console.error('Failed to validate request:', error);
@@ -139,7 +139,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
 
     try {
       await createRequestMutation.mutateAsync(requestData);
-      reset();
+      // Don't reset - keep the date_postmarked value
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
@@ -159,7 +159,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
 
     try {
       await createRequestMutation.mutateAsync(requestData);
-      reset();
+      // Don't reset - keep the date_postmarked value
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
