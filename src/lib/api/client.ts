@@ -15,6 +15,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const message = await response.text().catch(() => response.statusText);
     throw new ApiError(response.status, message);
   }
+  // Handle 204 No Content (no response body)
+  if (response.status === 204) {
+    return undefined as T;
+  }
   return response.json() as Promise<T>;
 }
 
