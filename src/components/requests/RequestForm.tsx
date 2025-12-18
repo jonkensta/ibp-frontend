@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,25 +19,39 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useCreateRequest, useValidateRequest } from '@/hooks';
-import type { Jurisdiction, RequestValidationWarnings } from '@/types';
+import type { Jurisdiction, RequestValidationWarnings, Action } from '@/types';
 
 interface RequestFormProps {
   jurisdiction: Jurisdiction;
   inmateId: number;
 }
 
+const POSTMARK_DATE_COOKIE = 'ibp_last_postmark_date';
+
 const requestSchema = z.object({
   date_postmarked: z.date({ message: 'Postmark date is required' }),
-  date_processed: z.date({ message: 'Processed date is required' }),
-  action: z.enum(['Filled', 'Tossed'], { message: 'Action is required' }),
 });
 
 type RequestFormData = z.infer<typeof requestSchema>;
 
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function setCookie(name: string, value: string, days: number = 365) {
+  const date = new Date();
+  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/`;
+}
+
 export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
   const [showWarningDialog, setShowWarningDialog] = useState(false);
   const [warnings, setWarnings] = useState<RequestValidationWarnings | null>(null);
-  const [pendingData, setPendingData] = useState<RequestFormData | null>(null);
+  const [pendingAction, setPendingAction] = useState<Action | null>(null);
 
   const createRequestMutation = useCreateRequest(jurisdiction, inmateId);
   const validateRequestMutation = useValidateRequest(jurisdiction, inmateId);
@@ -45,24 +59,54 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
   const {
     setValue,
     watch,
-    handleSubmit,
     formState: { errors },
     reset,
   } = useForm<RequestFormData>({
     resolver: zodResolver(requestSchema),
+    defaultValues: {
+      date_postmarked: undefined,
+    },
   });
 
   const datePostmarked = watch('date_postmarked');
-  const dateProcessed = watch('date_processed');
-  const action = watch('action');
 
-  const onSubmit = async (data: RequestFormData) => {
+  // Load postmark date from cookie on mount
+  useEffect(() => {
+    const savedDate = getCookie(POSTMARK_DATE_COOKIE);
+    if (savedDate) {
+      const date = new Date(savedDate);
+      if (!isNaN(date.getTime())) {
+        setValue('date_postmarked', date);
+      }
+    }
+  }, [setValue]);
+
+  const handleSubmit = async (action: Action) => {
+    if (!datePostmarked) {
+      return;
+    }
+
+    // Save postmark date to cookie
+    setCookie(POSTMARK_DATE_COOKIE, datePostmarked.toISOString());
+
     const requestData = {
-      date_postmarked: format(data.date_postmarked, 'yyyy-MM-dd'),
-      date_processed: format(data.date_processed, 'yyyy-MM-dd'),
-      action: data.action,
+      date_postmarked: format(datePostmarked, 'yyyy-MM-dd'),
+      date_processed: format(new Date(), 'yyyy-MM-dd'),
+      action,
     };
 
+    // Skip validation for "Tossed" requests
+    if (action === 'Tossed') {
+      try {
+        await createRequestMutation.mutateAsync(requestData);
+        reset();
+      } catch (error) {
+        console.error('Failed to create request:', error);
+      }
+      return;
+    }
+
+    // Validate "Filled" requests
     try {
       const validationWarnings = await validateRequestMutation.mutateAsync(requestData);
 
@@ -73,7 +117,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
 
       if (hasWarnings) {
         setWarnings(validationWarnings);
-        setPendingData(data);
+        setPendingAction(action);
         setShowWarningDialog(true);
       } else {
         await createRequestMutation.mutateAsync(requestData);
@@ -85,12 +129,12 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
   };
 
   const handleConfirmWithWarnings = async () => {
-    if (!pendingData) return;
+    if (!datePostmarked || !pendingAction) return;
 
     const requestData = {
-      date_postmarked: format(pendingData.date_postmarked, 'yyyy-MM-dd'),
-      date_processed: format(pendingData.date_processed, 'yyyy-MM-dd'),
-      action: pendingData.action,
+      date_postmarked: format(datePostmarked, 'yyyy-MM-dd'),
+      date_processed: format(new Date(), 'yyyy-MM-dd'),
+      action: pendingAction,
     };
 
     try {
@@ -98,16 +142,29 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
       reset();
       setShowWarningDialog(false);
       setWarnings(null);
-      setPendingData(null);
+      setPendingAction(null);
     } catch (error) {
       console.error('Failed to create request:', error);
     }
   };
 
-  const handleChangeTossed = () => {
-    if (pendingData) {
-      setValue('action', 'Tossed');
-      handleConfirmWithWarnings();
+  const handleChangeTossed = async () => {
+    if (!datePostmarked) return;
+
+    const requestData = {
+      date_postmarked: format(datePostmarked, 'yyyy-MM-dd'),
+      date_processed: format(new Date(), 'yyyy-MM-dd'),
+      action: 'Tossed' as Action,
+    };
+
+    try {
+      await createRequestMutation.mutateAsync(requestData);
+      reset();
+      setShowWarningDialog(false);
+      setWarnings(null);
+      setPendingAction(null);
+    } catch (error) {
+      console.error('Failed to create request:', error);
     }
   };
 
@@ -122,7 +179,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
           <CardTitle>Add New Request</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-4">
             {createRequestMutation.isError && (
               <Alert variant="destructive">
                 <AlertDescription>Failed to create request. Please try again.</AlertDescription>
@@ -151,59 +208,28 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label>Date Processed</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateProcessed ? format(dateProcessed, 'PP') : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={dateProcessed}
-                    onSelect={(date) => date && setValue('date_processed', date)}
-                  />
-                </PopoverContent>
-              </Popover>
-              {errors.date_processed && (
-                <p className="text-sm text-red-500">{errors.date_processed.message}</p>
-              )}
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                onClick={() => handleSubmit('Filled')}
+                disabled={
+                  !datePostmarked ||
+                  createRequestMutation.isPending ||
+                  validateRequestMutation.isPending
+                }
+              >
+                Fill
+              </Button>
+              <Button
+                className="flex-1"
+                variant="secondary"
+                onClick={() => handleSubmit('Tossed')}
+                disabled={!datePostmarked || createRequestMutation.isPending}
+              >
+                Toss
+              </Button>
             </div>
-
-            <div className="space-y-2">
-              <Label>Action</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={action === 'Filled' ? 'default' : 'outline'}
-                  className="flex-1"
-                  onClick={() => setValue('action', 'Filled')}
-                >
-                  Filled
-                </Button>
-                <Button
-                  type="button"
-                  variant={action === 'Tossed' ? 'default' : 'outline'}
-                  className="flex-1"
-                  onClick={() => setValue('action', 'Tossed')}
-                >
-                  Tossed
-                </Button>
-              </div>
-              {errors.action && <p className="text-sm text-red-500">{errors.action.message}</p>}
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={createRequestMutation.isPending || validateRequestMutation.isPending}
-            >
-              {validateRequestMutation.isPending ? 'Validating...' : 'Add Request'}
-            </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
@@ -229,9 +255,9 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
               Cancel
             </Button>
             <Button variant="secondary" onClick={handleChangeTossed}>
-              Change to Tossed
+              Change to Toss
             </Button>
-            <Button onClick={handleConfirmWithWarnings}>Proceed Anyway</Button>
+            <Button onClick={handleConfirmWithWarnings}>Proceed with Fill</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
