@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { InmateProfile } from '@/components/inmates';
-import { useInmate } from '@/hooks';
+import { RequestList, RequestForm } from '@/components/requests';
+import { useInmate, useInmateWarnings } from '@/hooks';
 import type { Jurisdiction } from '@/types';
 
 export function InmateDetailPage() {
@@ -8,6 +9,7 @@ export function InmateDetailPage() {
 
   const inmateId = id ? parseInt(id, 10) : 0;
   const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
+  const { data: warnings } = useInmateWarnings(jurisdiction as Jurisdiction, inmateId);
 
   if (isLoading) {
     return (
@@ -56,7 +58,16 @@ export function InmateDetailPage() {
         </div>
       </div>
 
-      <InmateProfile inmate={inmate} />
+      <InmateProfile inmate={inmate} warnings={warnings} />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <RequestForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
+        <RequestList
+          requests={inmate.requests}
+          jurisdiction={jurisdiction as Jurisdiction}
+          inmateId={inmateId}
+        />
+      </div>
     </div>
   );
 }

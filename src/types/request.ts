@@ -18,3 +18,14 @@ export interface RequestUpdate {
   date_postmarked?: string;
   action?: Action;
 }
+
+export interface InmateWarnings {
+  entry_age?: string;
+  release?: string;
+}
+
+export interface RequestValidationWarnings {
+  entry_age?: string;
+  release?: string;
+  postmarkdate?: string;
+}
