@@ -117,7 +117,7 @@ export function UnitForm({ unit }: UnitFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="jurisdiction">Jurisdiction</Label>
-              <Select value={jurisdiction} onValueChange={(value: string) => setValue('jurisdiction', value as Jurisdiction)}>
+              <Select value={jurisdiction} onValueChange={(value: string) => setValue('jurisdiction', value as Jurisdiction, { shouldDirty: true })}>
                 <SelectTrigger id="jurisdiction">
                   <SelectValue placeholder="Select jurisdiction" />
                 </SelectTrigger>
@@ -151,7 +151,7 @@ export function UnitForm({ unit }: UnitFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Select value={watch('state')} onValueChange={(value: string) => setValue('state', value)}>
+              <Select value={watch('state')} onValueChange={(value: string) => setValue('state', value, { shouldDirty: true })}>
                 <SelectTrigger id="state">
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
@@ -183,7 +183,7 @@ export function UnitForm({ unit }: UnitFormProps) {
             <Label htmlFor="shipping_method">Shipping Method (Optional)</Label>
             <Select
               value={shippingMethod || 'none'}
-              onValueChange={(value: string) => setValue('shipping_method', value === 'none' ? null : (value as ShippingMethod))}
+              onValueChange={(value: string) => setValue('shipping_method', value === 'none' ? null : (value as ShippingMethod), { shouldDirty: true })}
             >
               <SelectTrigger id="shipping_method">
                 <SelectValue placeholder="Select shipping method" />
