@@ -1,8 +1,10 @@
+import { UnitDirectory } from '@/components/units/UnitDirectory';
+
 export function UnitsPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold">Units Directory</h1>
-      <p className="mt-2 text-muted-foreground">Unit listing coming soon.</p>
+      <h1 className="text-2xl font-bold mb-6">Units Directory</h1>
+      <UnitDirectory />
     </div>
   );
 }

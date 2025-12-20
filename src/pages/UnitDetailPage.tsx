@@ -1,14 +1,46 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent } from '@/components/ui/card';
+import { UnitForm } from '@/components/units/UnitForm';
+import { useUnit } from '@/hooks';
+import type { Jurisdiction } from '@/types';
 
 export function UnitDetailPage() {
   const { jurisdiction, name } = useParams<{ jurisdiction: string; name: string }>();
 
+  const { data: unit, isLoading, isError } = useUnit(jurisdiction as Jurisdiction, name as string);
+
+  if (isLoading) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold mb-6">Unit Details</h1>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">Loading unit...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError || !unit) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold mb-6">Unit Details</h1>
+        <Alert variant="destructive">
+          <AlertDescription>Failed to load unit. Please try again.</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-bold">Unit Details</h1>
-      <p className="mt-2 text-muted-foreground">
-        Viewing unit: {jurisdiction} / {name}
+      <h1 className="text-2xl font-bold mb-6">{unit.name}</h1>
+      <p className="text-muted-foreground mb-6">
+        {unit.jurisdiction} Jurisdiction
       </p>
+      <UnitForm unit={unit} />
     </div>
   );
 }
