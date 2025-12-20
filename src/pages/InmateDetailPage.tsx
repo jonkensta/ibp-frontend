@@ -62,21 +62,21 @@ export function InmateDetailPage() {
       <InmateProfile inmate={inmate} warnings={warnings} />
 
       <div className="grid gap-6 md:grid-cols-2">
-        <RequestForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
         <RequestList
           requests={inmate.requests}
           jurisdiction={jurisdiction as Jurisdiction}
           inmateId={inmateId}
-        />
-      </div>
+        >
+          <RequestForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
+        </RequestList>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <CommentForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
         <CommentList
           comments={inmate.comments}
           jurisdiction={jurisdiction as Jurisdiction}
           inmateId={inmateId}
-        />
+        >
+          <CommentForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
+        </CommentList>
       </div>
     </div>
   );

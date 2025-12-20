@@ -19,9 +19,10 @@ interface CommentListProps {
   comments: Comment[];
   jurisdiction: Jurisdiction;
   inmateId: number;
+  children?: React.ReactNode;
 }
 
-export function CommentList({ comments, jurisdiction, inmateId }: CommentListProps) {
+export function CommentList({ comments, jurisdiction, inmateId, children }: CommentListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
   const deleteCommentMutation = useDeleteComment(jurisdiction, inmateId);
@@ -53,8 +54,9 @@ export function CommentList({ comments, jurisdiction, inmateId }: CommentListPro
         <CardHeader>
           <CardTitle>Comments</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <p className="text-sm text-muted-foreground">No comments yet.</p>
+          {children}
         </CardContent>
       </Card>
     );
@@ -66,34 +68,37 @@ export function CommentList({ comments, jurisdiction, inmateId }: CommentListPro
         <CardHeader>
           <CardTitle>Comments ({comments.length})</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {sortedComments.map((comment) => (
-            <div
-              key={comment.index}
-              className="flex items-start justify-between border-b pb-3 last:border-b-0 last:pb-0"
-            >
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{comment.author}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.datetime_created), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </div>
-                <p className="text-sm">{comment.body}</p>
-              </div>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleDeleteClick(comment.index)}
-                disabled={deleteCommentMutation.isPending}
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            {sortedComments.map((comment) => (
+              <div
+                key={comment.index}
+                className="flex items-start justify-between border-b pb-3 last:border-b-0 last:pb-0"
               >
-                <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-              </Button>
-            </div>
-          ))}
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{comment.author}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(comment.datetime_created), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm">{comment.body}</p>
+                </div>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleDeleteClick(comment.index)}
+                  disabled={deleteCommentMutation.isPending}
+                >
+                  <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          {children}
         </CardContent>
       </Card>
 

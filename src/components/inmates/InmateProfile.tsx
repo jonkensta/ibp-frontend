@@ -1,5 +1,6 @@
 import { format, formatDistanceToNow } from 'date-fns';
 import { AlertCircle } from 'lucide-react';
+import { Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Inmate, InmateWarnings } from '@/types';
@@ -21,126 +22,100 @@ export function InmateProfile({ inmate, warnings }: InmateProfileProps) {
 
   return (
     <TooltipProvider>
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Inmate Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Name</p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Inmate Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <p className="text-sm text-muted-foreground">Name</p>
+            {inmate.url ? (
+              <a
+                href={inmate.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline"
+              >
+                {inmate.last_name}, {inmate.first_name}
+              </a>
+            ) : (
               <p className="font-medium">
                 {inmate.last_name}, {inmate.first_name}
               </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">ID</p>
-              <p className="font-medium">
-                {inmate.jurisdiction} #{inmate.id.toString().padStart(8, '0')}
-              </p>
-            </div>
-            {inmate.race && (
-              <div>
-                <p className="text-sm text-muted-foreground">Race</p>
-                <p className="font-medium">{inmate.race}</p>
-              </div>
-            )}
-            {inmate.sex && (
-              <div>
-                <p className="text-sm text-muted-foreground">Sex</p>
-                <p className="font-medium">{inmate.sex}</p>
-              </div>
-            )}
-            {inmate.release && (
-              <div>
-                <p className="text-sm text-muted-foreground">Release Date</p>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium">
-                    {releaseDate ? format(releaseDate, 'MMMM d, yyyy') : inmate.release}
-                  </p>
-                  {warnings?.release && (
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <AlertCircle className="h-4 w-4 text-yellow-500" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{warnings.release}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
-              </div>
-            )}
-            {inmate.url && (
-              <div>
-                <p className="text-sm text-muted-foreground">Official Record</p>
-                <a
-                  href={inmate.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline"
-                >
-                  View on provider site
-                </a>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Unit Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Unit Name</p>
-              <p className="font-medium">{inmate.unit.name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Address</p>
-              <p className="font-medium">
-                {inmate.unit.street1}
-                {inmate.unit.street2 && (
-                  <>
-                    <br />
-                    {inmate.unit.street2}
-                  </>
-                )}
-                <br />
-                {inmate.unit.city}, {inmate.unit.state} {inmate.unit.zipcode}
-              </p>
-            </div>
-            {inmate.unit.shipping_method && (
-              <div>
-                <p className="text-sm text-muted-foreground">Shipping Method</p>
-                <p className="font-medium">{inmate.unit.shipping_method}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {fetchedDate && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground md:col-span-2">
-            <span>Data last updated {formatDistanceToNow(fetchedDate, { addSuffix: true })}</span>
-            {warnings?.entry_age && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <AlertCircle className="h-4 w-4 text-yellow-500" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{warnings.entry_age}</p>
-                </TooltipContent>
-              </Tooltip>
             )}
           </div>
-        )}
+          <div>
+            <p className="text-sm text-muted-foreground">ID</p>
+            <p className="font-medium">
+              {inmate.jurisdiction} #{inmate.id.toString().padStart(8, '0')}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Unit</p>
+            <Link
+              to={`/units/${encodeURIComponent(inmate.unit.jurisdiction)}/${encodeURIComponent(inmate.unit.name)}`}
+              className="font-medium text-primary underline"
+            >
+              {inmate.unit.name}
+            </Link>
+          </div>
+          {inmate.race && (
+            <div>
+              <p className="text-sm text-muted-foreground">Race</p>
+              <p className="font-medium">{inmate.race}</p>
+            </div>
+          )}
+          {inmate.sex && (
+            <div>
+              <p className="text-sm text-muted-foreground">Sex</p>
+              <p className="font-medium">{inmate.sex}</p>
+            </div>
+          )}
+          {inmate.release && (
+            <div>
+              <p className="text-sm text-muted-foreground">Release Date</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium">
+                  {releaseDate ? format(releaseDate, 'MMMM d, yyyy') : inmate.release}
+                </p>
+                {warnings?.release && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{warnings.release}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            </div>
+          )}
 
-        {inmate.lookups.length > 0 && (
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Recent Lookups</CardTitle>
-            </CardHeader>
-            <CardContent>
+          {fetchedDate && (
+            <div>
+              <p className="text-sm text-muted-foreground">Data Last Updated</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium">
+                  {formatDistanceToNow(fetchedDate, { addSuffix: true })}
+                </p>
+                {warnings?.entry_age && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <AlertCircle className="h-4 w-4 text-yellow-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{warnings.entry_age}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            </div>
+          )}
+
+          {inmate.lookups.length > 0 && (
+            <div>
+              <p className="text-sm text-muted-foreground">Recent Lookups</p>
               <ul className="space-y-1 text-sm">
                 {inmate.lookups.map((lookup, index) => (
                   <li key={index} className="text-muted-foreground">
@@ -148,10 +123,10 @@ export function InmateProfile({ inmate, warnings }: InmateProfileProps) {
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </TooltipProvider>
   );
 }
