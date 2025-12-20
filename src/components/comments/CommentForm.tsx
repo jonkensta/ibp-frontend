@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -54,47 +53,42 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add Comment</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {createCommentMutation.isError && (
-            <Alert variant="destructive">
-              <AlertDescription>Failed to create comment. Please try again.</AlertDescription>
-            </Alert>
-          )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <h3 className="font-semibold">Add Comment</h3>
 
-          <div className="space-y-2">
-            <Label htmlFor="author">Author</Label>
-            <Input id="author" placeholder="Your name" {...register('author')} />
-            {errors.author && <p className="text-sm text-red-500">{errors.author.message}</p>}
-          </div>
+      {createCommentMutation.isError && (
+        <Alert variant="destructive">
+          <AlertDescription>Failed to create comment. Please try again.</AlertDescription>
+        </Alert>
+      )}
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="body">Comment</Label>
-              <span
-                className={`text-xs ${bodyLength > 60 ? 'text-red-500' : 'text-muted-foreground'}`}
-              >
-                {bodyLength}/60
-              </span>
-            </div>
-            <Input
-              id="body"
-              placeholder="Add your comment..."
-              {...register('body')}
-              maxLength={60}
-            />
-            {errors.body && <p className="text-sm text-red-500">{errors.body.message}</p>}
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="author">Author</Label>
+        <Input id="author" placeholder="Your name" {...register('author')} />
+        {errors.author && <p className="text-sm text-red-500">{errors.author.message}</p>}
+      </div>
 
-          <Button type="submit" className="w-full" disabled={createCommentMutation.isPending}>
-            {createCommentMutation.isPending ? 'Adding...' : 'Add Comment'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="body">Comment</Label>
+          <span
+            className={`text-xs ${bodyLength > 60 ? 'text-red-500' : 'text-muted-foreground'}`}
+          >
+            {bodyLength}/60
+          </span>
+        </div>
+        <Input
+          id="body"
+          placeholder="Add your comment..."
+          {...register('body')}
+          maxLength={60}
+        />
+        {errors.body && <p className="text-sm text-red-500">{errors.body.message}</p>}
+      </div>
+
+      <Button type="submit" className="w-full" disabled={createCommentMutation.isPending}>
+        {createCommentMutation.isPending ? 'Adding...' : 'Add Comment'}
+      </Button>
+    </form>
   );
 }

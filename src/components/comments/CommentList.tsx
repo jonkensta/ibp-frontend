@@ -56,7 +56,12 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-sm text-muted-foreground">No comments yet.</p>
-          {children}
+          {children && (
+            <>
+              <div className="border-t" />
+              {children}
+            </>
+          )}
         </CardContent>
       </Card>
     );
@@ -98,7 +103,12 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
               </div>
             ))}
           </div>
-          {children}
+          {children && (
+            <>
+              <div className="border-t" />
+              {children}
+            </>
+          )}
         </CardContent>
       </Card>
 

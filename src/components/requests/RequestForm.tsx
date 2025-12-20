@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -173,64 +172,59 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Add New Request</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {createRequestMutation.isError && (
-              <Alert variant="destructive">
-                <AlertDescription>Failed to create request. Please try again.</AlertDescription>
-              </Alert>
-            )}
+      <div className="space-y-4">
+        <h3 className="font-semibold">Add New Request</h3>
 
-            <div className="space-y-2">
-              <Label>Date Postmarked</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {datePostmarked ? format(datePostmarked, 'PP') : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={datePostmarked}
-                    onSelect={(date) => date && setValue('date_postmarked', date)}
-                  />
-                </PopoverContent>
-              </Popover>
-              {errors.date_postmarked && (
-                <p className="text-sm text-red-500">{errors.date_postmarked.message}</p>
-              )}
-            </div>
+        {createRequestMutation.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>Failed to create request. Please try again.</AlertDescription>
+          </Alert>
+        )}
 
-            <div className="flex gap-2">
-              <Button
-                className="flex-1"
-                onClick={() => handleSubmit('Filled')}
-                disabled={
-                  !datePostmarked ||
-                  createRequestMutation.isPending ||
-                  validateRequestMutation.isPending
-                }
-              >
-                Fill
+        <div className="space-y-2">
+          <Label>Date Postmarked</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {datePostmarked ? format(datePostmarked, 'PP') : <span>Pick a date</span>}
               </Button>
-              <Button
-                className="flex-1"
-                variant="secondary"
-                onClick={() => handleSubmit('Tossed')}
-                disabled={!datePostmarked || createRequestMutation.isPending}
-              >
-                Toss
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={datePostmarked}
+                onSelect={(date) => date && setValue('date_postmarked', date)}
+              />
+            </PopoverContent>
+          </Popover>
+          {errors.date_postmarked && (
+            <p className="text-sm text-red-500">{errors.date_postmarked.message}</p>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            className="flex-1"
+            onClick={() => handleSubmit('Filled')}
+            disabled={
+              !datePostmarked ||
+              createRequestMutation.isPending ||
+              validateRequestMutation.isPending
+            }
+          >
+            Fill
+          </Button>
+          <Button
+            className="flex-1"
+            variant="secondary"
+            onClick={() => handleSubmit('Tossed')}
+            disabled={!datePostmarked || createRequestMutation.isPending}
+          >
+            Toss
+          </Button>
+        </div>
+      </div>
 
       <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
         <DialogContent>

@@ -65,7 +65,12 @@ export function RequestList({ requests, jurisdiction, inmateId, children }: Requ
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-sm text-muted-foreground">No requests yet.</p>
-          {children}
+          {children && (
+            <>
+              <div className="border-t" />
+              {children}
+            </>
+          )}
         </CardContent>
       </Card>
     );
@@ -119,7 +124,12 @@ export function RequestList({ requests, jurisdiction, inmateId, children }: Requ
               </div>
             ))}
           </div>
-          {children}
+          {children && (
+            <>
+              <div className="border-t" />
+              {children}
+            </>
+          )}
         </CardContent>
       </Card>
 
