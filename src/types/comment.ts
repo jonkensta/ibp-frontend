@@ -6,7 +6,6 @@ export interface Comment {
 }
 
 export interface CommentCreate {
-  datetime_created: string;
   author: string;
   body: string;
 }

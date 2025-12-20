@@ -45,13 +45,8 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
   const bodyLength = body?.length || 0;
 
   const onSubmit = async (data: CommentFormData) => {
-    const commentData = {
-      ...data,
-      datetime_created: new Date().toISOString(),
-    };
-
     try {
-      await createCommentMutation.mutateAsync(commentData);
+      await createCommentMutation.mutateAsync(data);
       reset();
     } catch (error) {
       console.error('Failed to create comment:', error);
