@@ -50,18 +50,15 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
 
   if (comments.length === 0) {
     return (
-      <Card>
+      <Card className="flex flex-col">
         <CardHeader>
           <CardTitle>Comments</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="flex flex-col flex-1 gap-4">
           <p className="text-sm text-muted-foreground">No comments yet.</p>
-          {children && (
-            <>
-              <div className="border-t" />
-              {children}
-            </>
-          )}
+          <div className="flex-1" />
+          <div className="border-t" />
+          {children}
         </CardContent>
       </Card>
     );
@@ -69,11 +66,11 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
 
   return (
     <>
-      <Card>
+      <Card className="flex flex-col">
         <CardHeader>
           <CardTitle>Comments ({comments.length})</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="flex flex-col flex-1 gap-4">
           <div className="space-y-3">
             {sortedComments.map((comment) => (
               <div
@@ -103,12 +100,9 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
               </div>
             ))}
           </div>
-          {children && (
-            <>
-              <div className="border-t" />
-              {children}
-            </>
-          )}
+          <div className="flex-1" />
+          <div className="border-t" />
+          {children}
         </CardContent>
       </Card>
 
