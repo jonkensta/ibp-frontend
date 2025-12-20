@@ -172,7 +172,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-3">
         <h3 className="font-semibold">Add New Request</h3>
 
         {createRequestMutation.isError && (
@@ -181,31 +181,28 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
           </Alert>
         )}
 
-        <div className="space-y-2">
-          <Label>Date Postmarked</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {datePostmarked ? format(datePostmarked, 'PP') : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={datePostmarked}
-                onSelect={(date) => date && setValue('date_postmarked', date)}
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.date_postmarked && (
-            <p className="text-sm text-red-500">{errors.date_postmarked.message}</p>
-          )}
-        </div>
+        <div className="flex items-end gap-2">
+          <div className="flex-1 space-y-1">
+            <Label className="text-xs">Date Postmarked</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left font-normal h-9">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {datePostmarked ? format(datePostmarked, 'PP') : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={datePostmarked}
+                  onSelect={(date) => date && setValue('date_postmarked', date)}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
 
-        <div className="flex gap-2">
           <Button
-            className="flex-1"
+            size="sm"
             onClick={() => handleSubmit('Filled')}
             disabled={
               !datePostmarked ||
@@ -216,7 +213,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
             Fill
           </Button>
           <Button
-            className="flex-1"
+            size="sm"
             variant="secondary"
             onClick={() => handleSubmit('Tossed')}
             disabled={!datePostmarked || createRequestMutation.isPending}
@@ -224,6 +221,10 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
             Toss
           </Button>
         </div>
+
+        {errors.date_postmarked && (
+          <p className="text-sm text-red-500">{errors.date_postmarked.message}</p>
+        )}
       </div>
 
       <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
