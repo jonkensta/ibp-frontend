@@ -60,7 +60,6 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
     setValue,
     watch,
     formState: { errors },
-    reset,
   } = useForm<RequestFormData>({
     resolver: zodResolver(requestSchema),
     defaultValues: {

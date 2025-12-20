@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { InmateProfile } from '@/components/inmates';
 import { RequestList, RequestForm } from '@/components/requests';
+import { CommentList, CommentForm } from '@/components/comments';
 import { useInmate, useInmateWarnings } from '@/hooks';
 import type { Jurisdiction } from '@/types';
 
@@ -64,6 +65,15 @@ export function InmateDetailPage() {
         <RequestForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
         <RequestList
           requests={inmate.requests}
+          jurisdiction={jurisdiction as Jurisdiction}
+          inmateId={inmateId}
+        />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <CommentForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
+        <CommentList
+          comments={inmate.comments}
           jurisdiction={jurisdiction as Jurisdiction}
           inmateId={inmateId}
         />
