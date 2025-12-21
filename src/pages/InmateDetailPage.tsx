@@ -59,9 +59,9 @@ export function InmateDetailPage() {
         </div>
       </div>
 
-      <InmateProfile inmate={inmate} warnings={warnings} />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <InmateProfile inmate={inmate} warnings={warnings} />
 
-      <div className="grid gap-6 md:grid-cols-2">
         <RequestList
           requests={inmate.requests}
           jurisdiction={jurisdiction as Jurisdiction}

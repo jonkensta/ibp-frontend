@@ -59,14 +59,15 @@ export function RequestList({ requests, jurisdiction, inmateId, children }: Requ
 
   if (requests.length === 0) {
     return (
-      <Card className="flex flex-col">
+      <Card className="flex flex-col h-[600px]">
         <CardHeader>
           <CardTitle>Requests</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col flex-1 gap-4">
-          <p className="text-sm text-muted-foreground">No requests yet.</p>
-          <div className="flex-1" />
-          <div className="border-t" />
+        <CardContent className="flex flex-col flex-1 gap-4 min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <p className="text-sm text-muted-foreground">No requests yet.</p>
+          </div>
+          <div className="border-t pt-4" />
           {children}
         </CardContent>
       </Card>
@@ -75,12 +76,12 @@ export function RequestList({ requests, jurisdiction, inmateId, children }: Requ
 
   return (
     <>
-      <Card className="flex flex-col">
+      <Card className="flex flex-col h-[600px]">
         <CardHeader>
           <CardTitle>Requests ({requests.length})</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col flex-1 gap-4">
-          <div className="space-y-3">
+        <CardContent className="flex flex-col flex-1 gap-4 min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 pr-2 space-y-3">
             {sortedRequests.map((request) => (
               <div
                 key={request.index}
@@ -121,8 +122,7 @@ export function RequestList({ requests, jurisdiction, inmateId, children }: Requ
               </div>
             ))}
           </div>
-          <div className="flex-1" />
-          <div className="border-t" />
+          <div className="border-t pt-4" />
           {children}
         </CardContent>
       </Card>

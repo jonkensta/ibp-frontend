@@ -53,42 +53,59 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <h3 className="font-semibold">Add Comment</h3>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+      <h3 className="font-semibold text-sm">Add Comment</h3>
 
       {createCommentMutation.isError && (
         <Alert variant="destructive">
-          <AlertDescription>Failed to create comment. Please try again.</AlertDescription>
+          <AlertDescription>Failed to create comment.</AlertDescription>
         </Alert>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="author">Author</Label>
-        <Input id="author" placeholder="Your name" {...register('author')} />
-        {errors.author && <p className="text-sm text-red-500">{errors.author.message}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="body">Comment</Label>
-          <span
-            className={`text-xs ${bodyLength > 60 ? 'text-red-500' : 'text-muted-foreground'}`}
-          >
-            {bodyLength}/60
-          </span>
+      <div className="flex items-end gap-2">
+        <div className="flex-[1] space-y-1">
+          <Label htmlFor="author" className="text-xs">
+            Author
+          </Label>
+          <Input id="author" placeholder="Initials" {...register('author')} className="h-9" />
         </div>
-        <Input
-          id="body"
-          placeholder="Add your comment..."
-          {...register('body')}
-          maxLength={60}
-        />
-        {errors.body && <p className="text-sm text-red-500">{errors.body.message}</p>}
+
+        <div className="flex-[2] space-y-1">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="body" className="text-xs">
+              Comment
+            </Label>
+            <span
+              className={`text-[10px] ${bodyLength > 60 ? 'text-red-500' : 'text-muted-foreground'}`}
+            >
+              {bodyLength}/60
+            </span>
+          </div>
+          <Input
+            id="body"
+            placeholder="Add your comment..."
+            {...register('body')}
+            maxLength={60}
+            className="h-9"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          size="sm"
+          className="h-9 px-3"
+          disabled={createCommentMutation.isPending}
+        >
+          {createCommentMutation.isPending ? '...' : 'Add'}
+        </Button>
       </div>
 
-      <Button type="submit" className="w-full" disabled={createCommentMutation.isPending}>
-        {createCommentMutation.isPending ? 'Adding...' : 'Add Comment'}
-      </Button>
+      {(errors.author || errors.body) && (
+        <div className="text-[10px] text-red-500 flex flex-col gap-0">
+          {errors.author && <span>Author required. </span>}
+          {errors.body && <span>{errors.body.message}</span>}
+        </div>
+      )}
     </form>
   );
 }

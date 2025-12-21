@@ -22,7 +22,7 @@ export function InmateProfile({ inmate, warnings }: InmateProfileProps) {
 
   return (
     <TooltipProvider>
-      <Card>
+      <Card className="h-[600px] overflow-y-auto">
         <CardHeader>
           <CardTitle>Inmate Information</CardTitle>
         </CardHeader>
