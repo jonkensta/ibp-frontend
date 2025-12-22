@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { GlobalSearch } from './GlobalSearch';
 
 const navItems = [
   { to: '/', label: 'Home' },
@@ -28,6 +29,7 @@ export function Header() {
             </Link>
           ))}
         </nav>
+        <GlobalSearch />
       </div>
     </header>
   );

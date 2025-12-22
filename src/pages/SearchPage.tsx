@@ -1,14 +1,23 @@
-import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { InmateSearchForm, InmateSearchResults } from '@/components/inmates';
 import { useSearchInmates } from '@/hooks';
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
 
   const { data, isLoading, error } = useSearchInmates(query);
+
+  // Auto-redirect on single result
+  useEffect(() => {
+    if (data && data.inmates.length === 1 && !isLoading) {
+      const inmate = data.inmates[0];
+      navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`);
+    }
+  }, [data, isLoading, navigate]);
 
   const handleSearch = (newQuery: string) => {
     setQuery(newQuery);
