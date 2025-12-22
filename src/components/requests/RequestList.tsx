@@ -44,15 +44,24 @@ export function RequestList({
   // Focus print button when a new request is created
   useEffect(() => {
     if (focusRequestIndex !== null && focusRequestIndex !== undefined) {
-      const button = printButtonRefs.current.get(focusRequestIndex);
-      if (button) {
-        // Small delay to ensure DOM is updated
-        setTimeout(() => {
+      // Retry mechanism to wait for DOM to update after query refetch
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      const tryFocus = () => {
+        const button = printButtonRefs.current.get(focusRequestIndex);
+        if (button) {
           button.focus();
-        }, 100);
-      }
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(tryFocus, 100);
+        }
+      };
+
+      // Start trying after a small initial delay
+      setTimeout(tryFocus, 100);
     }
-  }, [focusRequestIndex]);
+  }, [focusRequestIndex, requests]);
 
   const handleDeleteClick = (requestIndex: number) => {
     setRequestToDelete(requestIndex);
