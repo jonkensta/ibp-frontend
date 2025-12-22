@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,16 +20,39 @@ interface RequestListProps {
   jurisdiction: Jurisdiction;
   inmateId: number;
   children?: React.ReactNode;
+  focusRequestIndex?: number | null;
+  onPrintLabel?: () => void;
 }
 
-export function RequestList({ requests, jurisdiction, inmateId, children }: RequestListProps) {
+export function RequestList({
+  requests,
+  jurisdiction,
+  inmateId,
+  children,
+  focusRequestIndex,
+  onPrintLabel,
+}: RequestListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [requestToDelete, setRequestToDelete] = useState<number | null>(null);
   const deleteRequestMutation = useDeleteRequest(jurisdiction, inmateId);
+  const printButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
   const sortedRequests = [...requests].sort(
     (a, b) => new Date(b.date_postmarked).getTime() - new Date(a.date_postmarked).getTime()
   );
+
+  // Focus print button when a new request is created
+  useEffect(() => {
+    if (focusRequestIndex !== null && focusRequestIndex !== undefined) {
+      const button = printButtonRefs.current.get(focusRequestIndex);
+      if (button) {
+        // Small delay to ensure DOM is updated
+        setTimeout(() => {
+          button.focus();
+        }, 100);
+      }
+    }
+  }, [focusRequestIndex]);
 
   const handleDeleteClick = (requestIndex: number) => {
     setRequestToDelete(requestIndex);
@@ -52,6 +75,7 @@ export function RequestList({ requests, jurisdiction, inmateId, children }: Requ
   const handleDownload = async (requestIndex: number) => {
     try {
       await downloadRequestLabel(jurisdiction, inmateId, requestIndex);
+      onPrintLabel?.();
     } catch (error) {
       alert(`Failed to download label: ${error}`);
     }
@@ -107,7 +131,18 @@ export function RequestList({ requests, jurisdiction, inmateId, children }: Requ
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleDownload(request.index)}>
+                  <Button
+                    ref={(el) => {
+                      if (el) {
+                        printButtonRefs.current.set(request.index, el);
+                      } else {
+                        printButtonRefs.current.delete(request.index);
+                      }
+                    }}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDownload(request.index)}
+                  >
                     <Download className="h-4 w-4" />
                   </Button>
                   <Button

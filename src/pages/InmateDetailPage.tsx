@@ -1,16 +1,31 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { InmateProfile } from '@/components/inmates';
 import { RequestList, RequestForm } from '@/components/requests';
 import { CommentList, CommentForm } from '@/components/comments';
 import { useInmate, useInmateWarnings } from '@/hooks';
+import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import type { Jurisdiction } from '@/types';
 
 export function InmateDetailPage() {
   const { jurisdiction, id } = useParams<{ jurisdiction: string; id: string }>();
+  const [focusRequestIndex, setFocusRequestIndex] = useState<number | null>(null);
+  const { globalSearchRef } = useGlobalSearch();
 
   const inmateId = id ? parseInt(id, 10) : 0;
   const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
   const { data: warnings } = useInmateWarnings(jurisdiction as Jurisdiction, inmateId);
+
+  const handleRequestCreated = (requestIndex: number) => {
+    setFocusRequestIndex(requestIndex);
+  };
+
+  const handlePrintLabel = () => {
+    // Focus global search after print label
+    setTimeout(() => {
+      globalSearchRef.current?.focus();
+    }, 100);
+  };
 
   if (isLoading) {
     return (
@@ -66,8 +81,14 @@ export function InmateDetailPage() {
           requests={inmate.requests}
           jurisdiction={jurisdiction as Jurisdiction}
           inmateId={inmateId}
+          focusRequestIndex={focusRequestIndex}
+          onPrintLabel={handlePrintLabel}
         >
-          <RequestForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
+          <RequestForm
+            jurisdiction={jurisdiction as Jurisdiction}
+            inmateId={inmateId}
+            onRequestCreated={handleRequestCreated}
+          />
         </RequestList>
 
         <CommentList

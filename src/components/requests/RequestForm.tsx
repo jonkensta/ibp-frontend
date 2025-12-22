@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,6 +23,7 @@ import type { Jurisdiction, RequestValidationWarnings, Action } from '@/types';
 interface RequestFormProps {
   jurisdiction: Jurisdiction;
   inmateId: number;
+  onRequestCreated?: (requestIndex: number) => void;
 }
 
 const POSTMARK_DATE_COOKIE = 'ibp_last_postmark_date';
@@ -47,10 +48,13 @@ function setCookie(name: string, value: string, days: number = 365) {
   document.cookie = `${name}=${value};${expires};path=/`;
 }
 
-export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
+export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: RequestFormProps) {
   const [showWarningDialog, setShowWarningDialog] = useState(false);
   const [warnings, setWarnings] = useState<RequestValidationWarnings | null>(null);
   const [pendingAction, setPendingAction] = useState<Action | null>(null);
+
+  const fillButtonRef = useRef<HTMLButtonElement>(null);
+  const changeTossButtonRef = useRef<HTMLButtonElement>(null);
 
   const createRequestMutation = useCreateRequest(jurisdiction, inmateId);
   const validateRequestMutation = useValidateRequest(jurisdiction, inmateId);
@@ -79,6 +83,21 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
     }
   }, [setValue]);
 
+  // Auto-focus Fill button on mount
+  useEffect(() => {
+    fillButtonRef.current?.focus();
+  }, []);
+
+  // Auto-focus Change to Toss button when warning dialog opens
+  useEffect(() => {
+    if (showWarningDialog) {
+      // Small delay to ensure dialog is fully rendered
+      setTimeout(() => {
+        changeTossButtonRef.current?.focus();
+      }, 100);
+    }
+  }, [showWarningDialog]);
+
   const handleSubmit = async (action: Action) => {
     if (!datePostmarked) {
       return;
@@ -96,8 +115,9 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
     // Skip validation for "Tossed" requests
     if (action === 'Tossed') {
       try {
-        await createRequestMutation.mutateAsync(requestData);
+        const newRequest = await createRequestMutation.mutateAsync(requestData);
         // Don't reset - keep the date_postmarked value
+        onRequestCreated?.(newRequest.index);
       } catch (error) {
         console.error('Failed to create request:', error);
       }
@@ -118,8 +138,9 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
         setPendingAction(action);
         setShowWarningDialog(true);
       } else {
-        await createRequestMutation.mutateAsync(requestData);
+        const newRequest = await createRequestMutation.mutateAsync(requestData);
         // Don't reset - keep the date_postmarked value
+        onRequestCreated?.(newRequest.index);
       }
     } catch (error) {
       console.error('Failed to validate request:', error);
@@ -136,11 +157,12 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
     };
 
     try {
-      await createRequestMutation.mutateAsync(requestData);
+      const newRequest = await createRequestMutation.mutateAsync(requestData);
       // Don't reset - keep the date_postmarked value
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
+      onRequestCreated?.(newRequest.index);
     } catch (error) {
       console.error('Failed to create request:', error);
     }
@@ -156,11 +178,12 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
     };
 
     try {
-      await createRequestMutation.mutateAsync(requestData);
+      const newRequest = await createRequestMutation.mutateAsync(requestData);
       // Don't reset - keep the date_postmarked value
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
+      onRequestCreated?.(newRequest.index);
     } catch (error) {
       console.error('Failed to create request:', error);
     }
@@ -202,6 +225,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
           </div>
 
           <Button
+            ref={fillButtonRef}
             size="sm"
             onClick={() => handleSubmit('Filled')}
             disabled={
@@ -248,7 +272,7 @@ export function RequestForm({ jurisdiction, inmateId }: RequestFormProps) {
             <Button variant="outline" onClick={() => setShowWarningDialog(false)}>
               Cancel
             </Button>
-            <Button variant="secondary" onClick={handleChangeTossed}>
+            <Button ref={changeTossButtonRef} variant="secondary" onClick={handleChangeTossed}>
               Change to Toss
             </Button>
             <Button onClick={handleConfirmWithWarnings}>Proceed with Fill</Button>

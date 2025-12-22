@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { GlobalSearch } from './GlobalSearch';
+import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 
 const navItems = [
   { to: '/', label: 'Home' },
@@ -9,6 +10,7 @@ const navItems = [
 
 export function Header() {
   const location = useLocation();
+  const { globalSearchRef } = useGlobalSearch();
 
   return (
     <header className="border-b bg-background">
@@ -29,7 +31,7 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <GlobalSearch />
+        <GlobalSearch ref={globalSearchRef} />
       </div>
     </header>
   );

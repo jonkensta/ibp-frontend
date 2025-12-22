@@ -1,15 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchInmates } from '@/hooks';
 
-export function GlobalSearch() {
+export interface GlobalSearchRef {
+  focus: () => void;
+}
+
+export const GlobalSearch = forwardRef<GlobalSearchRef>((_props, ref) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const navigate = useNavigate();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { data } = useSearchInmates(debouncedQuery);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+  }));
 
   // Debounce search input
   useEffect(() => {
@@ -47,6 +58,7 @@ export function GlobalSearch() {
     <form onSubmit={handleSubmit} className="relative ml-auto">
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
+        ref={inputRef}
         type="search"
         placeholder="Search inmates..."
         value={query}
@@ -55,4 +67,6 @@ export function GlobalSearch() {
       />
     </form>
   );
-}
+});
+
+GlobalSearch.displayName = 'GlobalSearch';
