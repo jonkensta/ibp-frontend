@@ -23,7 +23,7 @@ import type { Jurisdiction, RequestValidationWarnings, Action } from '@/types';
 interface RequestFormProps {
   jurisdiction: Jurisdiction;
   inmateId: number;
-  onRequestCreated?: (requestIndex: number) => void;
+  onRequestCreated?: (requestIndex: number, action: Action) => void;
 }
 
 const POSTMARK_DATE_COOKIE = 'ibp_last_postmark_date';
@@ -121,7 +121,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       try {
         const newRequest = await createRequestMutation.mutateAsync(requestData);
         // Don't reset - keep the date_postmarked value
-        onRequestCreated?.(newRequest.index);
+        onRequestCreated?.(newRequest.index, action);
       } catch (error) {
         console.error('Failed to create request:', error);
       }
@@ -144,7 +144,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       } else {
         const newRequest = await createRequestMutation.mutateAsync(requestData);
         // Don't reset - keep the date_postmarked value
-        onRequestCreated?.(newRequest.index);
+        onRequestCreated?.(newRequest.index, action);
       }
     } catch (error) {
       console.error('Failed to validate request:', error);
@@ -166,7 +166,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
-      onRequestCreated?.(newRequest.index);
+      onRequestCreated?.(newRequest.index, pendingAction);
     } catch (error) {
       console.error('Failed to create request:', error);
     }
@@ -175,10 +175,11 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
   const handleChangeTossed = async () => {
     if (!datePostmarked) return;
 
+    const tossAction: Action = 'Tossed';
     const requestData = {
       date_postmarked: format(datePostmarked, 'yyyy-MM-dd'),
       date_processed: format(new Date(), 'yyyy-MM-dd'),
-      action: 'Tossed' as Action,
+      action: tossAction,
     };
 
     try {
@@ -187,7 +188,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
-      onRequestCreated?.(newRequest.index);
+      onRequestCreated?.(newRequest.index, tossAction);
     } catch (error) {
       console.error('Failed to create request:', error);
     }

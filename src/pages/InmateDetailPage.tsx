@@ -16,8 +16,16 @@ export function InmateDetailPage() {
   const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
   const { data: warnings } = useInmateWarnings(jurisdiction as Jurisdiction, inmateId);
 
-  const handleRequestCreated = (requestIndex: number) => {
-    setFocusRequestIndex(requestIndex);
+  const handleRequestCreated = (requestIndex: number, action: 'Filled' | 'Tossed') => {
+    if (action === 'Tossed') {
+      // For Tossed requests, skip Print Label and go directly to search
+      setTimeout(() => {
+        globalSearchRef.current?.focus();
+      }, 100);
+    } else {
+      // For Filled requests, focus the Print Label button
+      setFocusRequestIndex(requestIndex);
+    }
   };
 
   const handlePrintLabel = () => {
