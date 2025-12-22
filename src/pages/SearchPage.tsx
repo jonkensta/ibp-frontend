@@ -15,7 +15,7 @@ export function SearchPage() {
   useEffect(() => {
     if (data && data.inmates.length === 1 && !isLoading) {
       const inmate = data.inmates[0];
-      navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`);
+      navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, { replace: true });
     }
   }, [data, isLoading, navigate]);
 
