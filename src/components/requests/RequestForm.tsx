@@ -55,6 +55,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
 
   const fillButtonRef = useRef<HTMLButtonElement>(null);
   const changeTossButtonRef = useRef<HTMLButtonElement>(null);
+  const hasInitiallyFocused = useRef(false);
 
   const createRequestMutation = useCreateRequest(jurisdiction, inmateId);
   const validateRequestMutation = useValidateRequest(jurisdiction, inmateId);
@@ -83,10 +84,13 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
     }
   }, [setValue]);
 
-  // Auto-focus Fill button on mount
+  // Auto-focus Fill button on initial load when date is available
   useEffect(() => {
-    fillButtonRef.current?.focus();
-  }, []);
+    if (datePostmarked && !hasInitiallyFocused.current) {
+      fillButtonRef.current?.focus();
+      hasInitiallyFocused.current = true;
+    }
+  }, [datePostmarked]);
 
   // Auto-focus Change to Toss button when warning dialog opens
   useEffect(() => {
