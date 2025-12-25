@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -121,9 +122,11 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       try {
         const newRequest = await createRequestMutation.mutateAsync(requestData);
         // Don't reset - keep the date_postmarked value
+        toast.success('Request tossed');
         onRequestCreated?.(newRequest.index, action);
       } catch (error) {
         console.error('Failed to create request:', error);
+        toast.error('Failed to create request. Please try again.');
       }
       return;
     }
@@ -144,10 +147,12 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       } else {
         const newRequest = await createRequestMutation.mutateAsync(requestData);
         // Don't reset - keep the date_postmarked value
+        toast.success('Request filled successfully');
         onRequestCreated?.(newRequest.index, action);
       }
     } catch (error) {
       console.error('Failed to validate request:', error);
+      toast.error('Failed to validate request. Please try again.');
     }
   };
 
@@ -166,9 +171,11 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
+      toast.success('Request filled successfully');
       onRequestCreated?.(newRequest.index, pendingAction);
     } catch (error) {
       console.error('Failed to create request:', error);
+      toast.error('Failed to create request. Please try again.');
     }
   };
 
@@ -188,9 +195,11 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       setShowWarningDialog(false);
       setWarnings(null);
       setPendingAction(null);
+      toast.success('Request tossed');
       onRequestCreated?.(newRequest.index, tossAction);
     } catch (error) {
       console.error('Failed to create request:', error);
+      toast.error('Failed to create request. Please try again.');
     }
   };
 

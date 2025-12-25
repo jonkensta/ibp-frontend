@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,8 +44,10 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
       await deleteCommentMutation.mutateAsync(commentToDelete);
       setDeleteDialogOpen(false);
       setCommentToDelete(null);
+      toast.success('Comment deleted');
     } catch (error) {
       console.error('Failed to delete comment:', error);
+      toast.error('Failed to delete comment. Please try again.');
     }
   };
 

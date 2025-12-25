@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,8 +76,10 @@ export function RequestList({
       await deleteRequestMutation.mutateAsync(requestToDelete);
       setDeleteDialogOpen(false);
       setRequestToDelete(null);
+      toast.success('Request deleted');
     } catch (error) {
       console.error('Failed to delete request:', error);
+      toast.error('Failed to delete request. Please try again.');
       // Keep dialog open on error so user can see the error message
     }
   };
@@ -84,9 +87,11 @@ export function RequestList({
   const handleDownload = async (requestIndex: number) => {
     try {
       await downloadRequestLabel(jurisdiction, inmateId, requestIndex);
+      toast.success('Label downloaded');
       onPrintLabel?.();
     } catch (error) {
-      alert(`Failed to download label: ${error}`);
+      console.error('Failed to download label:', error);
+      toast.error(`Failed to download label: ${error}`);
     }
   };
 

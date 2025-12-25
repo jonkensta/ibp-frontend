@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,8 +48,10 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
     try {
       await createCommentMutation.mutateAsync(data);
       reset();
+      toast.success('Comment added');
     } catch (error) {
       console.error('Failed to create comment:', error);
+      toast.error('Failed to create comment. Please try again.');
     }
   };
 
