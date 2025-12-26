@@ -155,6 +155,7 @@ export function RequestList({
                     size="sm"
                     variant="outline"
                     onClick={() => handleDownload(request.index)}
+                    aria-label="Download request label"
                   >
                     <Download className="h-4 w-4" />
                   </Button>
@@ -163,6 +164,7 @@ export function RequestList({
                     variant="destructive"
                     onClick={() => handleDeleteClick(request.index)}
                     disabled={deleteRequestMutation.isPending}
+                    aria-label="Delete request"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

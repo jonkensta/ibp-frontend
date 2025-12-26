@@ -98,6 +98,7 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
                   variant="ghost"
                   onClick={() => handleDeleteClick(comment.index)}
                   disabled={deleteCommentMutation.isPending}
+                  aria-label="Delete comment"
                 >
                   <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                 </Button>
