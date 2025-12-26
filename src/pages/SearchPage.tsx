@@ -49,6 +49,7 @@ export function SearchPage() {
         <div>
           <p className="mb-4 text-sm text-muted-foreground">
             Found {data.inmates.length} result{data.inmates.length !== 1 ? 's' : ''}
+            {data.errors.length > 0 && ' (partial results due to provider errors)'}
           </p>
           <InmateSearchResults inmates={data.inmates} errors={data.errors} />
         </div>

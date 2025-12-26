@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import type { InmateSearchResult } from '@/types';
 
 interface InmateSearchResultsProps {
@@ -11,14 +13,22 @@ export function InmateSearchResults({ inmates, errors }: InmateSearchResultsProp
   return (
     <div className="space-y-4">
       {errors.length > 0 && (
-        <div className="rounded-md bg-yellow-50 p-4">
-          <h3 className="text-sm font-medium text-yellow-800">Provider Warnings</h3>
-          <ul className="mt-2 list-inside list-disc text-sm text-yellow-700">
-            {errors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
-          </ul>
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle />
+          <AlertTitle>
+            {errors.length === 1 ? 'Provider Error' : `${errors.length} Provider Errors`}
+          </AlertTitle>
+          <AlertDescription>
+            <p className="mb-2">
+              Some providers encountered errors. Search results may be incomplete.
+            </p>
+            <ul className="list-inside list-disc space-y-1">
+              {errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
       )}
 
       {inmates.length === 0 ? (
