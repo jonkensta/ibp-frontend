@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 import { Header } from './Header';
 import { GlobalSearchProvider } from '@/contexts/GlobalSearchContext';
 
@@ -11,7 +11,7 @@ export function Layout() {
         <main className="container mx-auto px-4 py-6">
           <Outlet />
         </main>
-        <Toaster position="top-right" richColors />
+        <Toaster />
       </div>
     </GlobalSearchProvider>
   );
