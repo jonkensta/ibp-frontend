@@ -127,7 +127,6 @@ export function RequestList({
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Request #{request.index}</span>
                     <span
                       className={`text-xs px-2 py-0.5 rounded ${
                         request.action === 'Filled'
@@ -181,8 +180,7 @@ export function RequestList({
           <DialogHeader>
             <DialogTitle>Delete Request</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete request #{requestToDelete}? This action cannot be
-              undone.
+              Are you sure you want to delete this request? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
