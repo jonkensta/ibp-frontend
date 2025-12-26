@@ -1,7 +1,6 @@
 import { useParams } from 'react-router';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
-import { UnitForm } from '@/components/units/UnitForm';
+import { UnitForm, UnitFormSkeleton } from '@/components/units';
 import { useUnit } from '@/hooks';
 import type { Jurisdiction } from '@/types';
 
@@ -14,11 +13,7 @@ export function UnitDetailPage() {
     return (
       <div>
         <h1 className="text-2xl font-bold mb-6">Unit Details</h1>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading unit...</p>
-          </CardContent>
-        </Card>
+        <UnitFormSkeleton />
       </div>
     );
   }

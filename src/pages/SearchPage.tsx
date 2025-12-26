@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { InmateSearchForm, InmateSearchResults } from '@/components/inmates';
+import { InmateSearchForm, InmateSearchResults, InmateSearchResultsSkeleton } from '@/components/inmates';
 import { useSearchInmates } from '@/hooks';
 
 export function SearchPage() {
@@ -43,11 +43,7 @@ export function SearchPage() {
         </div>
       )}
 
-      {isLoading && (
-        <div className="py-8 text-center">
-          <p className="text-muted-foreground">Searching...</p>
-        </div>
-      )}
+      {isLoading && <InmateSearchResultsSkeleton />}
 
       {data && !isLoading && (
         <div>

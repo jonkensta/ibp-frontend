@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { InmateProfile } from '@/components/inmates';
-import { RequestList, RequestForm } from '@/components/requests';
-import { CommentList, CommentForm } from '@/components/comments';
+import { InmateProfile, InmateProfileSkeleton } from '@/components/inmates';
+import { RequestList, RequestForm, RequestListSkeleton } from '@/components/requests';
+import { CommentList, CommentForm, CommentListSkeleton } from '@/components/comments';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useInmate, useInmateWarnings } from '@/hooks';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import type { Jurisdiction } from '@/types';
@@ -37,8 +38,21 @@ export function InmateDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="py-8 text-center">
-        <p className="text-muted-foreground">Loading inmate information...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Link to="/search" className="text-sm text-muted-foreground hover:underline">
+              &larr; Back to search
+            </Link>
+            <Skeleton className="h-8 w-64 mt-2" />
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <InmateProfileSkeleton />
+          <RequestListSkeleton />
+          <CommentListSkeleton />
+        </div>
       </div>
     );
   }
