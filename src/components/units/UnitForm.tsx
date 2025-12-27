@@ -74,7 +74,7 @@ export function UnitForm({ unit }: UnitFormProps) {
     if (updateUnitMutation.isSuccess) {
       reset(getValues());
     }
-  }, [updateUnitMutation.isSuccess, reset]);
+  }, [updateUnitMutation.isSuccess, reset, getValues]);
 
   const onSubmit = async (data: UnitFormData) => {
     const updateData = {
