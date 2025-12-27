@@ -1,4 +1,4 @@
-import { useParams } from 'react-router';
+import { useParams } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UnitForm, UnitFormSkeleton } from '@/components/units';
 import { useUnit } from '@/hooks';
