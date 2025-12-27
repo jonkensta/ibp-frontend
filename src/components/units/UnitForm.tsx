@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUpdateUnit } from '@/hooks';
-import type { Unit, Jurisdiction, ShippingMethod } from '@/types';
+import type { Unit, ShippingMethod } from '@/types';
 
 interface UnitFormProps {
   unit: Unit;
@@ -24,7 +24,6 @@ const US_STATES = [
 ];
 
 const unitUpdateSchema = z.object({
-  name: z.string().min(1, { message: 'Name is required' }),
   street1: z.string().min(1, { message: 'Street address is required' }),
   street2: z.string().optional(),
   city: z.string().min(1, { message: 'City is required' }),
@@ -34,7 +33,6 @@ const unitUpdateSchema = z.object({
     .min(5, { message: 'Zipcode must be at least 5 characters' })
     .max(12, { message: 'Zipcode must be at most 12 characters' }),
   url: z.string().url({ message: 'Must be a valid URL' }).optional().or(z.literal('')),
-  jurisdiction: z.enum(['Texas', 'Federal']),
   shipping_method: z.enum(['Box', 'Individual']).nullable().optional(),
 });
 
@@ -54,19 +52,16 @@ export function UnitForm({ unit }: UnitFormProps) {
   } = useForm<UnitFormData>({
     resolver: zodResolver(unitUpdateSchema),
     defaultValues: {
-      name: unit.name,
       street1: unit.street1,
       street2: unit.street2 || '',
       city: unit.city,
       state: unit.state,
       zipcode: unit.zipcode,
       url: unit.url || '',
-      jurisdiction: unit.jurisdiction,
       shipping_method: unit.shipping_method,
     },
   });
 
-  const jurisdiction = useWatch({ control, name: 'jurisdiction' });
   const shippingMethod = useWatch({ control, name: 'shipping_method' });
   const state = useWatch({ control, name: 'state' });
 
@@ -113,22 +108,14 @@ export function UnitForm({ unit }: UnitFormProps) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" {...register('name')} />
-              {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+              <Input id="name" value={unit.name} disabled />
+              <p className="text-sm text-muted-foreground">Unit name cannot be changed to prevent breaking inmate associations</p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="jurisdiction">Jurisdiction</Label>
-              <Select value={jurisdiction} onValueChange={(value: string) => setValue('jurisdiction', value as Jurisdiction, { shouldDirty: true })}>
-                <SelectTrigger id="jurisdiction">
-                  <SelectValue placeholder="Select jurisdiction" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Texas">Texas</SelectItem>
-                  <SelectItem value="Federal">Federal</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.jurisdiction && <p className="text-sm text-red-500">{errors.jurisdiction.message}</p>}
+              <Input id="jurisdiction" value={unit.jurisdiction} disabled />
+              <p className="text-sm text-muted-foreground">Jurisdiction cannot be changed to prevent breaking inmate associations</p>
             </div>
           </div>
 
