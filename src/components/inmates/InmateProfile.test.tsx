@@ -61,8 +61,8 @@ describe('InmateProfile', () => {
   it('should display release date when valid', async () => {
     renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
-    // Matches Dec 23 or 24 depending on timezone
-    const releaseDate = page.getByText(/december 2\d, 2025/i);
+    // Should display December 24, 2025 (not Dec 23 due to timezone shift)
+    const releaseDate = page.getByText(/december 24, 2025/i);
     await expect.element(releaseDate).toBeInTheDocument();
   });
 
@@ -154,6 +154,36 @@ describe('InmateProfile', () => {
 
     const releaseLabel = page.getByText(/release date/i);
     expect(await releaseLabel.query()).toBeNull();
+  });
+
+  it('should parse date-only strings as local dates (not UTC) to prevent timezone shift', async () => {
+    // Regression test for timezone bug where date-only strings were parsed as UTC
+    // The bug: new Date("2025-12-24") parses as UTC midnight, which in negative
+    // UTC offset timezones (like CST UTC-6) displays as Dec 23
+    const inmateWithDateOnlyRelease = {
+      ...mockInmate,
+      release: '2025-12-24', // Date-only string (no time component)
+    };
+
+    renderWithRouter(<InmateProfile inmate={inmateWithDateOnlyRelease} />);
+
+    // Verify release date displays as Dec 24, not Dec 23
+    const releaseDate = page.getByText(/december 24, 2025/i);
+    await expect.element(releaseDate).toBeInTheDocument();
+  });
+
+  it('should correctly parse datetime strings with timezone info', async () => {
+    // parseDate helper should handle both date-only and datetime strings
+    const inmateWithDatetime = {
+      ...mockInmate,
+      datetime_fetched: '2024-12-20T10:00:00Z', // Datetime with timezone
+    };
+
+    renderWithRouter(<InmateProfile inmate={inmateWithDatetime} />);
+
+    // Should display "Data last updated X days ago"
+    const lastUpdated = page.getByText(/data last updated/i);
+    await expect.element(lastUpdated).toBeInTheDocument();
   });
 
 });

@@ -194,4 +194,30 @@ describe('RequestList', () => {
     const child = page.getByText('Test Child Content');
     await expect.element(child).toBeInTheDocument();
   });
+
+  it('should parse date-only strings as local dates (not UTC) to prevent timezone shift', async () => {
+    // Regression test for timezone bug where dates were displayed one day earlier
+    // The bug: new Date("2024-12-20") parses as UTC midnight, which in negative
+    // UTC offset timezones (like CST UTC-6) displays as the previous day
+    const request: Request = {
+      index: 1,
+      date_postmarked: '2024-12-20',
+      date_processed: '2024-12-21',
+      action: 'Filled',
+    };
+
+    render(
+      <QueryWrapper>
+        <RequestList requests={[request]} jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    // Verify postmarked date displays as Dec 20, not Dec 19
+    const postmarked = page.getByText(/postmarked:.*dec.*20/i);
+    await expect.element(postmarked).toBeInTheDocument();
+
+    // Verify processed date displays as Dec 21, not Dec 20
+    const processed = page.getByText(/processed:.*dec.*21/i);
+    await expect.element(processed).toBeInTheDocument();
+  });
 });
