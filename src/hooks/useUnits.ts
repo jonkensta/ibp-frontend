@@ -1,11 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllUnits, getUnit, updateUnit } from '@/lib/api';
-import type { Jurisdiction, UnitUpdate } from '@/types';
+import { getAllUnits, createUnit, getUnit, updateUnit } from '@/lib/api';
+import type { Jurisdiction, UnitCreate, UnitUpdate } from '@/types';
 
 export function useUnits() {
   return useQuery({
     queryKey: ['units'],
     queryFn: getAllUnits,
+  });
+}
+
+export function useCreateUnit() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UnitCreate) => createUnit(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['units'] });
+    },
   });
 }
 

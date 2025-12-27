@@ -8,6 +8,7 @@ const HomePage = lazy(() => import('./pages/HomePage').then(m => ({ default: m.H
 const SearchPage = lazy(() => import('./pages/SearchPage').then(m => ({ default: m.SearchPage })));
 const InmateDetailPage = lazy(() => import('./pages/InmateDetailPage').then(m => ({ default: m.InmateDetailPage })));
 const UnitsPage = lazy(() => import('./pages/UnitsPage').then(m => ({ default: m.UnitsPage })));
+const CreateUnitPage = lazy(() => import('./pages/CreateUnitPage').then(m => ({ default: m.CreateUnitPage })));
 const UnitDetailPage = lazy(() => import('./pages/UnitDetailPage').then(m => ({ default: m.UnitDetailPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
@@ -49,6 +50,13 @@ function App() {
           <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <UnitsPage />
+            </Suspense>
+          </ErrorBoundary>
+        } />
+        <Route path="units/new" element={
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <CreateUnitPage />
             </Suspense>
           </ErrorBoundary>
         } />

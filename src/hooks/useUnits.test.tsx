@@ -11,6 +11,7 @@ import type { Jurisdiction, UnitUpdate } from '@/types';
 // Mock the API module
 vi.mock('@/lib/api', () => ({
   getAllUnits: vi.fn(),
+  createUnit: vi.fn(),
   getUnit: vi.fn(),
   updateUnit: vi.fn(),
 }));

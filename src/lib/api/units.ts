@@ -1,8 +1,12 @@
-import type { Unit, UnitUpdate, Jurisdiction } from '@/types';
-import { apiGet, apiPut } from './client';
+import type { Unit, UnitCreate, UnitUpdate, Jurisdiction } from '@/types';
+import { apiGet, apiPost, apiPut } from './client';
 
 export async function getAllUnits(): Promise<Unit[]> {
   return apiGet<Unit[]>('/units');
+}
+
+export async function createUnit(data: UnitCreate): Promise<Unit> {
+  return apiPost<Unit>('/units', data);
 }
 
 export async function getUnit(jurisdiction: Jurisdiction, name: string): Promise<Unit> {
