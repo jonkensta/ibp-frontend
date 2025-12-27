@@ -103,8 +103,8 @@ describe('UnitForm', () => {
       </QueryWrapper>
     );
 
-    const nameInput = page.getByLabelText(/^name$/i);
-    await nameInput.fill('Updated Unit Name');
+    const cityInput = page.getByLabelText(/city/i);
+    await cityInput.fill('Houston');
 
     const saveButton = page.getByRole('button', { name: /save changes/i });
     await expect.element(saveButton).not.toBeDisabled();
@@ -118,15 +118,15 @@ describe('UnitForm', () => {
     );
 
     // Clear a required field
-    const nameInput = page.getByLabelText(/^name$/i);
-    await nameInput.fill('');
+    const street1Input = page.getByLabelText(/street address$/i);
+    await street1Input.fill('');
 
     // Try to submit
     const saveButton = page.getByRole('button', { name: /save changes/i });
     await saveButton.click();
 
     // Should show validation error
-    const error = page.getByText(/name is required/i);
+    const error = page.getByText(/street address is required/i);
     await expect.element(error).toBeInTheDocument();
   });
 
@@ -390,5 +390,37 @@ describe('UnitForm', () => {
     const error = page.getByText(/zipcode must be/i);
     const errorElement = await error.query();
     expect(errorElement).toBeNull();
+  });
+
+  it('should have name field disabled to prevent breaking inmate associations', async () => {
+    render(
+      <QueryWrapper>
+        <UnitForm unit={mockUnit} />
+      </QueryWrapper>
+    );
+
+    const nameInput = page.getByLabelText(/^name$/i);
+    await expect.element(nameInput).toBeDisabled();
+    await expect.element(nameInput).toHaveValue('Test Unit');
+
+    // Should show helper text explaining why it's disabled
+    const helperText = page.getByText(/unit name cannot be changed to prevent breaking inmate associations/i);
+    await expect.element(helperText).toBeInTheDocument();
+  });
+
+  it('should have jurisdiction field disabled to prevent breaking inmate associations', async () => {
+    render(
+      <QueryWrapper>
+        <UnitForm unit={mockUnit} />
+      </QueryWrapper>
+    );
+
+    const jurisdictionInput = page.getByLabelText(/jurisdiction/i);
+    await expect.element(jurisdictionInput).toBeDisabled();
+    await expect.element(jurisdictionInput).toHaveValue('Texas');
+
+    // Should show helper text explaining why it's disabled
+    const helperText = page.getByText(/jurisdiction cannot be changed to prevent breaking inmate associations/i);
+    await expect.element(helperText).toBeInTheDocument();
   });
 });
