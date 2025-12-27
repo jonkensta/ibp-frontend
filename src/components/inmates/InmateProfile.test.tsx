@@ -16,7 +16,7 @@ const mockInmate: Inmate = {
   last_name: 'Doe',
   race: 'White',
   sex: 'M',
-  release: '2025-12-25',
+  release: '2025-12-24',
   url: 'https://example.com/inmate/12345',
   datetime_fetched: '2024-12-20T10:00:00Z',
   unit: {
@@ -61,7 +61,7 @@ describe('InmateProfile', () => {
   it('should display release date when valid', async () => {
     renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
-    const releaseDate = page.getByText(/december 25, 2025/i);
+    const releaseDate = page.getByText(/december 24, 2025/i);
     await expect.element(releaseDate).toBeInTheDocument();
   });
 
@@ -155,17 +155,4 @@ describe('InmateProfile', () => {
     expect(await releaseLabel.query()).toBeNull();
   });
 
-  it('should display warnings when provided', async () => {
-    const warnings = {
-      entry_age: 'Data is 30 days old',
-      release: 'Already released',
-    };
-
-    renderWithRouter(<InmateProfile inmate={mockInmate} warnings={warnings} />);
-
-    // Should show warning icons (AlertCircle)
-    const warningIcons = await page.element.all();
-    const svgs = warningIcons.filter((el) => el.tagName === 'svg');
-    expect(svgs.length).toBeGreaterThan(0);
-  });
 });

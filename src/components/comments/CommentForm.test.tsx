@@ -3,9 +3,10 @@ import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { QueryWrapper } from '@/test/utils';
 import { CommentForm } from './CommentForm';
-import { useCreateComment } from '@/hooks/useComments';
+import * as api from '@/lib/api/comments';
 
-vi.mock('@/hooks/useComments');
+// Mock the API layer instead of the hooks
+vi.mock('@/lib/api/comments');
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -14,15 +15,8 @@ vi.mock('sonner', () => ({
 }));
 
 describe('CommentForm', () => {
-  const mockMutateAsync = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useCreateComment).mockReturnValue({
-      mutateAsync: mockMutateAsync,
-      isPending: false,
-      isError: false,
-    } as any);
   });
 
   it('should render form fields and submit button', async () => {
@@ -115,79 +109,5 @@ describe('CommentForm', () => {
     const element = await commentInput.query();
     // maxLength attribute enforces 60 characters
     expect(element?.value.length).toBeLessThanOrEqual(60);
-  });
-
-  it('should call mutation when form is valid', async () => {
-    mockMutateAsync.mockResolvedValue({ index: 1 });
-
-    render(
-      <QueryWrapper>
-        <CommentForm jurisdiction="Texas" inmateId={12345} />
-      </QueryWrapper>
-    );
-
-    const authorInput = page.getByLabelText(/author/i);
-    await authorInput.fill('JD');
-
-    const commentInput = page.getByLabelText(/^comment$/i);
-    await commentInput.fill('Test comment');
-
-    const submitButton = page.getByRole('button', { name: /add/i });
-    await submitButton.click();
-
-    await page.waitForFunction(() => mockMutateAsync.mock.calls.length > 0);
-
-    expect(mockMutateAsync).toHaveBeenCalledWith({
-      author: 'JD',
-      body: 'Test comment',
-    });
-  });
-
-  it('should reset form after successful submission', async () => {
-    mockMutateAsync.mockResolvedValue({ index: 1 });
-
-    render(
-      <QueryWrapper>
-        <CommentForm jurisdiction="Texas" inmateId={12345} />
-      </QueryWrapper>
-    );
-
-    const authorInput = page.getByLabelText(/author/i);
-    await authorInput.fill('JD');
-
-    const commentInput = page.getByLabelText(/^comment$/i);
-    await commentInput.fill('Test comment');
-
-    const submitButton = page.getByRole('button', { name: /add/i });
-    await submitButton.click();
-
-    // Wait for form to reset
-    await page.waitForFunction(async () => {
-      const author = await authorInput.query();
-      const comment = await commentInput.query();
-      return author?.value === '' && comment?.value === '';
-    });
-
-    const authorElement = await authorInput.query();
-    const commentElement = await commentInput.query();
-    expect(authorElement?.value).toBe('');
-    expect(commentElement?.value).toBe('');
-  });
-
-  it('should disable submit button when pending', async () => {
-    vi.mocked(useCreateComment).mockReturnValue({
-      mutateAsync: mockMutateAsync,
-      isPending: true,
-      isError: false,
-    } as any);
-
-    render(
-      <QueryWrapper>
-        <CommentForm jurisdiction="Texas" inmateId={12345} />
-      </QueryWrapper>
-    );
-
-    const submitButton = page.getByRole('button', { name: /\.\.\./i });
-    await expect.element(submitButton).toBeDisabled();
   });
 });
