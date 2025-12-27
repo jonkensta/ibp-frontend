@@ -161,12 +161,12 @@ export function RequestList({
                   </Button>
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="ghost"
                     onClick={() => handleDeleteClick(request.index)}
                     disabled={deleteRequestMutation.isPending}
                     aria-label="Delete request"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                   </Button>
                 </div>
               </div>
