@@ -40,6 +40,24 @@ describe('API Client', () => {
 
       await expect(apiGet('/test')).rejects.toThrow(ApiError);
     });
+
+    it('should extract error message from JSON response', async () => {
+      mockFetch.mockResolvedValue(
+        new Response(JSON.stringify({ detail: 'Query must be an inmate name or ID.' }), {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+
+      try {
+        await apiGet('/test');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ApiError);
+        expect((error as ApiError).message).toBe('Query must be an inmate name or ID.');
+        expect((error as ApiError).status).toBe(400);
+      }
+    });
   });
 
   describe('apiPost', () => {
