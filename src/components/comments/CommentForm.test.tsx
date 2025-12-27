@@ -3,7 +3,6 @@ import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { QueryWrapper } from '@/test/utils';
 import { CommentForm } from './CommentForm';
-import * as api from '@/lib/api/comments';
 
 // Mock the API layer instead of the hooks
 vi.mock('@/lib/api/comments');

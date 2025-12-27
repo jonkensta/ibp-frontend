@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useRef, type RefObject } from 'react';
 import type { GlobalSearchRef } from '@/components/layout/GlobalSearch';
 

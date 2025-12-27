@@ -70,6 +70,7 @@ export function UnitForm({ unit }: UnitFormProps) {
 
   useEffect(() => {
     if (updateUnitMutation.isSuccess) {
+      // eslint-disable-next-line react-hooks/incompatible-library
       reset(watch());
     }
   }, [updateUnitMutation.isSuccess, reset, watch]);

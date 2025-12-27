@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type SpyInstance } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { createWrapper } from '@/test/utils';
@@ -12,6 +12,7 @@ import {
 import * as api from '@/lib/api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import type { Jurisdiction } from '@/types';
 
 // Mock the API module
 vi.mock('@/lib/api', () => ({
@@ -23,7 +24,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 // Test components
-function InmateWarningsTest({ jurisdiction, id }: any) {
+function InmateWarningsTest({ jurisdiction, id }: { jurisdiction: Jurisdiction; id: number }) {
   const { data, isLoading, isError, error } = useInmateWarnings(jurisdiction, id);
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;
@@ -31,7 +32,7 @@ function InmateWarningsTest({ jurisdiction, id }: any) {
   return null;
 }
 
-function CreateRequestTest({ jurisdiction, id, data }: any) {
+function CreateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: { date_postmarked: string; date_processed: string; action: string } }) {
   const mutation = useCreateRequest(jurisdiction, id);
   return (
     <div>
@@ -44,7 +45,7 @@ function CreateRequestTest({ jurisdiction, id, data }: any) {
   );
 }
 
-function DeleteRequestTest({ jurisdiction, id, requestIndex = 1 }: any) {
+function DeleteRequestTest({ jurisdiction, id, requestIndex = 1 }: { jurisdiction: Jurisdiction; id: number; requestIndex?: number }) {
   const mutation = useDeleteRequest(jurisdiction, id);
   return (
     <div>
@@ -56,7 +57,7 @@ function DeleteRequestTest({ jurisdiction, id, requestIndex = 1 }: any) {
   );
 }
 
-function ValidateRequestTest({ jurisdiction, id, data }: any) {
+function ValidateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: { date_postmarked: string; date_processed: string; action: string } }) {
   const mutation = useValidateRequest(jurisdiction, id);
   return (
     <div>
@@ -344,11 +345,11 @@ describe('useRequests', () => {
   });
 
   describe('downloadRequestLabel', () => {
-    let createElementSpy: any;
-    let appendChildSpy: any;
-    let removeChildSpy: any;
-    let createObjectURLSpy: any;
-    let revokeObjectURLSpy: any;
+    let createElementSpy: SpyInstance;
+    let appendChildSpy: SpyInstance;
+    let removeChildSpy: SpyInstance;
+    let createObjectURLSpy: SpyInstance;
+    let revokeObjectURLSpy: SpyInstance;
 
     beforeEach(() => {
       // Mock DOM APIs
@@ -358,9 +359,9 @@ describe('useRequests', () => {
         click: vi.fn(),
       };
 
-      createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockLink as any);
-      appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as any);
-      removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as any);
+      createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockLink as unknown as HTMLAnchorElement);
+      appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as unknown as Node);
+      removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as unknown as Node);
 
       // window.URL is available in browser mode
       createObjectURLSpy = vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:mock-url');

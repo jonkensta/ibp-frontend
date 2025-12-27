@@ -4,6 +4,7 @@ import { page } from 'vitest/browser';
 import { createWrapper } from '@/test/utils';
 import { useSearchInmates, useInmate } from './useInmates';
 import * as api from '@/lib/api';
+import type { Jurisdiction } from '@/types';
 
 // Mock the API module
 vi.mock('@/lib/api', () => ({
@@ -23,8 +24,8 @@ function SearchInmatesTest({ query }: { query: string }) {
 }
 
 // Test component that uses useInmate
-function InmateTest({ jurisdiction, id }: { jurisdiction: string; id: number }) {
-  const { data, isLoading, isError, error } = useInmate(jurisdiction as any, id);
+function InmateTest({ jurisdiction, id }: { jurisdiction: Jurisdiction; id: number }) {
+  const { data, isLoading, isError, error } = useInmate(jurisdiction, id);
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;

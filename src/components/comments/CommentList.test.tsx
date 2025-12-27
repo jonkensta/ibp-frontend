@@ -3,7 +3,6 @@ import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { QueryWrapper } from '@/test/utils';
 import { CommentList } from './CommentList';
-import * as api from '@/lib/api/comments';
 import type { Comment } from '@/types';
 
 vi.mock('@/lib/api/comments');
@@ -87,7 +86,7 @@ describe('CommentList', () => {
     );
 
     // Comments should be sorted: Jane (Dec 21) > John (Dec 20) > Bob (Dec 19)
-    const comments = await page.getByText(/comment/).all();
+    await page.getByText(/comment/).all();
 
     // First comment should be from Jane (newest)
     const firstComment = page.getByText('Second comment');

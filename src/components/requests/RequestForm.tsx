@@ -72,6 +72,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const datePostmarked = watch('date_postmarked');
 
   // Load postmark date from cookie on mount

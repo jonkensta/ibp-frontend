@@ -6,6 +6,7 @@ import { useUnits, useUnit, useUpdateUnit } from './useUnits';
 import * as api from '@/lib/api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import type { Jurisdiction, UnitUpdate } from '@/types';
 
 // Mock the API module
 vi.mock('@/lib/api', () => ({
@@ -23,7 +24,7 @@ function UnitsTest() {
   return null;
 }
 
-function UnitTest({ jurisdiction, name }: any) {
+function UnitTest({ jurisdiction, name }: { jurisdiction: Jurisdiction; name: string }) {
   const { data, isLoading, isError, error } = useUnit(jurisdiction, name);
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;
@@ -31,7 +32,7 @@ function UnitTest({ jurisdiction, name }: any) {
   return null;
 }
 
-function UpdateUnitTest({ jurisdiction, name, data }: any) {
+function UpdateUnitTest({ jurisdiction, name, data }: { jurisdiction: Jurisdiction; name: string; data: UnitUpdate }) {
   const mutation = useUpdateUnit(jurisdiction, name);
   return (
     <div>

@@ -6,6 +6,7 @@ import { useCreateComment, useDeleteComment } from './useComments';
 import * as api from '@/lib/api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import type { Jurisdiction } from '@/types';
 
 // Mock the API module
 vi.mock('@/lib/api', () => ({
@@ -14,7 +15,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 // Test components
-function CreateCommentTest({ jurisdiction, id, data }: any) {
+function CreateCommentTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: { author: string; body: string } }) {
   const mutation = useCreateComment(jurisdiction, id);
   return (
     <div>
@@ -27,7 +28,7 @@ function CreateCommentTest({ jurisdiction, id, data }: any) {
   );
 }
 
-function DeleteCommentTest({ jurisdiction, id, commentIndex = 1 }: any) {
+function DeleteCommentTest({ jurisdiction, id, commentIndex = 1 }: { jurisdiction: Jurisdiction; id: number; commentIndex?: number }) {
   const mutation = useDeleteComment(jurisdiction, id);
   return (
     <div>

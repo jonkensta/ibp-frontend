@@ -24,7 +24,7 @@ vi.mock('@/components/units', async () => {
   const actual = await vi.importActual('@/components/units');
   return {
     ...actual,
-    UnitForm: ({ unit }: any) => <div data-testid="unit-form">UnitForm: {unit.name}</div>,
+    UnitForm: ({ unit }: { unit: { name: string } }) => <div data-testid="unit-form">UnitForm: {unit.name}</div>,
     UnitFormSkeleton: () => <div data-testid="unit-form-skeleton">Loading...</div>,
   };
 });

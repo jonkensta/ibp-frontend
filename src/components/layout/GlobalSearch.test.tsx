@@ -3,7 +3,6 @@ import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { QueryWrapper } from '@/test/utils';
 import { GlobalSearch } from './GlobalSearch';
-import * as api from '@/lib/api/inmates';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {

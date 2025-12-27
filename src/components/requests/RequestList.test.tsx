@@ -3,7 +3,6 @@ import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { QueryWrapper } from '@/test/utils';
 import { RequestList } from './RequestList';
-import * as api from '@/lib/api/requests';
 import type { Request } from '@/types';
 
 vi.mock('@/lib/api/requests');

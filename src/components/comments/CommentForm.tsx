@@ -41,6 +41,7 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const body = watch('body');
   const bodyLength = body?.length || 0;
 
