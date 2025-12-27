@@ -36,9 +36,10 @@ export const GlobalSearch = forwardRef<GlobalSearchRef>((_props, ref) => {
     if (data && data.inmates.length === 1 && debouncedQuery) {
       const inmate = data.inmates[0];
       navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, { replace: true });
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setQuery('');
-      setDebouncedQuery('');
+      setTimeout(() => {
+        setQuery('');
+        setDebouncedQuery('');
+      }, 0);
     }
   }, [data, debouncedQuery, navigate]);
 

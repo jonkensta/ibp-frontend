@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
@@ -63,7 +63,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
 
   const {
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<RequestFormData>({
     resolver: zodResolver(requestSchema),
@@ -72,8 +72,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
     },
   });
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const datePostmarked = watch('date_postmarked');
+  const datePostmarked = useWatch({ control, name: 'date_postmarked' });
 
   // Load postmark date from cookie on mount
   useEffect(() => {

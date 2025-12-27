@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -30,7 +30,7 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
     reset,
   } = useForm<CommentFormData>({
@@ -41,8 +41,7 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
     },
   });
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const body = watch('body');
+  const body = useWatch({ control, name: 'body' });
   const bodyLength = body?.length || 0;
 
   const onSubmit = async (data: CommentFormData) => {

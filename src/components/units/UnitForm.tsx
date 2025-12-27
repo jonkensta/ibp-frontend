@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,8 @@ export function UnitForm({ unit }: UnitFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
+    getValues,
     setValue,
     formState: { errors, isDirty },
     reset,
@@ -65,15 +66,15 @@ export function UnitForm({ unit }: UnitFormProps) {
     },
   });
 
-  const jurisdiction = watch('jurisdiction');
-  const shippingMethod = watch('shipping_method');
+  const jurisdiction = useWatch({ control, name: 'jurisdiction' });
+  const shippingMethod = useWatch({ control, name: 'shipping_method' });
+  const state = useWatch({ control, name: 'state' });
 
   useEffect(() => {
     if (updateUnitMutation.isSuccess) {
-      // eslint-disable-next-line react-hooks/incompatible-library
-      reset(watch());
+      reset(getValues());
     }
-  }, [updateUnitMutation.isSuccess, reset, watch]);
+  }, [updateUnitMutation.isSuccess, reset]);
 
   const onSubmit = async (data: UnitFormData) => {
     const updateData = {
@@ -152,7 +153,7 @@ export function UnitForm({ unit }: UnitFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Select value={watch('state')} onValueChange={(value: string) => setValue('state', value, { shouldDirty: true })}>
+              <Select value={state} onValueChange={(value: string) => setValue('state', value, { shouldDirty: true })}>
                 <SelectTrigger id="state">
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
