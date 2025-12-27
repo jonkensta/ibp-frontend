@@ -12,7 +12,10 @@ interface InmateProfileProps {
 
 function parseDate(value: string | null): Date | null {
   if (!value) return null;
-  const date = new Date(value);
+  // For date-only strings (YYYY-MM-DD), append time to parse as local midnight
+  // For datetime strings with 'T', parse as-is
+  const dateString = value.includes('T') ? value : value + 'T00:00:00';
+  const date = new Date(dateString);
   return isNaN(date.getTime()) ? null : date;
 }
 
