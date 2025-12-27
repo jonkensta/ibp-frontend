@@ -135,10 +135,10 @@ describe('Inmates API', () => {
         })
       );
 
-      await getInmate('New York', 12345);
+      await getInmate('Texas', 12345);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('New%20York'),
+        expect.stringContaining('Texas'),
         expect.anything()
       );
     });

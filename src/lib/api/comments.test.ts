@@ -56,10 +56,10 @@ describe('Comments API', () => {
         body: 'Test',
       };
 
-      await createComment('New York', 12345, commentData);
+      await createComment('Texas', 12345, commentData);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('New%20York'),
+        expect.stringContaining('Texas'),
         expect.anything()
       );
     });
@@ -111,10 +111,10 @@ describe('Comments API', () => {
         })
       );
 
-      await deleteComment('Federal BOP', 67890, 2);
+      await deleteComment('Federal', 67890, 2);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('Federal%20BOP'),
+        expect.stringContaining('Federal'),
         expect.anything()
       );
     });

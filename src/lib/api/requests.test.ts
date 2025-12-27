@@ -64,10 +64,10 @@ describe('Requests API', () => {
         action: 'Filled',
       };
 
-      await createRequest('New York', 12345, requestData);
+      await createRequest('Texas', 12345, requestData);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('New%20York'),
+        expect.stringContaining('Texas'),
         expect.anything()
       );
     });

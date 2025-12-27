@@ -33,7 +33,7 @@ describe('Units API', () => {
           state: 'TX',
           zipcode: '75201',
           url: null,
-          shipping_method: 'Flat',
+          shipping_method: 'Box',
         },
       ];
 
@@ -111,10 +111,10 @@ describe('Units API', () => {
         })
       );
 
-      await getUnit('New York', 'Maximum Security Unit');
+      await getUnit('Texas', 'Maximum Security Unit');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('New%20York/Maximum%20Security%20Unit'),
+        expect.stringContaining('Texas/Maximum%20Security%20Unit'),
         expect.anything()
       );
     });
@@ -142,7 +142,7 @@ describe('Units API', () => {
         state: 'TX',
         zipcode: '77001',
         url: null,
-        shipping_method: 'Flat',
+        shipping_method: 'Box',
       };
 
       mockFetch.mockResolvedValue(
@@ -159,7 +159,7 @@ describe('Units API', () => {
         state: 'TX',
         zipcode: '77001',
         url: null,
-        shipping_method: 'Flat',
+        shipping_method: 'Box',
       };
 
       const result = await updateUnit('Texas', 'Test Unit', updateData);
@@ -192,10 +192,10 @@ describe('Units API', () => {
         shipping_method: 'Box',
       };
 
-      await updateUnit("St. Mary's", "O'Brien Unit", updateData);
+      await updateUnit('Texas', "O'Brien Unit", updateData);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining("St.%20Mary's/O'Brien%20Unit"),
+        expect.stringContaining("Texas/O'Brien%20Unit"),
         expect.anything()
       );
     });

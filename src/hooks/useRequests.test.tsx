@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type SpyInstance } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { createWrapper } from '@/test/utils';
@@ -12,7 +12,7 @@ import {
 import * as api from '@/lib/api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import type { Jurisdiction } from '@/types';
+import type { Jurisdiction, RequestCreate } from '@/types';
 
 // Mock the API module
 vi.mock('@/lib/api', () => ({
@@ -32,7 +32,7 @@ function InmateWarningsTest({ jurisdiction, id }: { jurisdiction: Jurisdiction; 
   return null;
 }
 
-function CreateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: { date_postmarked: string; date_processed: string; action: string } }) {
+function CreateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: RequestCreate }) {
   const mutation = useCreateRequest(jurisdiction, id);
   return (
     <div>
@@ -57,7 +57,7 @@ function DeleteRequestTest({ jurisdiction, id, requestIndex = 1 }: { jurisdictio
   );
 }
 
-function ValidateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: { date_postmarked: string; date_processed: string; action: string } }) {
+function ValidateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: RequestCreate }) {
   const mutation = useValidateRequest(jurisdiction, id);
   return (
     <div>
@@ -78,9 +78,8 @@ describe('useRequests', () => {
   describe('useInmateWarnings', () => {
     it('should fetch inmate warnings', async () => {
       const mockWarnings = {
-        entry_age: null,
+        entry_age: undefined,
         release: 'Release date is in the past',
-        postmarkdate: null,
       };
 
       vi.mocked(api.getInmateWarnings).mockResolvedValue(mockWarnings);
@@ -96,9 +95,8 @@ describe('useRequests', () => {
 
     it('should use correct query key', async () => {
       const mockWarnings = {
-        entry_age: null,
-        release: null,
-        postmarkdate: null,
+        entry_age: undefined,
+        release: undefined,
       };
 
       vi.mocked(api.getInmateWarnings).mockResolvedValue(mockWarnings);
@@ -275,7 +273,7 @@ describe('useRequests', () => {
         action: 'Filled' as const,
       };
 
-      const validationResult = { valid: true };
+      const validationResult = { entry_age: undefined, release: undefined, postmarkdate: undefined };
 
       vi.mocked(api.validateRequest).mockResolvedValue(validationResult);
 
@@ -325,7 +323,7 @@ describe('useRequests', () => {
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       );
 
-      vi.mocked(api.validateRequest).mockResolvedValue({ valid: true });
+      vi.mocked(api.validateRequest).mockResolvedValue({ entry_age: undefined, release: undefined, postmarkdate: undefined });
 
       render(<ValidateRequestTest jurisdiction="Texas" id={12345} data={{
         date_postmarked: '2024-12-20',
@@ -345,11 +343,11 @@ describe('useRequests', () => {
   });
 
   describe('downloadRequestLabel', () => {
-    let createElementSpy: SpyInstance;
-    let appendChildSpy: SpyInstance;
-    let removeChildSpy: SpyInstance;
-    let createObjectURLSpy: SpyInstance;
-    let revokeObjectURLSpy: SpyInstance;
+    let createElementSpy: MockInstance;
+    let appendChildSpy: MockInstance;
+    let removeChildSpy: MockInstance;
+    let createObjectURLSpy: MockInstance;
+    let revokeObjectURLSpy: MockInstance;
 
     beforeEach(() => {
       // Mock DOM APIs

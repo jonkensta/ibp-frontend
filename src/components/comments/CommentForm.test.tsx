@@ -107,6 +107,6 @@ describe('CommentForm', () => {
 
     const element = await commentInput.query();
     // maxLength attribute enforces 60 characters
-    expect(element?.value.length).toBeLessThanOrEqual(60);
+    expect((element as HTMLTextAreaElement)?.value.length).toBeLessThanOrEqual(60);
   });
 });

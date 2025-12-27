@@ -92,8 +92,8 @@ describe('RequestForm', () => {
     // Mock validation to return warnings
     vi.mocked(api.validateRequest).mockResolvedValue({
       entry_age: 'Inmate entered unit too recently',
-      release: null,
-      postmarkdate: null,
+      release: undefined,
+      postmarkdate: undefined,
     });
 
     render(

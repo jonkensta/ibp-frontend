@@ -43,10 +43,13 @@ describe('useInmates', () => {
       const mockResults = {
         inmates: [
           {
-            jurisdiction: 'Texas',
+            jurisdiction: 'Texas' as const,
             id: 12345,
             first_name: 'John',
             last_name: 'Doe',
+            race: null,
+            sex: null,
+            release: null,
             unit: 'Test Unit',
             url: null,
           },
@@ -105,7 +108,7 @@ describe('useInmates', () => {
   describe('useInmate', () => {
     it('should fetch inmate data', async () => {
       const mockInmate = {
-        jurisdiction: 'Texas',
+        jurisdiction: 'Texas' as const,
         id: 12345,
         first_name: 'John',
         last_name: 'Doe',
@@ -113,14 +116,14 @@ describe('useInmates', () => {
         sex: 'M',
         unit: {
           name: 'Test Unit',
-          jurisdiction: 'Texas',
+          jurisdiction: 'Texas' as const,
           street1: '123 Main St',
           street2: null,
           city: 'Austin',
           state: 'TX',
           zipcode: '78701',
           url: null,
-          shipping_method: 'Box',
+          shipping_method: 'Box' as const,
         },
         datetime_fetched: '2024-12-25T10:00:00Z',
         release: '2025-01-01',
@@ -143,7 +146,7 @@ describe('useInmates', () => {
 
     it('should handle different jurisdictions', async () => {
       const mockInmate = {
-        jurisdiction: 'Federal',
+        jurisdiction: 'Federal' as const,
         id: 67890,
         first_name: 'Jane',
         last_name: 'Smith',
@@ -151,14 +154,14 @@ describe('useInmates', () => {
         sex: 'F',
         unit: {
           name: 'Federal Unit',
-          jurisdiction: 'Federal',
+          jurisdiction: 'Federal' as const,
           street1: '456 Oak Ave',
           street2: null,
           city: 'Houston',
           state: 'TX',
           zipcode: '77001',
           url: null,
-          shipping_method: 'Envelope',
+          shipping_method: 'Individual' as const,
         },
         datetime_fetched: '2024-12-25T10:00:00Z',
         release: null,

@@ -46,7 +46,7 @@ function UpdateUnitTest({ jurisdiction, name, data }: { jurisdiction: Jurisdicti
 }
 
 const mockUnit = {
-  jurisdiction: 'Texas',
+  jurisdiction: 'Texas' as const,
   name: 'Test Unit',
   street1: '123 Main St',
   street2: null,
@@ -54,7 +54,7 @@ const mockUnit = {
   state: 'TX',
   zipcode: '78701',
   url: null,
-  shipping_method: 'Box',
+  shipping_method: 'Box' as const,
 };
 
 describe('useUnits', () => {
@@ -140,7 +140,7 @@ describe('useUnits', () => {
         state: 'TX',
         zipcode: '77001',
         url: null,
-        shipping_method: 'Envelope',
+        shipping_method: 'Individual' as const,
       };
 
       const updatedUnit = {
