@@ -116,6 +116,10 @@ describe('CommentList', () => {
     const deleteButtons = page.getByRole('button', { name: /delete comment/i });
     const buttons = await deleteButtons.all();
     expect(buttons.length).toBe(3);
+
+    // Verify aria-label
+    const firstButton = buttons[0];
+    await expect.element(firstButton).toHaveAttribute('aria-label', 'Delete comment');
   });
 
   it('should open delete dialog when delete button is clicked', async () => {

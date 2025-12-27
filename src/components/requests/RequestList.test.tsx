@@ -114,10 +114,12 @@ describe('RequestList', () => {
     const downloadButtons = page.getByRole('button', { name: /download request label/i });
     const downloads = await downloadButtons.all();
     expect(downloads.length).toBe(3);
+    await expect.element(downloads[0]).toHaveAttribute('aria-label', 'Download request label');
 
     const deleteButtons = page.getByRole('button', { name: /delete request/i });
     const deletes = await deleteButtons.all();
     expect(deletes.length).toBe(3);
+    await expect.element(deletes[0]).toHaveAttribute('aria-label', 'Delete request');
   });
 
   it('should open delete dialog when delete button is clicked', async () => {
