@@ -94,7 +94,7 @@ export async function printRequestLabel(
       </html>
     `);
     printWindow.document.close();
-  } catch (error) {
+  } catch {
     // Cleanup resources on error
     window.URL.revokeObjectURL(url);
     printWindow.close();

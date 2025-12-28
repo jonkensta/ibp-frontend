@@ -18,6 +18,9 @@ const CreateUnitPage = lazy(() =>
 const UnitDetailPage = lazy(() =>
   import('./pages/UnitDetailPage').then((m) => ({ default: m.UnitDetailPage }))
 );
+const MetricsPage = lazy(() =>
+  import('./pages/MetricsPage').then((m) => ({ default: m.MetricsPage }))
+);
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
 );
@@ -91,6 +94,16 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <UnitDetailPage />
+              </Suspense>
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="metrics"
+          element={
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <MetricsPage />
               </Suspense>
             </ErrorBoundary>
           }
