@@ -4,7 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useUnits } from '@/hooks';
 import type { Jurisdiction } from '@/types';
 
@@ -35,7 +41,7 @@ export function UnitDirectory() {
         (unit) =>
           unit.name.toLowerCase().includes(query) ||
           unit.city.toLowerCase().includes(query) ||
-          unit.state.toLowerCase().includes(query),
+          unit.state.toLowerCase().includes(query)
       );
     }
 
@@ -98,7 +104,12 @@ export function UnitDirectory() {
 
           <div className="space-y-2">
             <Label htmlFor="jurisdiction">Jurisdiction</Label>
-            <Select value={jurisdictionFilter} onValueChange={(value: string) => setJurisdictionFilter(value as Jurisdiction | 'all')}>
+            <Select
+              value={jurisdictionFilter}
+              onValueChange={(value: string) =>
+                setJurisdictionFilter(value as Jurisdiction | 'all')
+              }
+            >
               <SelectTrigger id="jurisdiction">
                 <SelectValue placeholder="All jurisdictions" />
               </SelectTrigger>

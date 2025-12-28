@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { InmateSearchForm, InmateSearchResults, InmateSearchResultsSkeleton } from '@/components/inmates';
+import {
+  InmateSearchForm,
+  InmateSearchResults,
+  InmateSearchResultsSkeleton,
+} from '@/components/inmates';
 import { useSearchInmates } from '@/hooks';
 
 export function SearchPage() {

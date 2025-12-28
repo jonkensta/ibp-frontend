@@ -23,9 +23,7 @@ vi.mock('@/components/ui/popover', () => ({
 
 vi.mock('@/components/ui/calendar', () => ({
   Calendar: ({ onSelect }: { onSelect: (date: Date) => void }) => (
-    <button onClick={() => onSelect(new Date('2024-12-25T12:00:00Z'))}>
-      Select Date
-    </button>
+    <button onClick={() => onSelect(new Date('2024-12-25T12:00:00Z'))}>Select Date</button>
   ),
 }));
 

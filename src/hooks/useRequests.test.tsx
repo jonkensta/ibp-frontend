@@ -32,7 +32,15 @@ function InmateWarningsTest({ jurisdiction, id }: { jurisdiction: Jurisdiction; 
   return null;
 }
 
-function CreateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: RequestCreate }) {
+function CreateRequestTest({
+  jurisdiction,
+  id,
+  data,
+}: {
+  jurisdiction: Jurisdiction;
+  id: number;
+  data: RequestCreate;
+}) {
   const mutation = useCreateRequest(jurisdiction, id);
   return (
     <div>
@@ -45,11 +53,21 @@ function CreateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdict
   );
 }
 
-function DeleteRequestTest({ jurisdiction, id, requestIndex = 1 }: { jurisdiction: Jurisdiction; id: number; requestIndex?: number }) {
+function DeleteRequestTest({
+  jurisdiction,
+  id,
+  requestIndex = 1,
+}: {
+  jurisdiction: Jurisdiction;
+  id: number;
+  requestIndex?: number;
+}) {
   const mutation = useDeleteRequest(jurisdiction, id);
   return (
     <div>
-      <button data-testid="delete-btn" onClick={() => mutation.mutate(requestIndex)}>Delete</button>
+      <button data-testid="delete-btn" onClick={() => mutation.mutate(requestIndex)}>
+        Delete
+      </button>
       {mutation.isPending && <div>Pending</div>}
       {mutation.isSuccess && <div>Success</div>}
       {mutation.isError && <div>Error: {(mutation.error as Error).message}</div>}
@@ -57,7 +75,15 @@ function DeleteRequestTest({ jurisdiction, id, requestIndex = 1 }: { jurisdictio
   );
 }
 
-function ValidateRequestTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: RequestCreate }) {
+function ValidateRequestTest({
+  jurisdiction,
+  id,
+  data,
+}: {
+  jurisdiction: Jurisdiction;
+  id: number;
+  data: RequestCreate;
+}) {
   const mutation = useValidateRequest(jurisdiction, id);
   return (
     <div>
@@ -137,7 +163,9 @@ describe('useRequests', () => {
       vi.mocked(api.createRequest).mockResolvedValue(createdRequest);
 
       const Wrapper = createWrapper();
-      render(<CreateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, { wrapper: Wrapper });
+      render(<CreateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -146,7 +174,7 @@ describe('useRequests', () => {
       await expect.element(success).toBeInTheDocument();
 
       expect(api.createRequest).toHaveBeenCalledWith('Texas', 12345, requestData);
-      
+
       const result = page.getByTestId('result');
       await expect.element(result).toHaveTextContent(JSON.stringify(createdRequest));
     });
@@ -174,11 +202,18 @@ describe('useRequests', () => {
 
       vi.mocked(api.createRequest).mockResolvedValue(createdRequest);
 
-      render(<CreateRequestTest jurisdiction="Texas" id={12345} data={{
-        date_postmarked: '2024-12-20',
-        date_processed: '2024-12-21',
-        action: 'Filled',
-      }} />, { wrapper: Wrapper });
+      render(
+        <CreateRequestTest
+          jurisdiction="Texas"
+          id={12345}
+          data={{
+            date_postmarked: '2024-12-20',
+            date_processed: '2024-12-21',
+            action: 'Filled',
+          }}
+        />,
+        { wrapper: Wrapper }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -194,11 +229,18 @@ describe('useRequests', () => {
       vi.mocked(api.createRequest).mockRejectedValue(new Error('Failed to create request'));
 
       const Wrapper = createWrapper();
-      render(<CreateRequestTest jurisdiction="Texas" id={12345} data={{
-        date_postmarked: '2024-12-20',
-        date_processed: '2024-12-21',
-        action: 'Filled',
-      }} />, { wrapper: Wrapper });
+      render(
+        <CreateRequestTest
+          jurisdiction="Texas"
+          id={12345}
+          data={{
+            date_postmarked: '2024-12-20',
+            date_processed: '2024-12-21',
+            action: 'Filled',
+          }}
+        />,
+        { wrapper: Wrapper }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -213,7 +255,9 @@ describe('useRequests', () => {
       vi.mocked(api.deleteRequest).mockResolvedValue(undefined);
 
       const Wrapper = createWrapper();
-      render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, { wrapper: Wrapper });
+      render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();
@@ -240,7 +284,9 @@ describe('useRequests', () => {
 
       vi.mocked(api.deleteRequest).mockResolvedValue(undefined);
 
-      render(<DeleteRequestTest jurisdiction="Federal" id={67890} requestIndex={2} />, { wrapper: Wrapper });
+      render(<DeleteRequestTest jurisdiction="Federal" id={67890} requestIndex={2} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();
@@ -255,7 +301,9 @@ describe('useRequests', () => {
       vi.mocked(api.deleteRequest).mockRejectedValue(new Error('Failed to delete request'));
 
       const Wrapper = createWrapper();
-      render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, { wrapper: Wrapper });
+      render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();
@@ -273,12 +321,18 @@ describe('useRequests', () => {
         action: 'Filled' as const,
       };
 
-      const validationResult = { entry_age: undefined, release: undefined, postmarkdate: undefined };
+      const validationResult = {
+        entry_age: undefined,
+        release: undefined,
+        postmarkdate: undefined,
+      };
 
       vi.mocked(api.validateRequest).mockResolvedValue(validationResult);
 
       const Wrapper = createWrapper();
-      render(<ValidateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, { wrapper: Wrapper });
+      render(<ValidateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -287,7 +341,7 @@ describe('useRequests', () => {
       await expect.element(success).toBeInTheDocument();
 
       expect(api.validateRequest).toHaveBeenCalledWith('Texas', 12345, requestData);
-      
+
       const result = page.getByTestId('result');
       await expect.element(result).toHaveTextContent(JSON.stringify(validationResult));
     });
@@ -296,11 +350,18 @@ describe('useRequests', () => {
       vi.mocked(api.validateRequest).mockRejectedValue(new Error('Validation failed'));
 
       const Wrapper = createWrapper();
-      render(<ValidateRequestTest jurisdiction="Texas" id={12345} data={{
-        date_postmarked: '2024-12-20',
-        date_processed: '2024-12-21',
-        action: 'Filled',
-      }} />, { wrapper: Wrapper });
+      render(
+        <ValidateRequestTest
+          jurisdiction="Texas"
+          id={12345}
+          data={{
+            date_postmarked: '2024-12-20',
+            date_processed: '2024-12-21',
+            action: 'Filled',
+          }}
+        />,
+        { wrapper: Wrapper }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -323,13 +384,24 @@ describe('useRequests', () => {
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       );
 
-      vi.mocked(api.validateRequest).mockResolvedValue({ entry_age: undefined, release: undefined, postmarkdate: undefined });
+      vi.mocked(api.validateRequest).mockResolvedValue({
+        entry_age: undefined,
+        release: undefined,
+        postmarkdate: undefined,
+      });
 
-      render(<ValidateRequestTest jurisdiction="Texas" id={12345} data={{
-        date_postmarked: '2024-12-20',
-        date_processed: '2024-12-21',
-        action: 'Filled',
-      }} />, { wrapper: Wrapper });
+      render(
+        <ValidateRequestTest
+          jurisdiction="Texas"
+          id={12345}
+          data={{
+            date_postmarked: '2024-12-20',
+            date_processed: '2024-12-21',
+            action: 'Filled',
+          }}
+        />,
+        { wrapper: Wrapper }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -419,7 +491,9 @@ describe('useRequests', () => {
         throw new Error('Document write failed');
       });
 
-      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow('Failed to prepare print window');
+      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow(
+        'Failed to prepare print window'
+      );
 
       // Should cleanup resources on error
       expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');

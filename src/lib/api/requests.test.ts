@@ -66,10 +66,7 @@ describe('Requests API', () => {
 
       await createRequest('Texas', 12345, requestData);
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('Texas'),
-        expect.anything()
-      );
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('Texas'), expect.anything());
     });
   });
 

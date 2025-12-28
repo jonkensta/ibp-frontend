@@ -7,16 +7,67 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useCreateUnit } from '@/hooks';
 import type { Jurisdiction, ShippingMethod } from '@/types';
 
 const US_STATES = [
-  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
+  'AL',
+  'AK',
+  'AZ',
+  'AR',
+  'CA',
+  'CO',
+  'CT',
+  'DE',
+  'FL',
+  'GA',
+  'HI',
+  'ID',
+  'IL',
+  'IN',
+  'IA',
+  'KS',
+  'KY',
+  'LA',
+  'ME',
+  'MD',
+  'MA',
+  'MI',
+  'MN',
+  'MS',
+  'MO',
+  'MT',
+  'NE',
+  'NV',
+  'NH',
+  'NJ',
+  'NM',
+  'NY',
+  'NC',
+  'ND',
+  'OH',
+  'OK',
+  'OR',
+  'PA',
+  'RI',
+  'SC',
+  'SD',
+  'TN',
+  'TX',
+  'UT',
+  'VT',
+  'VA',
+  'WA',
+  'WV',
+  'WI',
+  'WY',
 ];
 
 const unitCreateSchema = z.object({
@@ -76,7 +127,9 @@ export function UnitCreateForm() {
     try {
       const newUnit = await createUnitMutation.mutateAsync(createData);
       // Navigate to the newly created unit's detail page
-      navigate(`/units/${encodeURIComponent(newUnit.jurisdiction)}/${encodeURIComponent(newUnit.name)}`);
+      navigate(
+        `/units/${encodeURIComponent(newUnit.jurisdiction)}/${encodeURIComponent(newUnit.name)}`
+      );
     } catch (error) {
       console.error('Failed to create unit:', error);
     }
@@ -104,7 +157,12 @@ export function UnitCreateForm() {
 
             <div className="space-y-2">
               <Label htmlFor="jurisdiction">Jurisdiction</Label>
-              <Select value={jurisdiction} onValueChange={(value: string) => setValue('jurisdiction', value as Jurisdiction, { shouldDirty: true })}>
+              <Select
+                value={jurisdiction}
+                onValueChange={(value: string) =>
+                  setValue('jurisdiction', value as Jurisdiction, { shouldDirty: true })
+                }
+              >
                 <SelectTrigger id="jurisdiction">
                   <SelectValue placeholder="Select jurisdiction" />
                 </SelectTrigger>
@@ -113,7 +171,9 @@ export function UnitCreateForm() {
                   <SelectItem value="Federal">Federal</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.jurisdiction && <p className="text-sm text-red-500">{errors.jurisdiction.message}</p>}
+              {errors.jurisdiction && (
+                <p className="text-sm text-red-500">{errors.jurisdiction.message}</p>
+              )}
             </div>
           </div>
 
@@ -138,7 +198,10 @@ export function UnitCreateForm() {
 
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Select value={state} onValueChange={(value: string) => setValue('state', value, { shouldDirty: true })}>
+              <Select
+                value={state}
+                onValueChange={(value: string) => setValue('state', value, { shouldDirty: true })}
+              >
                 <SelectTrigger id="state">
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
@@ -170,7 +233,11 @@ export function UnitCreateForm() {
             <Label htmlFor="shipping_method">Shipping Method (Optional)</Label>
             <Select
               value={shippingMethod || 'none'}
-              onValueChange={(value: string) => setValue('shipping_method', value === 'none' ? null : (value as ShippingMethod), { shouldDirty: true })}
+              onValueChange={(value: string) =>
+                setValue('shipping_method', value === 'none' ? null : (value as ShippingMethod), {
+                  shouldDirty: true,
+                })
+              }
             >
               <SelectTrigger id="shipping_method">
                 <SelectValue placeholder="Select shipping method" />
@@ -181,7 +248,9 @@ export function UnitCreateForm() {
                 <SelectItem value="Individual">Individual</SelectItem>
               </SelectContent>
             </Select>
-            {errors.shipping_method && <p className="text-sm text-red-500">{errors.shipping_method.message}</p>}
+            {errors.shipping_method && (
+              <p className="text-sm text-red-500">{errors.shipping_method.message}</p>
+            )}
           </div>
 
           <div className="flex gap-4">

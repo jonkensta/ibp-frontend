@@ -33,7 +33,15 @@ function UnitTest({ jurisdiction, name }: { jurisdiction: Jurisdiction; name: st
   return null;
 }
 
-function UpdateUnitTest({ jurisdiction, name, data }: { jurisdiction: Jurisdiction; name: string; data: UnitUpdate }) {
+function UpdateUnitTest({
+  jurisdiction,
+  name,
+  data,
+}: {
+  jurisdiction: Jurisdiction;
+  name: string;
+  data: UnitUpdate;
+}) {
   const mutation = useUpdateUnit(jurisdiction, name);
   return (
     <div>
@@ -152,7 +160,9 @@ describe('useUnits', () => {
       vi.mocked(api.updateUnit).mockResolvedValue(updatedUnit);
 
       const Wrapper = createWrapper();
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={updateData} />, { wrapper: Wrapper });
+      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={updateData} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -161,7 +171,7 @@ describe('useUnits', () => {
       await expect.element(success).toBeInTheDocument();
 
       expect(api.updateUnit).toHaveBeenCalledWith('Texas', 'Test Unit', updateData);
-      
+
       const result = page.getByTestId('result');
       await expect.element(result).toHaveTextContent(JSON.stringify(updatedUnit));
     });
@@ -183,7 +193,9 @@ describe('useUnits', () => {
       const updatedUnit = { ...mockUnit, city: 'Dallas' };
       vi.mocked(api.updateUnit).mockResolvedValue(updatedUnit);
 
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, { wrapper: Wrapper });
+      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -200,7 +212,9 @@ describe('useUnits', () => {
       vi.mocked(api.updateUnit).mockRejectedValue(new Error('Update failed'));
 
       const Wrapper = createWrapper();
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, { wrapper: Wrapper });
+      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -215,7 +229,9 @@ describe('useUnits', () => {
       );
 
       const Wrapper = createWrapper();
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, { wrapper: Wrapper });
+      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();

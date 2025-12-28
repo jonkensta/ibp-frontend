@@ -29,7 +29,12 @@ function InmateTest({ jurisdiction, id }: { jurisdiction: Jurisdiction; id: numb
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error: {(error as Error).message}</div>;
-  if (data) return <div>Inmate: {data.first_name} {data.last_name}</div>;
+  if (data)
+    return (
+      <div>
+        Inmate: {data.first_name} {data.last_name}
+      </div>
+    );
   return null;
 }
 

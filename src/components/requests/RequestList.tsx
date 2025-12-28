@@ -39,7 +39,9 @@ export function RequestList({
   const printButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
   const sortedRequests = [...requests].sort(
-    (a, b) => new Date(b.date_postmarked + 'T00:00:00').getTime() - new Date(a.date_postmarked + 'T00:00:00').getTime()
+    (a, b) =>
+      new Date(b.date_postmarked + 'T00:00:00').getTime() -
+      new Date(a.date_postmarked + 'T00:00:00').getTime()
   );
 
   // Focus print button when a new request is created
@@ -138,7 +140,9 @@ export function RequestList({
                     </span>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    <p>Postmarked: {format(new Date(request.date_postmarked + 'T00:00:00'), 'PP')}</p>
+                    <p>
+                      Postmarked: {format(new Date(request.date_postmarked + 'T00:00:00'), 'PP')}
+                    </p>
                     <p>Processed: {format(new Date(request.date_processed + 'T00:00:00'), 'PP')}</p>
                   </div>
                 </div>

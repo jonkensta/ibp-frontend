@@ -58,10 +58,7 @@ describe('Comments API', () => {
 
       await createComment('Texas', 12345, commentData);
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('Texas'),
-        expect.anything()
-      );
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('Texas'), expect.anything());
     });
 
     it('should enforce character limits in data', async () => {
@@ -113,10 +110,7 @@ describe('Comments API', () => {
 
       await deleteComment('Federal', 67890, 2);
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('Federal'),
-        expect.anything()
-      );
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('Federal'), expect.anything());
     });
 
     it('should throw error for failed deletion', async () => {

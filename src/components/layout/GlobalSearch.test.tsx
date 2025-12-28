@@ -62,9 +62,7 @@ describe('GlobalSearch', () => {
     // Wait for debounce and navigation
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining('/search?q=Jane%20Smith')
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/search?q=Jane%20Smith'));
   });
 
   it('should trim whitespace from query', async () => {
@@ -84,9 +82,7 @@ describe('GlobalSearch', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining('q=John%20Doe')
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('q=John%20Doe'));
   });
 
   it('should not navigate on empty query', async () => {
@@ -143,9 +139,7 @@ describe('GlobalSearch', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining("O'Brien%20%26%20Sons")
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining("O'Brien%20%26%20Sons"));
   });
 
   it('should have search icon', async () => {

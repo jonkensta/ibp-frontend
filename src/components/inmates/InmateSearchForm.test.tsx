@@ -30,13 +30,7 @@ describe('InmateSearchForm', () => {
 
   it('should display initial query value', async () => {
     const onSearch = vi.fn();
-    render(
-      <InmateSearchForm
-        onSearch={onSearch}
-        isLoading={false}
-        initialQuery="Johnson"
-      />
-    );
+    render(<InmateSearchForm onSearch={onSearch} isLoading={false} initialQuery="Johnson" />);
 
     const input = page.getByRole('textbox');
     await expect.element(input).toHaveValue('Johnson');

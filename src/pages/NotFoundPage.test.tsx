@@ -28,14 +28,14 @@ describe('NotFoundPage', () => {
 
     const homeLink = page.getByRole('link', { name: /go to home/i });
     await expect.element(homeLink).toBeInTheDocument();
-    
+
     // Check href attribute (browser mode specific)
     const homeElement = await homeLink.query();
     expect(homeElement?.getAttribute('href')).toBe('/');
 
     const searchLink = page.getByRole('link', { name: /search inmates/i });
     await expect.element(searchLink).toBeInTheDocument();
-    
+
     const searchElement = await searchLink.query();
     expect(searchElement?.getAttribute('href')).toBe('/search');
   });

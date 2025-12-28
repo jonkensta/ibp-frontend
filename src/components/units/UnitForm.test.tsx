@@ -10,7 +10,15 @@ window.fetch = mockFetch;
 
 // Mock UI Select components to avoid Radix/React conflicts
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ value, onValueChange, children }: { value: string; onValueChange: (v: string) => void; children: React.ReactNode }) => (
+  Select: ({
+    value,
+    onValueChange,
+    children,
+  }: {
+    value: string;
+    onValueChange: (v: string) => void;
+    children: React.ReactNode;
+  }) => (
     <div data-select-value={value}>
       <button onClick={() => onValueChange && onValueChange('TX')}>Change</button>
       {children}
@@ -404,7 +412,9 @@ describe('UnitForm', () => {
     await expect.element(nameInput).toHaveValue('Test Unit');
 
     // Should show helper text explaining why it's disabled
-    const helperText = page.getByText(/unit name cannot be changed to prevent breaking inmate associations/i);
+    const helperText = page.getByText(
+      /unit name cannot be changed to prevent breaking inmate associations/i
+    );
     await expect.element(helperText).toBeInTheDocument();
   });
 
@@ -420,7 +430,9 @@ describe('UnitForm', () => {
     await expect.element(jurisdictionInput).toHaveValue('Texas');
 
     // Should show helper text explaining why it's disabled
-    const helperText = page.getByText(/jurisdiction cannot be changed to prevent breaking inmate associations/i);
+    const helperText = page.getByText(
+      /jurisdiction cannot be changed to prevent breaking inmate associations/i
+    );
     await expect.element(helperText).toBeInTheDocument();
   });
 });

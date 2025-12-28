@@ -137,10 +137,7 @@ describe('Inmates API', () => {
 
       await getInmate('Texas', 12345);
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('Texas'),
-        expect.anything()
-      );
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('Texas'), expect.anything());
     });
 
     it('should throw error for not found inmate', async () => {

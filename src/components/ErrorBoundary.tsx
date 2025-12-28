@@ -54,12 +54,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
               {this.state.error && (
                 <details className="rounded-md bg-muted p-4">
-                  <summary className="cursor-pointer text-sm font-medium">
-                    Error details
-                  </summary>
-                  <pre className="mt-2 text-xs overflow-x-auto">
-                    {this.state.error.toString()}
-                  </pre>
+                  <summary className="cursor-pointer text-sm font-medium">Error details</summary>
+                  <pre className="mt-2 text-xs overflow-x-auto">{this.state.error.toString()}</pre>
                 </details>
               )}
 
@@ -67,7 +63,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <Button onClick={this.handleReset} variant="default">
                   Try again
                 </Button>
-                <Button onClick={() => window.location.href = '/'} variant="outline">
+                <Button onClick={() => (window.location.href = '/')} variant="outline">
                   Go to home
                 </Button>
               </div>

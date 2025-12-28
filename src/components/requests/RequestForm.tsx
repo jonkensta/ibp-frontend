@@ -223,7 +223,10 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
             <Label className="text-xs">Date Postmarked</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal h-9">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal h-9"
+                >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {datePostmarked ? format(datePostmarked, 'PP') : <span>Pick a date</span>}
                 </Button>

@@ -72,9 +72,7 @@ describe('HomePage', () => {
     const searchButton = page.getByRole('button', { name: /search/i });
     await searchButton.click();
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      expect.stringContaining("O'Brien%20%26%20Smith")
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining("O'Brien%20%26%20Smith"));
   });
 
   it('should have proper page structure with max-width constraint', async () => {

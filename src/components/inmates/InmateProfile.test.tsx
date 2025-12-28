@@ -185,5 +185,4 @@ describe('InmateProfile', () => {
     const lastUpdated = page.getByText(/data last updated/i);
     await expect.element(lastUpdated).toBeInTheDocument();
   });
-
 });

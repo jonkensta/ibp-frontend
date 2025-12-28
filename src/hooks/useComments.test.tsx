@@ -15,7 +15,15 @@ vi.mock('@/lib/api', () => ({
 }));
 
 // Test components
-function CreateCommentTest({ jurisdiction, id, data }: { jurisdiction: Jurisdiction; id: number; data: { author: string; body: string } }) {
+function CreateCommentTest({
+  jurisdiction,
+  id,
+  data,
+}: {
+  jurisdiction: Jurisdiction;
+  id: number;
+  data: { author: string; body: string };
+}) {
   const mutation = useCreateComment(jurisdiction, id);
   return (
     <div>
@@ -28,11 +36,21 @@ function CreateCommentTest({ jurisdiction, id, data }: { jurisdiction: Jurisdict
   );
 }
 
-function DeleteCommentTest({ jurisdiction, id, commentIndex = 1 }: { jurisdiction: Jurisdiction; id: number; commentIndex?: number }) {
+function DeleteCommentTest({
+  jurisdiction,
+  id,
+  commentIndex = 1,
+}: {
+  jurisdiction: Jurisdiction;
+  id: number;
+  commentIndex?: number;
+}) {
   const mutation = useDeleteComment(jurisdiction, id);
   return (
     <div>
-      <button data-testid="delete-btn" onClick={() => mutation.mutate(commentIndex)}>Delete</button>
+      <button data-testid="delete-btn" onClick={() => mutation.mutate(commentIndex)}>
+        Delete
+      </button>
       {mutation.isPending && <div>Pending</div>}
       {mutation.isSuccess && <div>Success</div>}
       {mutation.isError && <div>Error: {(mutation.error as Error).message}</div>}
@@ -62,7 +80,9 @@ describe('useComments', () => {
       vi.mocked(api.createComment).mockResolvedValue(createdComment);
 
       const Wrapper = createWrapper();
-      render(<CreateCommentTest jurisdiction="Texas" id={12345} data={commentData} />, { wrapper: Wrapper });
+      render(<CreateCommentTest jurisdiction="Texas" id={12345} data={commentData} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -71,7 +91,7 @@ describe('useComments', () => {
       await expect.element(success).toBeInTheDocument();
 
       expect(api.createComment).toHaveBeenCalledWith('Texas', 12345, commentData);
-      
+
       const result = page.getByTestId('result');
       await expect.element(result).toHaveTextContent(JSON.stringify(createdComment));
     });
@@ -99,7 +119,14 @@ describe('useComments', () => {
 
       vi.mocked(api.createComment).mockResolvedValue(createdComment);
 
-      render(<CreateCommentTest jurisdiction="Texas" id={12345} data={{ author: 'JD', body: 'Test comment' }} />, { wrapper: Wrapper });
+      render(
+        <CreateCommentTest
+          jurisdiction="Texas"
+          id={12345}
+          data={{ author: 'JD', body: 'Test comment' }}
+        />,
+        { wrapper: Wrapper }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -115,7 +142,10 @@ describe('useComments', () => {
       vi.mocked(api.createComment).mockRejectedValue(new Error('Failed to create comment'));
 
       const Wrapper = createWrapper();
-      render(<CreateCommentTest jurisdiction="Texas" id={12345} data={{ author: 'JD', body: 'Test' }} />, { wrapper: Wrapper });
+      render(
+        <CreateCommentTest jurisdiction="Texas" id={12345} data={{ author: 'JD', body: 'Test' }} />,
+        { wrapper: Wrapper }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -130,7 +160,10 @@ describe('useComments', () => {
       );
 
       const Wrapper = createWrapper();
-      render(<CreateCommentTest jurisdiction="Texas" id={12345} data={{ author: 'JD', body: 'Test' }} />, { wrapper: Wrapper });
+      render(
+        <CreateCommentTest jurisdiction="Texas" id={12345} data={{ author: 'JD', body: 'Test' }} />,
+        { wrapper: Wrapper }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -145,7 +178,9 @@ describe('useComments', () => {
       vi.mocked(api.deleteComment).mockResolvedValue(undefined);
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, { wrapper: Wrapper });
+      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();
@@ -172,7 +207,9 @@ describe('useComments', () => {
 
       vi.mocked(api.deleteComment).mockResolvedValue(undefined);
 
-      render(<DeleteCommentTest jurisdiction="Federal" id={67890} commentIndex={2} />, { wrapper: Wrapper });
+      render(<DeleteCommentTest jurisdiction="Federal" id={67890} commentIndex={2} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();
@@ -188,7 +225,9 @@ describe('useComments', () => {
       vi.mocked(api.deleteComment).mockRejectedValue(new Error('Failed to delete comment'));
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, { wrapper: Wrapper });
+      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();
@@ -203,7 +242,9 @@ describe('useComments', () => {
       );
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, { wrapper: Wrapper });
+      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();
@@ -216,7 +257,9 @@ describe('useComments', () => {
       vi.mocked(api.deleteComment).mockResolvedValue(undefined);
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={5} />, { wrapper: Wrapper });
+      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={5} />, {
+        wrapper: Wrapper,
+      });
 
       const button = page.getByTestId('delete-btn');
       await button.click();

@@ -8,12 +8,8 @@ function TestComponent() {
   const { globalSearchRef } = useGlobalSearch();
   return (
     <div>
-      <div data-testid="ref-exists">
-        {globalSearchRef ? 'Ref Object Exists' : 'No Ref Object'}
-      </div>
-      <div data-testid="ref-type">
-        {typeof globalSearchRef}
-      </div>
+      <div data-testid="ref-exists">{globalSearchRef ? 'Ref Object Exists' : 'No Ref Object'}</div>
+      <div data-testid="ref-type">{typeof globalSearchRef}</div>
     </div>
   );
 }
@@ -73,9 +69,9 @@ describe('GlobalSearchContext', () => {
 
       const error = page.getByTestId('error');
       await expect.element(error).toBeInTheDocument();
-      await expect.element(error).toHaveTextContent(
-        'useGlobalSearch must be used within GlobalSearchProvider'
-      );
+      await expect
+        .element(error)
+        .toHaveTextContent('useGlobalSearch must be used within GlobalSearchProvider');
     });
 
     it('should return context value when used inside provider', async () => {

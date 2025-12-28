@@ -16,10 +16,10 @@ export async function getUnit(jurisdiction: Jurisdiction, name: string): Promise
 export async function updateUnit(
   jurisdiction: Jurisdiction,
   name: string,
-  data: UnitUpdate,
+  data: UnitUpdate
 ): Promise<Unit> {
   return apiPut<Unit>(
     `/units/${encodeURIComponent(jurisdiction)}/${encodeURIComponent(name)}`,
-    data,
+    data
   );
 }

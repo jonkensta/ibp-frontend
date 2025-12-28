@@ -7,7 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useUpdateUnit } from '@/hooks';
 import type { Unit, ShippingMethod } from '@/types';
 
@@ -16,11 +22,56 @@ interface UnitFormProps {
 }
 
 const US_STATES = [
-  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
+  'AL',
+  'AK',
+  'AZ',
+  'AR',
+  'CA',
+  'CO',
+  'CT',
+  'DE',
+  'FL',
+  'GA',
+  'HI',
+  'ID',
+  'IL',
+  'IN',
+  'IA',
+  'KS',
+  'KY',
+  'LA',
+  'ME',
+  'MD',
+  'MA',
+  'MI',
+  'MN',
+  'MS',
+  'MO',
+  'MT',
+  'NE',
+  'NV',
+  'NH',
+  'NJ',
+  'NM',
+  'NY',
+  'NC',
+  'ND',
+  'OH',
+  'OK',
+  'OR',
+  'PA',
+  'RI',
+  'SC',
+  'SD',
+  'TN',
+  'TX',
+  'UT',
+  'VT',
+  'VA',
+  'WA',
+  'WV',
+  'WI',
+  'WY',
 ];
 
 const unitUpdateSchema = z.object({
@@ -109,13 +160,17 @@ export function UnitForm({ unit }: UnitFormProps) {
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input id="name" value={unit.name} disabled />
-              <p className="text-sm text-muted-foreground">Unit name cannot be changed to prevent breaking inmate associations</p>
+              <p className="text-sm text-muted-foreground">
+                Unit name cannot be changed to prevent breaking inmate associations
+              </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="jurisdiction">Jurisdiction</Label>
               <Input id="jurisdiction" value={unit.jurisdiction} disabled />
-              <p className="text-sm text-muted-foreground">Jurisdiction cannot be changed to prevent breaking inmate associations</p>
+              <p className="text-sm text-muted-foreground">
+                Jurisdiction cannot be changed to prevent breaking inmate associations
+              </p>
             </div>
           </div>
 
@@ -140,7 +195,10 @@ export function UnitForm({ unit }: UnitFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Select value={state} onValueChange={(value: string) => setValue('state', value, { shouldDirty: true })}>
+              <Select
+                value={state}
+                onValueChange={(value: string) => setValue('state', value, { shouldDirty: true })}
+              >
                 <SelectTrigger id="state">
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
@@ -172,7 +230,11 @@ export function UnitForm({ unit }: UnitFormProps) {
             <Label htmlFor="shipping_method">Shipping Method (Optional)</Label>
             <Select
               value={shippingMethod || 'none'}
-              onValueChange={(value: string) => setValue('shipping_method', value === 'none' ? null : (value as ShippingMethod), { shouldDirty: true })}
+              onValueChange={(value: string) =>
+                setValue('shipping_method', value === 'none' ? null : (value as ShippingMethod), {
+                  shouldDirty: true,
+                })
+              }
             >
               <SelectTrigger id="shipping_method">
                 <SelectValue placeholder="Select shipping method" />
@@ -183,10 +245,16 @@ export function UnitForm({ unit }: UnitFormProps) {
                 <SelectItem value="Individual">Individual</SelectItem>
               </SelectContent>
             </Select>
-            {errors.shipping_method && <p className="text-sm text-red-500">{errors.shipping_method.message}</p>}
+            {errors.shipping_method && (
+              <p className="text-sm text-red-500">{errors.shipping_method.message}</p>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={!isDirty || updateUnitMutation.isPending}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!isDirty || updateUnitMutation.isPending}
+          >
             {updateUnitMutation.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
         </form>

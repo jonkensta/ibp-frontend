@@ -32,9 +32,7 @@ export function UnitDetailPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{unit.name}</h1>
-      <p className="text-muted-foreground mb-6">
-        {unit.jurisdiction} Jurisdiction
-      </p>
+      <p className="text-muted-foreground mb-6">{unit.jurisdiction} Jurisdiction</p>
       <UnitForm unit={unit} />
     </div>
   );

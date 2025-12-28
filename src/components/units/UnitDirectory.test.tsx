@@ -9,7 +9,15 @@ window.fetch = mockFetch;
 
 // Mock UI Select components to avoid Radix/React conflicts
 vi.mock('@/components/ui/select', () => ({
-  Select: ({ value, onValueChange, children }: { value: string; onValueChange: (v: string) => void; children: React.ReactNode }) => (
+  Select: ({
+    value,
+    onValueChange,
+    children,
+  }: {
+    value: string;
+    onValueChange: (v: string) => void;
+    children: React.ReactNode;
+  }) => (
     <div data-select-value={value}>
       <button onClick={() => onValueChange && onValueChange('Texas')}>Change to Texas</button>
       <button onClick={() => onValueChange && onValueChange('Federal')}>Change to Federal</button>
