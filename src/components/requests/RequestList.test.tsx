@@ -103,17 +103,17 @@ describe('RequestList', () => {
     await expect.element(processed).toBeInTheDocument();
   });
 
-  it('should show download and delete buttons for each request', async () => {
+  it('should show print and delete buttons for each request', async () => {
     render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
     );
 
-    const downloadButtons = page.getByRole('button', { name: /download request label/i });
-    const downloads = await downloadButtons.all();
-    expect(downloads.length).toBe(3);
-    await expect.element(downloads[0]).toHaveAttribute('aria-label', 'Download request label');
+    const printButtons = page.getByRole('button', { name: /print request label/i });
+    const prints = await printButtons.all();
+    expect(prints.length).toBe(3);
+    await expect.element(prints[0]).toHaveAttribute('aria-label', 'Print request label');
 
     const deleteButtons = page.getByRole('button', { name: /delete request/i });
     const deletes = await deleteButtons.all();

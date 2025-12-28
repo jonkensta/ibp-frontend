@@ -7,7 +7,7 @@ import {
   useCreateRequest,
   useDeleteRequest,
   useValidateRequest,
-  downloadRequestLabel,
+  printRequestLabel,
 } from './useRequests';
 import * as api from '@/lib/api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -342,88 +342,56 @@ describe('useRequests', () => {
     });
   });
 
-  describe('downloadRequestLabel', () => {
-    let createElementSpy: MockInstance;
-    let appendChildSpy: MockInstance;
-    let removeChildSpy: MockInstance;
+  describe('printRequestLabel', () => {
     let createObjectURLSpy: MockInstance;
-    let revokeObjectURLSpy: MockInstance;
+    let openSpy: MockInstance;
+    const mockWindow = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn(),
+      },
+      print: vi.fn(),
+      close: vi.fn(),
+    };
 
     beforeEach(() => {
-      // Mock DOM APIs
-      const mockLink = {
-        href: '',
-        download: '',
-        click: vi.fn(),
-      };
-
-      createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockLink as unknown as HTMLAnchorElement);
-      appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as unknown as Node);
-      removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as unknown as Node);
-
-      // window.URL is available in browser mode
+      openSpy = vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
       createObjectURLSpy = vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:mock-url');
-      revokeObjectURLSpy = vi.spyOn(window.URL, 'revokeObjectURL').mockImplementation(() => {});
     });
 
     afterEach(() => {
-      createElementSpy.mockRestore();
-      appendChildSpy.mockRestore();
-      removeChildSpy.mockRestore();
+      openSpy.mockRestore();
       createObjectURLSpy.mockRestore();
-      revokeObjectURLSpy.mockRestore();
+      vi.clearAllMocks();
     });
 
-    it('should download label file', async () => {
+    it('should fetch blob and open print window', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
 
-      await downloadRequestLabel('Texas', 12345, 1);
+      await printRequestLabel('Texas', 12345, 1);
 
       expect(api.getRequestLabel).toHaveBeenCalledWith('Texas', 12345, 1);
       expect(createObjectURLSpy).toHaveBeenCalledWith(mockBlob);
-      expect(createElementSpy).toHaveBeenCalledWith('a');
+      expect(openSpy).toHaveBeenCalledWith('', '_blank', expect.stringContaining('width='));
     });
 
-    it('should set correct filename', async () => {
+    it('should write image content to print window', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
 
-      const mockLink = {
-        href: '',
-        download: '',
-        click: vi.fn(),
-      };
-      createElementSpy.mockReturnValue(mockLink);
+      await printRequestLabel('Texas', 12345, 1);
 
-      await downloadRequestLabel('Federal', 67890, 5);
-
-      expect(mockLink.download).toBe('label-Federal-67890-5.png');
+      expect(mockWindow.document.write).toHaveBeenCalledWith(
+        expect.stringContaining('<img src="blob:mock-url"')
+      );
+      expect(mockWindow.document.close).toHaveBeenCalled();
     });
 
-    it('should trigger download and cleanup', async () => {
-      const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
-      vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
-
-      const mockLink = {
-        href: '',
-        download: '',
-        click: vi.fn(),
-      };
-      createElementSpy.mockReturnValue(mockLink);
-
-      await downloadRequestLabel('Texas', 12345, 1);
-
-      expect(mockLink.click).toHaveBeenCalled();
-      expect(appendChildSpy).toHaveBeenCalledWith(mockLink);
-      expect(removeChildSpy).toHaveBeenCalledWith(mockLink);
-      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
-    });
-
-    it('should handle download errors', async () => {
+    it('should handle print errors', async () => {
       vi.mocked(api.getRequestLabel).mockRejectedValue(new Error('Failed to get label'));
 
-      await expect(downloadRequestLabel('Texas', 12345, 1)).rejects.toThrow('Failed to get label');
+      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow('Failed to get label');
     });
   });
 });

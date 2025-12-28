@@ -43,18 +43,33 @@ export function useValidateRequest(jurisdiction: Jurisdiction, inmateId: number)
   });
 }
 
-export async function downloadRequestLabel(
+export async function printRequestLabel(
   jurisdiction: Jurisdiction,
   inmateId: number,
   requestIndex: number
 ) {
   const blob = await getRequestLabel(jurisdiction, inmateId, requestIndex);
   const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `label-${jurisdiction}-${inmateId}-${requestIndex}.png`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+
+  const printWindow = window.open('', '_blank', 'width=800,height=600');
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Label</title>
+          <style>
+            body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+            img { max-width: 100%; max-height: 100%; object-fit: contain; }
+            @media print { body { -webkit-print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>
+          <img src="${url}" onload="window.print(); setTimeout(() => window.close(), 500);" />
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    // Revoke the object URL after a short delay to allow the image to load
+    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  }
 }

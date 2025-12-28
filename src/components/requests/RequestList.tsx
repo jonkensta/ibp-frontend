@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Trash2, Download } from 'lucide-react';
+import { Trash2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useDeleteRequest, downloadRequestLabel } from '@/hooks';
+import { useDeleteRequest, printRequestLabel } from '@/hooks';
 import type { Request, Jurisdiction } from '@/types';
 
 interface RequestListProps {
@@ -84,14 +84,14 @@ export function RequestList({
     }
   };
 
-  const handleDownload = async (requestIndex: number) => {
+  const handlePrint = async (requestIndex: number) => {
     try {
-      await downloadRequestLabel(jurisdiction, inmateId, requestIndex);
-      toast.success('Label downloaded');
+      await printRequestLabel(jurisdiction, inmateId, requestIndex);
+      // No success toast needed as print dialog opens
       onPrintLabel?.();
     } catch (error) {
-      console.error('Failed to download label:', error);
-      toast.error(`Failed to download label: ${error}`);
+      console.error('Failed to print label:', error);
+      toast.error(`Failed to print label: ${error}`);
     }
   };
 
@@ -154,10 +154,10 @@ export function RequestList({
                     }}
                     size="sm"
                     variant="outline"
-                    onClick={() => handleDownload(request.index)}
-                    aria-label="Download request label"
+                    onClick={() => handlePrint(request.index)}
+                    aria-label="Print request label"
                   >
-                    <Download className="h-4 w-4" />
+                    <Printer className="h-4 w-4" />
                   </Button>
                   <Button
                     size="sm"
