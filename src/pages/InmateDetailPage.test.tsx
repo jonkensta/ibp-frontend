@@ -118,11 +118,12 @@ describe('InmateDetailPage', () => {
   });
 
   it('should display generic error for non-Error failures', async () => {
-    mockFetch.mockResolvedValue(
-      new Response('Server Error', {
-        status: 500,
-        statusText: 'Internal Server Error',
-      })
+    mockFetch.mockImplementation(
+      async () =>
+        new Response('Server Error', {
+          status: 500,
+          statusText: 'Internal Server Error',
+        })
     );
 
     const Wrapper = createTestWrapper();
@@ -133,11 +134,12 @@ describe('InmateDetailPage', () => {
   });
 
   it('should display "not found" when inmate does not exist', async () => {
-    mockFetch.mockResolvedValue(
-      new Response('Not Found', {
-        status: 404,
-        statusText: 'Not Found',
-      })
+    mockFetch.mockImplementation(
+      async () =>
+        new Response('Not Found', {
+          status: 404,
+          statusText: 'Not Found',
+        })
     );
 
     const Wrapper = createTestWrapper();
