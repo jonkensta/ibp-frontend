@@ -76,7 +76,6 @@ export async function printRequestLabel(
           <img
             src="${url}"
             onload="
-              window.print();
               // Clean up URL after print dialog closes
               window.addEventListener('afterprint', () => {
                 window.URL.revokeObjectURL('${url}');
@@ -86,6 +85,9 @@ export async function printRequestLabel(
               setTimeout(() => {
                 window.URL.revokeObjectURL('${url}');
               }, 60000);
+              
+              // Trigger print
+              window.print();
             "
           />
         </body>
