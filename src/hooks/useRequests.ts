@@ -51,8 +51,15 @@ export async function printRequestLabel(
   const blob = await getRequestLabel(jurisdiction, inmateId, requestIndex);
   const url = window.URL.createObjectURL(blob);
 
-  const printWindow = window.open('', '_blank', 'width=800,height=600');
-  if (printWindow) {
+  const printWindow = window.open('', '_blank', 'width=1024,height=768,scrollbars=yes');
+
+  if (!printWindow) {
+    // Cleanup URL if popup was blocked
+    window.URL.revokeObjectURL(url);
+    throw new Error('Failed to open print window. Please allow popups for this site.');
+  }
+
+  try {
     printWindow.document.write(`
       <html>
         <head>
@@ -60,16 +67,35 @@ export async function printRequestLabel(
           <style>
             body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
             img { max-width: 100%; max-height: 100%; object-fit: contain; }
-            @media print { body { -webkit-print-color-adjust: exact; } }
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
           </style>
         </head>
         <body>
-          <img src="${url}" onload="window.print(); setTimeout(() => window.close(), 500);" />
+          <img
+            src="${url}"
+            onload="
+              window.print();
+              // Clean up URL after print dialog closes
+              window.addEventListener('afterprint', () => {
+                window.URL.revokeObjectURL('${url}');
+                setTimeout(() => window.close(), 100);
+              });
+              // Fallback cleanup if afterprint doesn't fire
+              setTimeout(() => {
+                window.URL.revokeObjectURL('${url}');
+              }, 60000);
+            "
+          />
         </body>
       </html>
     `);
     printWindow.document.close();
-    // Revoke the object URL after a short delay to allow the image to load
-    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    // Cleanup resources on error
+    window.URL.revokeObjectURL(url);
+    printWindow.close();
+    throw new Error('Failed to prepare print window');
   }
 }

@@ -344,6 +344,7 @@ describe('useRequests', () => {
 
   describe('printRequestLabel', () => {
     let createObjectURLSpy: MockInstance;
+    let revokeObjectURLSpy: MockInstance;
     let openSpy: MockInstance;
     const mockWindow = {
       document: {
@@ -357,11 +358,13 @@ describe('useRequests', () => {
     beforeEach(() => {
       openSpy = vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
       createObjectURLSpy = vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+      revokeObjectURLSpy = vi.spyOn(window.URL, 'revokeObjectURL').mockImplementation(() => {});
     });
 
     afterEach(() => {
       openSpy.mockRestore();
       createObjectURLSpy.mockRestore();
+      revokeObjectURLSpy.mockRestore();
       vi.clearAllMocks();
     });
 
@@ -382,9 +385,11 @@ describe('useRequests', () => {
 
       await printRequestLabel('Texas', 12345, 1);
 
-      expect(mockWindow.document.write).toHaveBeenCalledWith(
-        expect.stringContaining('<img src="blob:mock-url"')
-      );
+      const writeCall = mockWindow.document.write.mock.calls[0][0];
+      expect(writeCall).toContain('<img');
+      expect(writeCall).toContain('src="blob:mock-url"');
+      expect(writeCall).toContain('window.print()');
+      expect(writeCall).toContain('afterprint');
       expect(mockWindow.document.close).toHaveBeenCalled();
     });
 
@@ -392,6 +397,33 @@ describe('useRequests', () => {
       vi.mocked(api.getRequestLabel).mockRejectedValue(new Error('Failed to get label'));
 
       await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow('Failed to get label');
+    });
+
+    it('should handle popup blocker (window.open returns null)', async () => {
+      const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
+      vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
+      openSpy.mockReturnValue(null);
+
+      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow(
+        'Failed to open print window. Please allow popups for this site.'
+      );
+
+      // Should cleanup the blob URL
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
+    });
+
+    it('should handle document.write errors', async () => {
+      const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
+      vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
+      mockWindow.document.write = vi.fn().mockImplementation(() => {
+        throw new Error('Document write failed');
+      });
+
+      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow('Failed to prepare print window');
+
+      // Should cleanup resources on error
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
+      expect(mockWindow.close).toHaveBeenCalled();
     });
   });
 });

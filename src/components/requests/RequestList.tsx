@@ -87,7 +87,7 @@ export function RequestList({
   const handlePrint = async (requestIndex: number) => {
     try {
       await printRequestLabel(jurisdiction, inmateId, requestIndex);
-      // No success toast needed as print dialog opens
+      // Print dialog provides its own feedback, no toast needed
       onPrintLabel?.();
     } catch (error) {
       console.error('Failed to print label:', error);
