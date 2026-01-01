@@ -69,47 +69,30 @@ export async function printRequestLabel(
         <head>
           <title>Print Label</title>
           <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
-            body { display: flex; justify-content: center; align-items: center; }
-            canvas { max-width: 100%; max-height: 100%; }
-            @media print {
-              @page {
-                size: 85mm 32mm;
-                margin: 0;
-              }
-              * { margin: 0; padding: 0; }
-              html, body {
-                width: 85mm;
-                height: 32mm;
-                display: block;
-                overflow: hidden;
-              }
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color-adjust: exact;
-              }
-              canvas {
-                display: block;
-                width: 85mm !important;
-                height: 32mm !important;
-                page-break-inside: avoid;
-              }
+            @page {
+              size: 85mm 32mm;
+              margin: 0;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            img {
+              width: 85mm;
+              height: 32mm;
+              display: block;
+              /* Ensure the image fills the printable area */
+              position: absolute;
+              top: 0;
+              left: 0;
             }
           </style>
         </head>
         <body>
-          <canvas id="label"></canvas>
+          <img id="label-img" src="${base64}" />
           <script>
-            const img = new Image();
+            const img = document.getElementById('label-img');
             img.onload = function() {
-              const canvas = document.getElementById('label');
-              canvas.width = img.width;
-              canvas.height = img.height;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0);
-
               // Close window after print dialog closes
               window.addEventListener('afterprint', () => {
                 setTimeout(() => window.close(), 100);
@@ -118,7 +101,6 @@ export async function printRequestLabel(
               // Trigger print
               window.print();
             };
-            img.src = '${base64}';
           </script>
         </body>
       </html>
