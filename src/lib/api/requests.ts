@@ -5,9 +5,7 @@ import type {
   InmateWarnings,
   RequestValidationWarnings,
 } from '@/types';
-import { apiGet, apiPost, apiDelete } from './client';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import { apiGet, apiPost, apiDelete, API_BASE_URL } from './client';
 
 export async function createRequest(
   jurisdiction: Jurisdiction,
