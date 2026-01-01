@@ -148,21 +148,23 @@ export function RequestList({
                 </div>
 
                 <div className="flex gap-2">
-                  <Button
-                    ref={(el) => {
-                      if (el) {
-                        printButtonRefs.current.set(request.index, el);
-                      } else {
-                        printButtonRefs.current.delete(request.index);
-                      }
-                    }}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handlePrint(request.index)}
-                    aria-label="Print request label"
-                  >
-                    <Printer className="h-4 w-4" />
-                  </Button>
+                  {request.action !== 'Tossed' && (
+                    <Button
+                      ref={(el) => {
+                        if (el) {
+                          printButtonRefs.current.set(request.index, el);
+                        } else {
+                          printButtonRefs.current.delete(request.index);
+                        }
+                      }}
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handlePrint(request.index)}
+                      aria-label="Print request label"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"

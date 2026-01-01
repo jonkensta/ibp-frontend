@@ -103,22 +103,40 @@ describe('RequestList', () => {
     await expect.element(processed).toBeInTheDocument();
   });
 
-  it('should show print and delete buttons for each request', async () => {
+  it('should show print and delete buttons for filled requests', async () => {
     render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
     );
 
+    // Only filled requests should have print buttons (2 out of 3 requests)
     const printButtons = page.getByRole('button', { name: /print request label/i });
     const prints = await printButtons.all();
-    expect(prints.length).toBe(3);
+    expect(prints.length).toBe(2);
     await expect.element(prints[0]).toHaveAttribute('aria-label', 'Print request label');
 
+    // All requests should have delete buttons
     const deleteButtons = page.getByRole('button', { name: /delete request/i });
     const deletes = await deleteButtons.all();
     expect(deletes.length).toBe(3);
     await expect.element(deletes[0]).toHaveAttribute('aria-label', 'Delete request');
+  });
+
+  it('should not show print button for tossed requests', async () => {
+    render(
+      <QueryWrapper>
+        <RequestList requests={[mockRequests[1]]} jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    // Tossed request should not have a print button
+    const printButton = page.getByRole('button', { name: /print request label/i });
+    expect(await printButton.query()).toBeNull();
+
+    // But should still have a delete button
+    const deleteButton = page.getByRole('button', { name: /delete request/i });
+    await expect.element(deleteButton).toBeInTheDocument();
   });
 
   it('should open delete dialog when delete button is clicked', async () => {
