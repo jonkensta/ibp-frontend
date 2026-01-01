@@ -49,13 +49,17 @@ export async function printRequestLabel(
   requestIndex: number
 ) {
   const blob = await getRequestLabel(jurisdiction, inmateId, requestIndex);
-  const url = window.URL.createObjectURL(blob);
+
+  // Convert blob to base64 data URL (may work better with Firefox printing)
+  const base64 = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
 
   const printWindow = window.open('', '_blank', 'width=1024,height=768,scrollbars=yes');
 
   if (!printWindow) {
-    // Cleanup URL if popup was blocked
-    window.URL.revokeObjectURL(url);
     throw new Error('Failed to open print window. Please allow popups for this site.');
   }
 
@@ -65,38 +69,62 @@ export async function printRequestLabel(
         <head>
           <title>Print Label</title>
           <style>
-            body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-            img { max-width: 100%; max-height: 100%; object-fit: contain; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+            body { display: flex; justify-content: center; align-items: center; }
+            canvas { max-width: 100%; max-height: 100%; }
             @media print {
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              @page {
+                size: 85mm 32mm;
+                margin: 0;
+              }
+              * { margin: 0; padding: 0; }
+              html, body {
+                width: 85mm;
+                height: 32mm;
+                display: block;
+                overflow: hidden;
+              }
+              body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              canvas {
+                display: block;
+                width: 85mm !important;
+                height: 32mm !important;
+                page-break-inside: avoid;
+              }
             }
           </style>
         </head>
         <body>
-          <img
-            src="${url}"
-            onload="
-              // Clean up URL after print dialog closes
+          <canvas id="label"></canvas>
+          <script>
+            const img = new Image();
+            img.onload = function() {
+              const canvas = document.getElementById('label');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+
+              // Close window after print dialog closes
               window.addEventListener('afterprint', () => {
-                window.URL.revokeObjectURL('${url}');
                 setTimeout(() => window.close(), 100);
               });
-              // Fallback cleanup if afterprint doesn't fire
-              setTimeout(() => {
-                window.URL.revokeObjectURL('${url}');
-              }, 60000);
-              
+
               // Trigger print
               window.print();
-            "
-          />
+            };
+            img.src = '${base64}';
+          </script>
         </body>
       </html>
     `);
     printWindow.document.close();
   } catch {
-    // Cleanup resources on error
-    window.URL.revokeObjectURL(url);
     printWindow.close();
     throw new Error('Failed to prepare print window');
   }
