@@ -91,16 +91,33 @@ export async function printRequestLabel(
         <body>
           <img id="label-img" src="${base64}" />
           <script>
-            const img = document.getElementById('label-img');
-            img.onload = function() {
-              // Close window after print dialog closes
+            // Wait for window to be fully loaded, not just the image
+            window.addEventListener('load', () => {
+              // Set up handlers before printing
+              let printCompleted = false;
+
+              window.addEventListener('beforeprint', () => {
+                console.log('Print dialog opening');
+              });
+
               window.addEventListener('afterprint', () => {
-                setTimeout(() => window.close(), 100);
+                console.log('Print dialog closed');
+                printCompleted = true;
+                // Keep window open longer to ensure print job completes
+                setTimeout(() => window.close(), 1000);
               });
 
               // Trigger print
               window.print();
-            };
+
+              // Fallback: if afterprint doesn't fire, close after timeout
+              setTimeout(() => {
+                if (!printCompleted) {
+                  console.log('Print timeout - closing window');
+                  window.close();
+                }
+              }, 30000); // 30 second timeout
+            });
           </script>
         </body>
       </html>

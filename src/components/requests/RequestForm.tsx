@@ -210,7 +210,7 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
   return (
     <>
       <div className="space-y-3">
-        <h3 className="font-semibold">Add New Request</h3>
+        <h3 className="font-semibold text-sm">Add New Request</h3>
 
         {createRequestMutation.isError && (
           <Alert variant="destructive">
