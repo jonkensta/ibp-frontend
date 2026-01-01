@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { InmateProfile, InmateProfileSkeleton } from '@/components/inmates';
 import { RequestList, RequestForm, RequestListSkeleton } from '@/components/requests';
 import { CommentList, CommentForm, CommentListSkeleton } from '@/components/comments';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 import { useInmate, useInmateWarnings } from '@/hooks';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import type { Jurisdiction } from '@/types';
@@ -11,11 +13,17 @@ import type { Jurisdiction } from '@/types';
 export function InmateDetailPage() {
   const { jurisdiction, id } = useParams<{ jurisdiction: string; id: string }>();
   const [focusRequestIndex, setFocusRequestIndex] = useState<number | null>(null);
+  const [isFirefox, setIsFirefox] = useState(false);
   const { globalSearchRef } = useGlobalSearch();
 
   const inmateId = id ? parseInt(id, 10) : 0;
   const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
   const { data: warnings } = useInmateWarnings(jurisdiction as Jurisdiction, inmateId);
+
+  useEffect(() => {
+    // Detect Firefox browser
+    setIsFirefox(navigator.userAgent.toLowerCase().includes('firefox'));
+  }, []);
 
   const handleRequestCreated = (requestIndex: number, action: 'Filled' | 'Tossed') => {
     if (action === 'Tossed') {
@@ -121,6 +129,16 @@ export function InmateDetailPage() {
           <CommentForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
         </CommentList>
       </div>
+
+      {isFirefox && (
+        <Alert variant="warning" className="border-yellow-600 bg-yellow-50">
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-800">
+            Label printing may not work correctly in Firefox. For best results, use Chrome or
+            Chromium for printing labels.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
