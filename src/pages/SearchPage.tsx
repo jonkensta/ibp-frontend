@@ -41,15 +41,6 @@ export function SearchPage() {
     setSearchParams({ q: newQuery });
   };
 
-  const trimmedQuery = query.trim();
-  const queryLooksIncomplete =
-    trimmedQuery.length > 0 &&
-    !trimmedQuery.includes(',') &&
-    !/^\d{8}$/.test(trimmedQuery) &&
-    trimmedQuery.split(/\s+/).length < 2;
-  const showFormatHint =
-    !isLoading && queryLooksIncomplete && Boolean(error || (data && data.inmates.length === 0));
-
   return (
     <div className="space-y-6">
       <div>
@@ -79,13 +70,6 @@ export function SearchPage() {
           </p>
           <InmateSearchResults inmates={data.inmates} errors={data.errors} query={query} />
         </div>
-      )}
-
-      {showFormatHint && (
-        <p className="text-sm text-muted-foreground">
-          Hint: enter a first and last name &mdash; &ldquo;John Smith&rdquo; or &ldquo;Smith,
-          John&rdquo; &mdash; or an 8-digit ID number.
-        </p>
       )}
     </div>
   );

@@ -271,41 +271,6 @@ describe('SearchPage', () => {
     await expect.element(resultsText).toBeInTheDocument();
   });
 
-  it('should show a format hint when a single-word query returns no results', async () => {
-    mockSearchParams = new URLSearchParams('q=Smith');
-    mockFetch.mockResolvedValue(
-      new Response(JSON.stringify({ inmates: [], errors: [] }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    );
-
-    const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
-
-    const hint = page.getByText(/enter a first and last name/i);
-    await expect.element(hint).toBeInTheDocument();
-  });
-
-  it('should not show a format hint for a well-formed query with no results', async () => {
-    mockSearchParams = new URLSearchParams('q=Smith, John');
-    mockFetch.mockResolvedValue(
-      new Response(JSON.stringify({ inmates: [], errors: [] }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    );
-
-    const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
-
-    const resultsText = page.getByText(/found 0 results/i);
-    await expect.element(resultsText).toBeInTheDocument();
-
-    const hint = page.getByText(/enter a first and last name/i);
-    await expect.element(hint).not.toBeInTheDocument();
-  });
-
   it('should update URL params when search is performed', async () => {
     mockFetch.mockResolvedValue(
       new Response(JSON.stringify({ inmates: [], errors: [] }), {
