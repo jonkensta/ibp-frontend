@@ -10,6 +10,7 @@ import {
   printRequestLabel,
 } from './useRequests';
 import * as api from '@/lib/api';
+import * as printServer from '@/lib/printServer';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type { Jurisdiction, RequestCreate } from '@/types';
@@ -21,6 +22,11 @@ vi.mock('@/lib/api', () => ({
   deleteRequest: vi.fn(),
   validateRequest: vi.fn(),
   getRequestLabel: vi.fn(),
+}));
+
+// Mock the print server client
+vi.mock('@/lib/printServer', () => ({
+  printLabelViaPrintServer: vi.fn(),
 }));
 
 // Test components
@@ -415,79 +421,108 @@ describe('useRequests', () => {
   });
 
   describe('printRequestLabel', () => {
-    let createObjectURLSpy: MockInstance;
-    let revokeObjectURLSpy: MockInstance;
     let openSpy: MockInstance;
-    const mockWindow = {
+    let mockWindow: {
       document: {
-        write: vi.fn(),
-        close: vi.fn(),
-      },
-      print: vi.fn(),
-      close: vi.fn(),
+        write: ReturnType<typeof vi.fn>;
+        close: ReturnType<typeof vi.fn>;
+      };
+      print: ReturnType<typeof vi.fn>;
+      close: ReturnType<typeof vi.fn>;
     };
 
     beforeEach(() => {
+      mockWindow = {
+        document: {
+          write: vi.fn(),
+          close: vi.fn(),
+        },
+        print: vi.fn(),
+        close: vi.fn(),
+      };
       openSpy = vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
-      createObjectURLSpy = vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:mock-url');
-      revokeObjectURLSpy = vi.spyOn(window.URL, 'revokeObjectURL').mockImplementation(() => {});
     });
 
     afterEach(() => {
       openSpy.mockRestore();
-      createObjectURLSpy.mockRestore();
-      revokeObjectURLSpy.mockRestore();
       vi.clearAllMocks();
     });
 
-    it('should fetch blob and open print window', async () => {
+    it('should print via print server without opening a window', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
+      vi.mocked(printServer.printLabelViaPrintServer).mockResolvedValue(undefined);
 
-      await printRequestLabel('Texas', 12345, 1);
+      const result = await printRequestLabel('Texas', 12345, 1);
 
+      expect(result).toEqual({ method: 'print-server' });
       expect(api.getRequestLabel).toHaveBeenCalledWith('Texas', 12345, 1);
-      expect(createObjectURLSpy).toHaveBeenCalledWith(mockBlob);
+      expect(printServer.printLabelViaPrintServer).toHaveBeenCalledWith(mockBlob);
+      expect(openSpy).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to a print window when the print server fails', async () => {
+      const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
+      vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
+      vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
+        new Error('Print server is unreachable')
+      );
+
+      const result = await printRequestLabel('Texas', 12345, 1);
+
+      expect(result).toEqual({
+        method: 'browser',
+        printServerError: 'Print server is unreachable',
+      });
       expect(openSpy).toHaveBeenCalledWith('', '_blank', expect.stringContaining('width='));
     });
 
-    it('should write image content to print window', async () => {
+    it('should write image content to the fallback print window', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
+      vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
+        new Error('Print server is unreachable')
+      );
 
       await printRequestLabel('Texas', 12345, 1);
 
       const writeCall = mockWindow.document.write.mock.calls[0][0];
       expect(writeCall).toContain('<img');
-      expect(writeCall).toContain('src="blob:mock-url"');
+      expect(writeCall).toContain('src="data:image/png;base64');
       expect(writeCall).toContain('window.print()');
       expect(writeCall).toContain('afterprint');
       expect(mockWindow.document.close).toHaveBeenCalled();
     });
 
-    it('should handle print errors', async () => {
+    it('should handle label fetch errors without trying to print', async () => {
       vi.mocked(api.getRequestLabel).mockRejectedValue(new Error('Failed to get label'));
 
       await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow('Failed to get label');
+
+      expect(printServer.printLabelViaPrintServer).not.toHaveBeenCalled();
+      expect(openSpy).not.toHaveBeenCalled();
     });
 
     it('should handle popup blocker (window.open returns null)', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
+      vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
+        new Error('Print server is unreachable')
+      );
       openSpy.mockReturnValue(null);
 
       await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow(
         'Failed to open print window. Please allow popups for this site.'
       );
-
-      // Should cleanup the blob URL
-      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
     });
 
     it('should handle document.write errors', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
-      mockWindow.document.write = vi.fn().mockImplementation(() => {
+      vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
+        new Error('Print server is unreachable')
+      );
+      mockWindow.document.write.mockImplementation(() => {
         throw new Error('Document write failed');
       });
 
@@ -496,7 +531,6 @@ describe('useRequests', () => {
       );
 
       // Should cleanup resources on error
-      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
       expect(mockWindow.close).toHaveBeenCalled();
     });
   });

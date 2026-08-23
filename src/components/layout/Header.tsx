@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { GlobalSearch } from './GlobalSearch';
+import { PrintServerSettings } from './PrintServerSettings';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 
 const navItems = [
@@ -33,6 +34,7 @@ export function Header() {
           ))}
         </nav>
         <GlobalSearch ref={globalSearchRef} />
+        <PrintServerSettings />
       </div>
     </header>
   );

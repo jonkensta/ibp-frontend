@@ -88,8 +88,15 @@ export function RequestList({
 
   const handlePrint = async (requestIndex: number) => {
     try {
-      await printRequestLabel(jurisdiction, inmateId, requestIndex);
-      // Print dialog provides its own feedback, no toast needed
+      const result = await printRequestLabel(jurisdiction, inmateId, requestIndex);
+      if (result.method === 'print-server') {
+        toast.success('Label sent to the label printer');
+      } else {
+        // Browser print dialog provides its own feedback; just explain why it appeared
+        toast.message('Print server unavailable — using the browser print dialog', {
+          description: result.printServerError,
+        });
+      }
       onPrintLabel?.();
     } catch (error) {
       console.error('Failed to print label:', error);

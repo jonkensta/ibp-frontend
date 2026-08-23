@@ -6,6 +6,7 @@ import {
   getInmateWarnings,
   validateRequest,
 } from '@/lib/api';
+import { printLabelViaPrintServer } from '@/lib/printServer';
 import type { Jurisdiction, RequestCreate } from '@/types';
 
 export function useInmateWarnings(jurisdiction: Jurisdiction, inmateId: number) {
@@ -43,13 +44,40 @@ export function useValidateRequest(jurisdiction: Jurisdiction, inmateId: number)
   });
 }
 
+export type PrintLabelResult =
+  | { method: 'print-server' }
+  | { method: 'browser'; printServerError: string };
+
+/**
+ * Print a request label.
+ *
+ * First tries the print server for silent one-click printing; if it is
+ * unreachable or errors, falls back to opening the browser print dialog.
+ * The returned result says which path was used so callers can surface
+ * appropriate feedback.
+ */
 export async function printRequestLabel(
   jurisdiction: Jurisdiction,
   inmateId: number,
   requestIndex: number
-) {
+): Promise<PrintLabelResult> {
   const blob = await getRequestLabel(jurisdiction, inmateId, requestIndex);
 
+  let printServerError: string;
+  try {
+    await printLabelViaPrintServer(blob);
+    return { method: 'print-server' };
+  } catch (error) {
+    printServerError = error instanceof Error ? error.message : String(error);
+    console.warn('Print server unavailable, falling back to browser printing:', error);
+  }
+
+  await printLabelInBrowser(blob);
+  return { method: 'browser', printServerError };
+}
+
+/** Open a popup window and print the label via the browser print dialog. */
+async function printLabelInBrowser(blob: Blob): Promise<void> {
   // Convert blob to base64 data URL (may work better with Firefox printing)
   const base64 = await new Promise<string>((resolve) => {
     const reader = new FileReader();
