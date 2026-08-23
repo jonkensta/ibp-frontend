@@ -10,6 +10,7 @@ window.fetch = mockFetch;
 const mockNavigate = vi.fn();
 const mockSetSearchParams = vi.fn();
 let mockSearchParams = new URLSearchParams('q=John');
+let mockLocationState: unknown = null;
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -17,6 +18,13 @@ vi.mock('react-router-dom', async () => {
     ...actual,
     useNavigate: () => mockNavigate,
     useSearchParams: () => [mockSearchParams, mockSetSearchParams],
+    useLocation: () => ({
+      pathname: '/search',
+      search: `?${mockSearchParams.toString()}`,
+      hash: '',
+      state: mockLocationState,
+      key: 'test',
+    }),
   };
 });
 
@@ -25,6 +33,7 @@ describe('SearchPage', () => {
     vi.clearAllMocks();
     mockFetch.mockReset();
     mockSearchParams = new URLSearchParams('q=John');
+    mockLocationState = null;
   });
 
   it('should render page title and description', async () => {
@@ -128,8 +137,68 @@ describe('SearchPage', () => {
     // Wait a bit for the redirect check
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Should navigate to inmate detail page automatically
-    expect(mockNavigate).toHaveBeenCalledWith('/inmates/Texas/12345', { replace: true });
+    // Should navigate to inmate detail page automatically, carrying the query
+    expect(mockNavigate).toHaveBeenCalledWith('/inmates/Texas/12345', {
+      replace: true,
+      state: { searchQuery: 'John' },
+    });
+  });
+
+  it('should not auto-redirect on single result when returning from a detail page', async () => {
+    const mockInmates = [
+      {
+        jurisdiction: 'Texas',
+        id: 12345,
+        first_name: 'John',
+        last_name: 'Doe',
+        unit: 'Test Unit',
+        url: null,
+      },
+    ];
+
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({ inmates: mockInmates, errors: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+    mockLocationState = { fromInmateDetail: true };
+
+    const Wrapper = createWrapper();
+    render(<SearchPage />, { wrapper: Wrapper });
+
+    // The single result should be shown instead of redirecting
+    const resultsText = page.getByText(/found 1 result/i);
+    await expect.element(resultsText).toBeInTheDocument();
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('should run a new search when the URL query changes', async () => {
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({ inmates: [], errors: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+    const Wrapper = createWrapper();
+    const { rerender } = await render(<SearchPage />, { wrapper: Wrapper });
+
+    const searchInput = page.getByRole('textbox');
+    await expect.element(searchInput).toHaveValue('John');
+
+    // Simulate a header search updating the URL while already on /search
+    mockSearchParams = new URLSearchParams('q=Jane Smith');
+    await rerender(<SearchPage />);
+
+    await expect.element(searchInput).toHaveValue('Jane Smith');
+
+    await vi.waitFor(() => {
+      const calledUrls = mockFetch.mock.calls.map((call) => String(call[0]));
+      expect(calledUrls.some((url) => url.includes('Jane%20Smith'))).toBe(true);
+    });
   });
 
   it('should display provider errors message', async () => {
@@ -200,6 +269,41 @@ describe('SearchPage', () => {
 
     const resultsText = page.getByText(/found 0 results/i);
     await expect.element(resultsText).toBeInTheDocument();
+  });
+
+  it('should show a format hint when a single-word query returns no results', async () => {
+    mockSearchParams = new URLSearchParams('q=Smith');
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({ inmates: [], errors: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+    const Wrapper = createWrapper();
+    render(<SearchPage />, { wrapper: Wrapper });
+
+    const hint = page.getByText(/enter a first and last name/i);
+    await expect.element(hint).toBeInTheDocument();
+  });
+
+  it('should not show a format hint for a well-formed query with no results', async () => {
+    mockSearchParams = new URLSearchParams('q=Smith, John');
+    mockFetch.mockResolvedValue(
+      new Response(JSON.stringify({ inmates: [], errors: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+    const Wrapper = createWrapper();
+    render(<SearchPage />, { wrapper: Wrapper });
+
+    const resultsText = page.getByText(/found 0 results/i);
+    await expect.element(resultsText).toBeInTheDocument();
+
+    const hint = page.getByText(/enter a first and last name/i);
+    await expect.element(hint).not.toBeInTheDocument();
   });
 
   it('should update URL params when search is performed', async () => {

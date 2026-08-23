@@ -14,6 +14,15 @@ export function InmateSearchForm({
   initialQuery = '',
 }: InmateSearchFormProps) {
   const [query, setQuery] = useState(initialQuery);
+  const [lastInitialQuery, setLastInitialQuery] = useState(initialQuery);
+
+  // Re-sync the input when the query changes from outside (e.g. a header
+  // search submitted while already on the search page). Local typing is left
+  // alone because it only changes `query`, not `initialQuery`.
+  if (initialQuery !== lastInitialQuery) {
+    setLastInitialQuery(initialQuery);
+    setQuery(initialQuery);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

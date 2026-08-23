@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   InmateSearchForm,
   InmateSearchResults,
@@ -10,23 +10,45 @@ import { useSearchInmates } from '@/hooks';
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const initialQuery = searchParams.get('q') || '';
-  const [query, setQuery] = useState(initialQuery);
+  const location = useLocation();
+
+  // Derive the query from the URL so header searches submitted while already
+  // on /search always run (the URL is the single source of truth).
+  const query = searchParams.get('q') || '';
+
+  // Set when the user navigated here via "Back to search" from a detail page.
+  const fromInmateDetail = Boolean(
+    (location.state as { fromInmateDetail?: boolean } | null)?.fromInmateDetail
+  );
 
   const { data, isLoading, error } = useSearchInmates(query);
 
-  // Auto-redirect on single result
+  // Auto-redirect on single result — but not when returning from a detail
+  // page, which would immediately bounce the user back to the page they left.
   useEffect(() => {
-    if (data && data.inmates.length === 1 && !isLoading) {
+    if (data && data.inmates.length === 1 && !isLoading && !fromInmateDetail) {
       const inmate = data.inmates[0];
-      navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, { replace: true });
+      navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, {
+        replace: true,
+        state: { searchQuery: query },
+      });
     }
-  }, [data, isLoading, navigate]);
+  }, [data, isLoading, navigate, fromInmateDetail, query]);
 
   const handleSearch = (newQuery: string) => {
-    setQuery(newQuery);
+    // setSearchParams navigates without state, clearing fromInmateDetail so a
+    // fresh search can auto-redirect again.
     setSearchParams({ q: newQuery });
   };
+
+  const trimmedQuery = query.trim();
+  const queryLooksIncomplete =
+    trimmedQuery.length > 0 &&
+    !trimmedQuery.includes(',') &&
+    !/^\d{8}$/.test(trimmedQuery) &&
+    trimmedQuery.split(/\s+/).length < 2;
+  const showFormatHint =
+    !isLoading && queryLooksIncomplete && Boolean(error || (data && data.inmates.length === 0));
 
   return (
     <div className="space-y-6">
@@ -55,8 +77,15 @@ export function SearchPage() {
             Found {data.inmates.length} result{data.inmates.length !== 1 ? 's' : ''}
             {data.errors.length > 0 && ' (partial results due to provider errors)'}
           </p>
-          <InmateSearchResults inmates={data.inmates} errors={data.errors} />
+          <InmateSearchResults inmates={data.inmates} errors={data.errors} query={query} />
         </div>
+      )}
+
+      {showFormatHint && (
+        <p className="text-sm text-muted-foreground">
+          Hint: enter a first and last name &mdash; &ldquo;John Smith&rdquo; or &ldquo;Smith,
+          John&rdquo; &mdash; or an 8-digit ID number.
+        </p>
       )}
     </div>
   );

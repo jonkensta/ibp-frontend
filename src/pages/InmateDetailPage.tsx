@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { InmateProfile, InmateProfileSkeleton } from '@/components/inmates';
 import { RequestList, RequestForm, RequestListSkeleton } from '@/components/requests';
 import { CommentList, CommentForm, CommentListSkeleton } from '@/components/comments';
@@ -15,6 +15,14 @@ export function InmateDetailPage() {
   const [focusRequestIndex, setFocusRequestIndex] = useState<number | null>(null);
   const [isFirefox, setIsFirefox] = useState(false);
   const { globalSearchRef } = useGlobalSearch();
+  const location = useLocation();
+
+  // Query carried from the search page (or a single-result auto-redirect) so
+  // "Back to search" restores the results. `fromInmateDetail` tells the search
+  // page not to auto-redirect straight back here on a single-result query.
+  const searchQuery = (location.state as { searchQuery?: string } | null)?.searchQuery;
+  const backToSearch = searchQuery ? `/search?q=${encodeURIComponent(searchQuery)}` : '/search';
+  const backToSearchState = { fromInmateDetail: true };
 
   const inmateId = id ? parseInt(id, 10) : 0;
   const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
@@ -49,7 +57,11 @@ export function InmateDetailPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <Link to="/search" className="text-sm text-muted-foreground hover:underline">
+            <Link
+              to={backToSearch}
+              state={backToSearchState}
+              className="text-sm text-muted-foreground hover:underline"
+            >
               &larr; Back to search
             </Link>
             <Skeleton className="h-8 w-64 mt-2" />
@@ -73,7 +85,7 @@ export function InmateDetailPage() {
             {error instanceof Error ? error.message : 'Failed to load inmate information.'}
           </p>
         </div>
-        <Link to="/search" className="text-primary underline">
+        <Link to={backToSearch} state={backToSearchState} className="text-primary underline">
           Back to search
         </Link>
       </div>
@@ -84,7 +96,7 @@ export function InmateDetailPage() {
     return (
       <div className="space-y-4">
         <p className="text-muted-foreground">Inmate not found.</p>
-        <Link to="/search" className="text-primary underline">
+        <Link to={backToSearch} state={backToSearchState} className="text-primary underline">
           Back to search
         </Link>
       </div>
@@ -95,7 +107,11 @@ export function InmateDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Link to="/search" className="text-sm text-muted-foreground hover:underline">
+          <Link
+            to={backToSearch}
+            state={backToSearchState}
+            className="text-sm text-muted-foreground hover:underline"
+          >
             &larr; Back to search
           </Link>
           <h1 className="mt-2 text-2xl font-bold">

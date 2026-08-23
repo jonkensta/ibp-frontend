@@ -35,7 +35,10 @@ export const GlobalSearch = forwardRef<GlobalSearchRef>((_props, ref) => {
   useEffect(() => {
     if (data && data.inmates.length === 1 && debouncedQuery) {
       const inmate = data.inmates[0];
-      navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, { replace: true });
+      navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, {
+        replace: true,
+        state: { searchQuery: debouncedQuery },
+      });
       setTimeout(() => {
         setQuery('');
         setDebouncedQuery('');

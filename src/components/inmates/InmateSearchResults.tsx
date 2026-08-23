@@ -7,9 +7,12 @@ import type { InmateSearchResult } from '@/types';
 interface InmateSearchResultsProps {
   inmates: InmateSearchResult[];
   errors: string[];
+  /** The search query that produced these results, carried to the detail page
+   *  so its "Back to search" link can restore the results. */
+  query?: string;
 }
 
-export function InmateSearchResults({ inmates, errors }: InmateSearchResultsProps) {
+export function InmateSearchResults({ inmates, errors, query }: InmateSearchResultsProps) {
   return (
     <div className="space-y-4">
       {errors.length > 0 && (
@@ -39,6 +42,7 @@ export function InmateSearchResults({ inmates, errors }: InmateSearchResultsProp
             <Link
               key={`${inmate.jurisdiction}-${inmate.id}`}
               to={`/inmates/${encodeURIComponent(inmate.jurisdiction)}/${inmate.id}`}
+              state={query ? { searchQuery: query } : undefined}
             >
               <Card className="transition-colors hover:bg-accent">
                 <CardContent className="flex items-center justify-between p-4">

@@ -42,11 +42,30 @@ function getCookie(name: string): string | null {
   return null;
 }
 
-function setCookie(name: string, value: string, days: number = 365) {
-  const date = new Date();
-  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-  const expires = `expires=${date.toUTCString()}`;
+// The remembered postmark date is only good for the current working session:
+// the cookie expires at the end of the day and records the day it was saved,
+// so a volunteer never inherits a stale date from a previous session.
+function setCookie(name: string, value: string) {
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+  const expires = `expires=${endOfDay.toUTCString()}`;
   document.cookie = `${name}=${value};${expires};path=/`;
+}
+
+function savePostmarkDate(date: Date) {
+  const savedOn = format(new Date(), 'yyyy-MM-dd');
+  setCookie(POSTMARK_DATE_COOKIE, encodeURIComponent(`${date.toISOString()}|${savedOn}`));
+}
+
+function loadPostmarkDateSavedToday(): Date | null {
+  const raw = getCookie(POSTMARK_DATE_COOKIE);
+  if (!raw) return null;
+  const [savedDate, savedOn] = decodeURIComponent(raw).split('|');
+  // Only pre-fill a date that was saved today (older-format cookies without a
+  // save date are ignored as stale).
+  if (savedOn !== format(new Date(), 'yyyy-MM-dd')) return null;
+  const date = new Date(savedDate);
+  return isNaN(date.getTime()) ? null : date;
 }
 
 export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: RequestFormProps) {
@@ -74,14 +93,11 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
 
   const datePostmarked = useWatch({ control, name: 'date_postmarked' });
 
-  // Load postmark date from cookie on mount
+  // Load postmark date from cookie on mount, only if it was saved today
   useEffect(() => {
-    const savedDate = getCookie(POSTMARK_DATE_COOKIE);
+    const savedDate = loadPostmarkDateSavedToday();
     if (savedDate) {
-      const date = new Date(savedDate);
-      if (!isNaN(date.getTime())) {
-        setValue('date_postmarked', date);
-      }
+      setValue('date_postmarked', savedDate);
     }
   }, [setValue]);
 
@@ -108,8 +124,8 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
       return;
     }
 
-    // Save postmark date to cookie
-    setCookie(POSTMARK_DATE_COOKIE, datePostmarked.toISOString());
+    // Save postmark date to cookie (valid for the rest of today only)
+    savePostmarkDate(datePostmarked);
 
     const requestData = {
       date_postmarked: format(datePostmarked, 'yyyy-MM-dd'),
@@ -289,10 +305,15 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
             <Button variant="outline" onClick={() => setShowWarningDialog(false)}>
               Cancel
             </Button>
-            <Button ref={changeTossButtonRef} variant="secondary" onClick={handleChangeTossed}>
+            <Button variant="secondary" onClick={handleConfirmWithWarnings}>
+              Proceed with Fill
+            </Button>
+            {/* "Change to Toss" is the deliberate safer default: it receives
+                both keyboard focus and primary styling so Enter and the visual
+                affordance agree. */}
+            <Button ref={changeTossButtonRef} onClick={handleChangeTossed}>
               Change to Toss
             </Button>
-            <Button onClick={handleConfirmWithWarnings}>Proceed with Fill</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -86,6 +86,48 @@ describe('RequestForm', () => {
     await expect.element(tossButton).not.toBeDisabled();
   });
 
+  it('should pre-fill postmark date remembered earlier today', async () => {
+    // Saved date with a save-day marker of "today" (system time is mocked)
+    document.cookie =
+      'ibp_last_postmark_date=' + encodeURIComponent('2024-12-24T18:00:00Z|2024-12-25') + ';path=/';
+
+    render(
+      <QueryWrapper>
+        <RequestForm jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    const datePicker = page.getByText('Dec 24, 2024');
+    await expect.element(datePicker).toBeInTheDocument();
+  });
+
+  it('should not pre-fill postmark date remembered on a previous day', async () => {
+    document.cookie =
+      'ibp_last_postmark_date=' + encodeURIComponent('2024-12-20T18:00:00Z|2024-12-20') + ';path=/';
+
+    render(
+      <QueryWrapper>
+        <RequestForm jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    const datePicker = page.getByRole('button', { name: /pick a date/i });
+    await expect.element(datePicker).toBeInTheDocument();
+  });
+
+  it('should ignore a legacy cookie without a save-day marker', async () => {
+    document.cookie = 'ibp_last_postmark_date=2024-12-24T18:00:00Z;path=/';
+
+    render(
+      <QueryWrapper>
+        <RequestForm jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    const datePicker = page.getByRole('button', { name: /pick a date/i });
+    await expect.element(datePicker).toBeInTheDocument();
+  });
+
   it('should show validation warnings when filling', async () => {
     // Mock validation to return warnings
     vi.mocked(api.validateRequest).mockResolvedValue({

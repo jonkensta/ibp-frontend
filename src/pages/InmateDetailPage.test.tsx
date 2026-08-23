@@ -11,12 +11,20 @@ window.fetch = mockFetch;
 
 let mockJurisdiction = 'Texas';
 let mockId = '12345';
+let mockLocationState: unknown = null;
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
     useParams: () => ({ jurisdiction: mockJurisdiction, id: mockId }),
+    useLocation: () => ({
+      pathname: `/inmates/${mockJurisdiction}/${mockId}`,
+      search: '',
+      hash: '',
+      state: mockLocationState,
+      key: 'test',
+    }),
   };
 });
 
@@ -84,6 +92,7 @@ describe('InmateDetailPage', () => {
     mockFetch.mockReset();
     mockJurisdiction = 'Texas';
     mockId = '12345';
+    mockLocationState = null;
   });
 
   it('should display loading skeletons while fetching data', async () => {
@@ -329,6 +338,33 @@ describe('InmateDetailPage', () => {
 
     const element = await backLink.query();
     expect(element?.getAttribute('href')).toBe('/search');
+  });
+
+  it('should preserve the originating search query in the back link', async () => {
+    mockLocationState = { searchQuery: 'John Smith' };
+
+    mockFetch
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockInmate), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockWarnings), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+
+    const Wrapper = createTestWrapper();
+    render(<InmateDetailPage />, { wrapper: Wrapper });
+
+    const backLink = page.getByText(/back to search/i);
+    await expect.element(backLink).toBeInTheDocument();
+
+    const element = await backLink.query();
+    expect(element?.getAttribute('href')).toBe('/search?q=John%20Smith');
   });
 
   it('should render RequestForm and CommentForm', async () => {
