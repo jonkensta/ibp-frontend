@@ -35,7 +35,10 @@ export function InmateSearchResults({ inmates, errors, query }: InmateSearchResu
       )}
 
       {inmates.length === 0 ? (
-        <p className="text-muted-foreground">No inmates found.</p>
+        <p className="text-muted-foreground">
+          No inmates found. Check the spelling, or search by the 8-digit ID
+          number.
+        </p>
       ) : (
         <div className="grid gap-3">
           {inmates.map((inmate) => (
