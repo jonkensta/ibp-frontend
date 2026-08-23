@@ -84,7 +84,7 @@ const unitUpdateSchema = z.object({
     .min(5, { message: 'Zipcode must be at least 5 characters' })
     .max(12, { message: 'Zipcode must be at most 12 characters' }),
   url: z.string().url({ message: 'Must be a valid URL' }).optional().or(z.literal('')),
-  shipping_method: z.enum(['Box', 'Individual']).nullable().optional(),
+  shipping_method: z.enum(['Box', 'Individual', 'Federal Tub']).nullable().optional(),
 });
 
 type UnitFormData = z.infer<typeof unitUpdateSchema>;
@@ -243,6 +243,7 @@ export function UnitForm({ unit }: UnitFormProps) {
                 <SelectItem value="none">None</SelectItem>
                 <SelectItem value="Box">Box</SelectItem>
                 <SelectItem value="Individual">Individual</SelectItem>
+                <SelectItem value="Federal Tub">Federal Tub</SelectItem>
               </SelectContent>
             </Select>
             {errors.shipping_method && (
