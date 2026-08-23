@@ -55,12 +55,23 @@ export function InmateProfile({ inmate, warnings }: InmateProfileProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Unit</p>
-            <Link
-              to={`/units/${encodeURIComponent(inmate.unit.jurisdiction)}/${encodeURIComponent(inmate.unit.name)}`}
-              className="font-medium text-primary underline"
-            >
-              {inmate.unit.name}
-            </Link>
+            {inmate.unit.url ? (
+              <a
+                href={inmate.unit.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline"
+              >
+                {inmate.unit.name}
+              </a>
+            ) : (
+              <Link
+                to={`/units/${encodeURIComponent(inmate.unit.jurisdiction)}/${encodeURIComponent(inmate.unit.name)}`}
+                className="font-medium text-primary underline"
+              >
+                {inmate.unit.name}
+              </Link>
+            )}
           </div>
           {inmate.race && (
             <div>
