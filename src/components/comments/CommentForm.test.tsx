@@ -19,7 +19,7 @@ describe('CommentForm', () => {
   });
 
   it('should render form fields and submit button', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -36,7 +36,7 @@ describe('CommentForm', () => {
   });
 
   it('should display character counter', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -47,7 +47,7 @@ describe('CommentForm', () => {
   });
 
   it('should update character counter when typing', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -61,7 +61,7 @@ describe('CommentForm', () => {
   });
 
   it('should show validation error for empty author', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -78,7 +78,7 @@ describe('CommentForm', () => {
   });
 
   it('should show validation error for empty comment', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -95,7 +95,7 @@ describe('CommentForm', () => {
   });
 
   it('should enforce 60 character limit', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>

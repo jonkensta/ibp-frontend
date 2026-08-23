@@ -43,7 +43,7 @@ describe('RequestForm', () => {
   });
 
   it('should render form elements', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -65,7 +65,7 @@ describe('RequestForm', () => {
   });
 
   it('should enable buttons when date is selected', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -91,7 +91,7 @@ describe('RequestForm', () => {
     document.cookie =
       'ibp_last_postmark_date=' + encodeURIComponent('2024-12-24T18:00:00Z|2024-12-25') + ';path=/';
 
-    render(
+    await render(
       <QueryWrapper>
         <RequestForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -105,7 +105,7 @@ describe('RequestForm', () => {
     document.cookie =
       'ibp_last_postmark_date=' + encodeURIComponent('2024-12-20T18:00:00Z|2024-12-20') + ';path=/';
 
-    render(
+    await render(
       <QueryWrapper>
         <RequestForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -118,7 +118,7 @@ describe('RequestForm', () => {
   it('should ignore a legacy cookie without a save-day marker', async () => {
     document.cookie = 'ibp_last_postmark_date=2024-12-24T18:00:00Z;path=/';
 
-    render(
+    await render(
       <QueryWrapper>
         <RequestForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -136,7 +136,7 @@ describe('RequestForm', () => {
       postmarkdate: undefined,
     });
 
-    render(
+    await render(
       <QueryWrapper>
         <RequestForm jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>

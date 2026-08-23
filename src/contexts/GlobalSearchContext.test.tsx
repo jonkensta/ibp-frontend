@@ -27,7 +27,7 @@ function ComponentOutsideProvider() {
 describe('GlobalSearchContext', () => {
   describe('GlobalSearchProvider', () => {
     it('should render children', async () => {
-      render(
+      await render(
         <GlobalSearchProvider>
           <div data-testid="child">Test Child</div>
         </GlobalSearchProvider>
@@ -39,7 +39,7 @@ describe('GlobalSearchContext', () => {
     });
 
     it('should provide globalSearchRef to children', async () => {
-      render(
+      await render(
         <GlobalSearchProvider>
           <TestComponent />
         </GlobalSearchProvider>
@@ -51,7 +51,7 @@ describe('GlobalSearchContext', () => {
     });
 
     it('should provide a ref object', async () => {
-      render(
+      await render(
         <GlobalSearchProvider>
           <TestComponent />
         </GlobalSearchProvider>
@@ -65,7 +65,7 @@ describe('GlobalSearchContext', () => {
 
   describe('useGlobalSearch', () => {
     it('should throw error when used outside provider', async () => {
-      render(<ComponentOutsideProvider />);
+      await render(<ComponentOutsideProvider />);
 
       const error = page.getByTestId('error');
       await expect.element(error).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe('GlobalSearchContext', () => {
     });
 
     it('should return context value when used inside provider', async () => {
-      render(
+      await render(
         <GlobalSearchProvider>
           <TestComponent />
         </GlobalSearchProvider>

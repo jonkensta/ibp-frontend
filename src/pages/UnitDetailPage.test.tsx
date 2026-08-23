@@ -54,7 +54,7 @@ describe('UnitDetailPage', () => {
     mockFetch.mockImplementation(() => new Promise(() => {}));
 
     const Wrapper = createWrapper();
-    render(<UnitDetailPage />, { wrapper: Wrapper });
+    await render(<UnitDetailPage />, { wrapper: Wrapper });
 
     const title = page.getByText(/unit details/i);
     await expect.element(title).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('UnitDetailPage', () => {
     mockFetch.mockRejectedValue(new Error('Network error'));
 
     const Wrapper = createWrapper();
-    render(<UnitDetailPage />, { wrapper: Wrapper });
+    await render(<UnitDetailPage />, { wrapper: Wrapper });
 
     const alert = page.getByText(/failed to load unit/i);
     await expect.element(alert).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe('UnitDetailPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDetailPage />, { wrapper: Wrapper });
+    await render(<UnitDetailPage />, { wrapper: Wrapper });
 
     // Header should contain unit name
     const heading = page.getByRole('heading', { name: 'Test Unit' });
@@ -107,7 +107,7 @@ describe('UnitDetailPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDetailPage />, { wrapper: Wrapper });
+    await render(<UnitDetailPage />, { wrapper: Wrapper });
 
     // Wait for render
     await expect.element(page.getByTestId('unit-form')).toBeInTheDocument();

@@ -80,7 +80,7 @@ describe('UnitDirectory', () => {
     mockFetch.mockImplementation(() => new Promise(() => {}));
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     const loading = page.getByText(/loading units/i);
     await expect.element(loading).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('UnitDirectory', () => {
     mockFetch.mockRejectedValue(new Error('Network error'));
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     const errorMessage = page.getByText(/failed to load units/i);
     await expect.element(errorMessage).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Check for unit names
     const austinUnit = page.getByText('Austin Unit');
@@ -127,7 +127,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     const countText = page.getByText(/unit directory \(3 units\)/i);
     await expect.element(countText).toBeInTheDocument();
@@ -142,7 +142,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for initial load
     const austinUnit = page.getByText('Austin Unit');
@@ -170,7 +170,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for initial load
     const austinUnit = page.getByText('Austin Unit');
@@ -198,7 +198,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for initial load
     const austinUnit = page.getByText('Austin Unit');
@@ -221,7 +221,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for load
     const austinUnit = page.getByText('Austin Unit');
@@ -241,7 +241,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for load
     const austinUnit = page.getByText('Austin Unit');
@@ -268,7 +268,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for load
     const austinUnit = page.getByText('Austin Unit');
@@ -292,7 +292,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for load
     const austinUnit = page.getByText('Austin Unit');
@@ -319,7 +319,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for load
     const austinUnit = page.getByText('Austin Unit');
@@ -338,7 +338,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for load
     const austinUnit = page.getByText('Austin Unit');
@@ -362,7 +362,7 @@ describe('UnitDirectory', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<UnitDirectory />, { wrapper: Wrapper });
+    await render(<UnitDirectory />, { wrapper: Wrapper });
 
     // Wait for load
     const austinUnit = page.getByText('Austin Unit');

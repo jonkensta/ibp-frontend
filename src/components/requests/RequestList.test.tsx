@@ -40,7 +40,7 @@ describe('RequestList', () => {
   });
 
   it('should display "No requests yet" when list is empty', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -51,7 +51,7 @@ describe('RequestList', () => {
   });
 
   it('should display requests with action badges', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -66,7 +66,7 @@ describe('RequestList', () => {
   });
 
   it('should display request count in title', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -77,7 +77,7 @@ describe('RequestList', () => {
   });
 
   it('should sort requests by postmark date (newest first)', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -90,7 +90,7 @@ describe('RequestList', () => {
   });
 
   it('should display formatted dates', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -104,7 +104,7 @@ describe('RequestList', () => {
   });
 
   it('should show print and delete buttons for filled requests', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -124,7 +124,7 @@ describe('RequestList', () => {
   });
 
   it('should not show print button for tossed requests', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[mockRequests[1]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -140,7 +140,7 @@ describe('RequestList', () => {
   });
 
   it('should open delete dialog when delete button is clicked', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -157,7 +157,7 @@ describe('RequestList', () => {
   });
 
   it('should close delete dialog when cancel is clicked', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -175,7 +175,7 @@ describe('RequestList', () => {
   });
 
   it('should apply correct styling to Filled action badge', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -188,7 +188,7 @@ describe('RequestList', () => {
   });
 
   it('should apply correct styling to Tossed action badge', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[mockRequests[1]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -201,7 +201,7 @@ describe('RequestList', () => {
   });
 
   it('should render children in the form area', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345}>
           <div>Test Child Content</div>
@@ -224,7 +224,7 @@ describe('RequestList', () => {
       action: 'Filled',
     };
 
-    render(
+    await render(
       <QueryWrapper>
         <RequestList requests={[request]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>

@@ -85,7 +85,7 @@ describe('useUnits', () => {
       vi.mocked(api.getAllUnits).mockResolvedValue(mockUnits);
 
       const Wrapper = createWrapper();
-      render(<UnitsTest />, { wrapper: Wrapper });
+      await render(<UnitsTest />, { wrapper: Wrapper });
 
       const result = page.getByTestId('result');
       await expect.element(result).toHaveTextContent(JSON.stringify(mockUnits));
@@ -97,7 +97,7 @@ describe('useUnits', () => {
       vi.mocked(api.getAllUnits).mockRejectedValue(new Error('Failed to fetch units'));
 
       const Wrapper = createWrapper();
-      render(<UnitsTest />, { wrapper: Wrapper });
+      await render(<UnitsTest />, { wrapper: Wrapper });
 
       const error = page.getByText('Error: Failed to fetch units');
       await expect.element(error).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('useUnits', () => {
       vi.mocked(api.getUnit).mockResolvedValue(mockUnit);
 
       const Wrapper = createWrapper();
-      render(<UnitTest jurisdiction="Texas" name="Test Unit" />, { wrapper: Wrapper });
+      await render(<UnitTest jurisdiction="Texas" name="Test Unit" />, { wrapper: Wrapper });
 
       const result = page.getByTestId('result');
       await expect.element(result).toHaveTextContent(JSON.stringify(mockUnit));
@@ -121,7 +121,7 @@ describe('useUnits', () => {
       vi.mocked(api.getUnit).mockResolvedValue(mockUnit);
 
       const Wrapper = createWrapper();
-      render(<UnitTest jurisdiction="Federal" name="Federal Prison" />, { wrapper: Wrapper });
+      await render(<UnitTest jurisdiction="Federal" name="Federal Prison" />, { wrapper: Wrapper });
 
       const result = page.getByTestId('result');
       await expect.element(result).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('useUnits', () => {
       vi.mocked(api.getUnit).mockRejectedValue(new Error('Unit not found'));
 
       const Wrapper = createWrapper();
-      render(<UnitTest jurisdiction="Texas" name="Nonexistent" />, { wrapper: Wrapper });
+      await render(<UnitTest jurisdiction="Texas" name="Nonexistent" />, { wrapper: Wrapper });
 
       const error = page.getByText('Error: Unit not found');
       await expect.element(error).toBeInTheDocument();
@@ -160,7 +160,7 @@ describe('useUnits', () => {
       vi.mocked(api.updateUnit).mockResolvedValue(updatedUnit);
 
       const Wrapper = createWrapper();
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={updateData} />, {
+      await render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={updateData} />, {
         wrapper: Wrapper,
       });
 
@@ -193,7 +193,7 @@ describe('useUnits', () => {
       const updatedUnit = { ...mockUnit, city: 'Dallas' };
       vi.mocked(api.updateUnit).mockResolvedValue(updatedUnit);
 
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
+      await render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
         wrapper: Wrapper,
       });
 
@@ -212,7 +212,7 @@ describe('useUnits', () => {
       vi.mocked(api.updateUnit).mockRejectedValue(new Error('Update failed'));
 
       const Wrapper = createWrapper();
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
+      await render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
         wrapper: Wrapper,
       });
 
@@ -229,7 +229,7 @@ describe('useUnits', () => {
       );
 
       const Wrapper = createWrapper();
-      render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
+      await render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
         wrapper: Wrapper,
       });
 

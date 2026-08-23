@@ -80,7 +80,7 @@ describe('useComments', () => {
       vi.mocked(api.createComment).mockResolvedValue(createdComment);
 
       const Wrapper = createWrapper();
-      render(<CreateCommentTest jurisdiction="Texas" id={12345} data={commentData} />, {
+      await render(<CreateCommentTest jurisdiction="Texas" id={12345} data={commentData} />, {
         wrapper: Wrapper,
       });
 
@@ -119,7 +119,7 @@ describe('useComments', () => {
 
       vi.mocked(api.createComment).mockResolvedValue(createdComment);
 
-      render(
+      await render(
         <CreateCommentTest
           jurisdiction="Texas"
           id={12345}
@@ -142,7 +142,7 @@ describe('useComments', () => {
       vi.mocked(api.createComment).mockRejectedValue(new Error('Failed to create comment'));
 
       const Wrapper = createWrapper();
-      render(
+      await render(
         <CreateCommentTest jurisdiction="Texas" id={12345} data={{ author: 'JD', body: 'Test' }} />,
         { wrapper: Wrapper }
       );
@@ -160,7 +160,7 @@ describe('useComments', () => {
       );
 
       const Wrapper = createWrapper();
-      render(
+      await render(
         <CreateCommentTest jurisdiction="Texas" id={12345} data={{ author: 'JD', body: 'Test' }} />,
         { wrapper: Wrapper }
       );
@@ -178,7 +178,7 @@ describe('useComments', () => {
       vi.mocked(api.deleteComment).mockResolvedValue(undefined);
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
+      await render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
         wrapper: Wrapper,
       });
 
@@ -207,7 +207,7 @@ describe('useComments', () => {
 
       vi.mocked(api.deleteComment).mockResolvedValue(undefined);
 
-      render(<DeleteCommentTest jurisdiction="Federal" id={67890} commentIndex={2} />, {
+      await render(<DeleteCommentTest jurisdiction="Federal" id={67890} commentIndex={2} />, {
         wrapper: Wrapper,
       });
 
@@ -225,7 +225,7 @@ describe('useComments', () => {
       vi.mocked(api.deleteComment).mockRejectedValue(new Error('Failed to delete comment'));
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
+      await render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
         wrapper: Wrapper,
       });
 
@@ -242,7 +242,7 @@ describe('useComments', () => {
       );
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
+      await render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={1} />, {
         wrapper: Wrapper,
       });
 
@@ -257,7 +257,7 @@ describe('useComments', () => {
       vi.mocked(api.deleteComment).mockResolvedValue(undefined);
 
       const Wrapper = createWrapper();
-      render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={5} />, {
+      await render(<DeleteCommentTest jurisdiction="Texas" id={12345} commentIndex={5} />, {
         wrapper: Wrapper,
       });
 

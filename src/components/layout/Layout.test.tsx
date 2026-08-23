@@ -15,7 +15,7 @@ vi.mock('@/components/ui/sonner', () => ({
 
 describe('Layout', () => {
   it('should render Header component', async () => {
-    render(
+    await render(
       <MemoryRouter>
         <Layout />
       </MemoryRouter>
@@ -26,7 +26,7 @@ describe('Layout', () => {
   });
 
   it('should render Toaster component', async () => {
-    render(
+    await render(
       <MemoryRouter>
         <Layout />
       </MemoryRouter>
@@ -37,7 +37,7 @@ describe('Layout', () => {
   });
 
   it('should render Outlet for nested routes', async () => {
-    render(
+    await render(
       <MemoryRouter initialEntries={['/']}>
         <Layout />
       </MemoryRouter>
@@ -50,7 +50,7 @@ describe('Layout', () => {
   });
 
   it('should have correct container structure', async () => {
-    render(
+    await render(
       <MemoryRouter>
         <Layout />
       </MemoryRouter>
@@ -63,7 +63,7 @@ describe('Layout', () => {
   });
 
   it('should wrap content with GlobalSearchProvider', async () => {
-    render(
+    await render(
       <MemoryRouter>
         <Layout />
       </MemoryRouter>

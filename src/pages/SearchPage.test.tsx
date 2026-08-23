@@ -45,7 +45,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     const title = page.getByText(/search inmates/i);
     await expect.element(title).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     // Search form should be rendered with the initial query
     const searchForm = page.getByRole('textbox');
@@ -98,7 +98,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     // Wait for results to load
     const resultsText = page.getByText(/found 2 results/i);
@@ -132,7 +132,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     // Wait a bit for the redirect check
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -166,7 +166,7 @@ describe('SearchPage', () => {
     mockLocationState = { fromInmateDetail: true };
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     // The single result should be shown instead of redirecting
     const resultsText = page.getByText(/found 1 result/i);
@@ -224,7 +224,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     const partialResultsText = page.getByText(/partial results due to provider errors/i);
     await expect.element(partialResultsText).toBeInTheDocument();
@@ -234,7 +234,7 @@ describe('SearchPage', () => {
     mockFetch.mockRejectedValue(new Error('Network error'));
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     const errorMessage = page.getByText(/network error/i);
     await expect.element(errorMessage).toBeInTheDocument();
@@ -249,7 +249,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     // The error message comes from the response statusText
     const errorMessage = page.getByText(/bad request/i);
@@ -265,7 +265,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     const resultsText = page.getByText(/found 0 results/i);
     await expect.element(resultsText).toBeInTheDocument();
@@ -280,7 +280,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     const searchInput = page.getByRole('textbox');
     await searchInput.fill('Jane Smith');
@@ -298,7 +298,7 @@ describe('SearchPage', () => {
     );
 
     const Wrapper = createWrapper();
-    render(<SearchPage />, { wrapper: Wrapper });
+    await render(<SearchPage />, { wrapper: Wrapper });
 
     // The search input should be disabled while loading
     const searchInput = page.getByRole('textbox');

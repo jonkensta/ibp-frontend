@@ -40,7 +40,7 @@ describe('CommentList', () => {
   });
 
   it('should display "No comments yet" when list is empty', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={[]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -51,7 +51,7 @@ describe('CommentList', () => {
   });
 
   it('should display comments with author and body', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={mockComments} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -68,7 +68,7 @@ describe('CommentList', () => {
   });
 
   it('should display comment count in title', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={mockComments} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -79,7 +79,7 @@ describe('CommentList', () => {
   });
 
   it('should sort comments by date (newest first)', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={mockComments} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -94,7 +94,7 @@ describe('CommentList', () => {
   });
 
   it('should display relative time for comments', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={mockComments} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -106,7 +106,7 @@ describe('CommentList', () => {
   });
 
   it('should show delete button for each comment', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={mockComments} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -122,7 +122,7 @@ describe('CommentList', () => {
   });
 
   it('should open delete dialog when delete button is clicked', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={[mockComments[0]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -139,7 +139,7 @@ describe('CommentList', () => {
   });
 
   it('should close delete dialog when cancel is clicked', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={[mockComments[0]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
@@ -157,7 +157,7 @@ describe('CommentList', () => {
   });
 
   it('should render children in the form area', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <CommentList comments={mockComments} jurisdiction="Texas" inmateId={12345}>
           <div>Test Child Content</div>

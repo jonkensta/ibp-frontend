@@ -6,7 +6,7 @@ import { InmateSearchForm } from './InmateSearchForm';
 describe('InmateSearchForm', () => {
   it('should render search input and button', async () => {
     const onSearch = vi.fn();
-    render(<InmateSearchForm onSearch={onSearch} isLoading={false} />);
+    await render(<InmateSearchForm onSearch={onSearch} isLoading={false} />);
 
     const input = page.getByRole('textbox');
     await expect.element(input).toBeInTheDocument();
@@ -17,7 +17,7 @@ describe('InmateSearchForm', () => {
 
   it('should call onSearch when form is submitted', async () => {
     const onSearch = vi.fn();
-    render(<InmateSearchForm onSearch={onSearch} isLoading={false} />);
+    await render(<InmateSearchForm onSearch={onSearch} isLoading={false} />);
 
     const input = page.getByRole('textbox');
     await input.fill('Smith');
@@ -30,7 +30,7 @@ describe('InmateSearchForm', () => {
 
   it('should display initial query value', async () => {
     const onSearch = vi.fn();
-    render(<InmateSearchForm onSearch={onSearch} isLoading={false} initialQuery="Johnson" />);
+    await render(<InmateSearchForm onSearch={onSearch} isLoading={false} initialQuery="Johnson" />);
 
     const input = page.getByRole('textbox');
     await expect.element(input).toHaveValue('Johnson');
@@ -38,7 +38,7 @@ describe('InmateSearchForm', () => {
 
   it('should disable button when loading', async () => {
     const onSearch = vi.fn();
-    render(<InmateSearchForm onSearch={onSearch} isLoading={true} />);
+    await render(<InmateSearchForm onSearch={onSearch} isLoading={true} />);
 
     const button = page.getByRole('button', { name: /searching/i });
     await expect.element(button).toBeDisabled();
@@ -46,7 +46,7 @@ describe('InmateSearchForm', () => {
 
   it('should update query when typing', async () => {
     const onSearch = vi.fn();
-    render(<InmateSearchForm onSearch={onSearch} isLoading={false} />);
+    await render(<InmateSearchForm onSearch={onSearch} isLoading={false} />);
 
     const input = page.getByRole('textbox');
     await input.fill('Test Query');

@@ -65,7 +65,7 @@ describe('useInmates', () => {
       vi.mocked(api.searchInmates).mockResolvedValue(mockResults);
 
       const Wrapper = createWrapper();
-      render(<SearchInmatesTest query="John Doe" />, { wrapper: Wrapper });
+      await render(<SearchInmatesTest query="John Doe" />, { wrapper: Wrapper });
 
       // Wait a bit for React Query to execute
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -78,7 +78,7 @@ describe('useInmates', () => {
 
     it('should be disabled when query is empty', async () => {
       const Wrapper = createWrapper();
-      render(<SearchInmatesTest query="" />, { wrapper: Wrapper });
+      await render(<SearchInmatesTest query="" />, { wrapper: Wrapper });
 
       const disabled = page.getByText('Query Disabled');
       await expect.element(disabled).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('useInmates', () => {
       vi.mocked(api.searchInmates).mockRejectedValue(new Error('Search failed'));
 
       const Wrapper = createWrapper();
-      render(<SearchInmatesTest query="error query" />, { wrapper: Wrapper });
+      await render(<SearchInmatesTest query="error query" />, { wrapper: Wrapper });
 
       // Wait for React Query to execute and handle the error
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -103,7 +103,7 @@ describe('useInmates', () => {
       vi.mocked(api.searchInmates).mockImplementation(() => new Promise(() => {}));
 
       const Wrapper = createWrapper();
-      render(<SearchInmatesTest query="test" />, { wrapper: Wrapper });
+      await render(<SearchInmatesTest query="test" />, { wrapper: Wrapper });
 
       const loading = page.getByText('Loading...');
       await expect.element(loading).toBeInTheDocument();
@@ -141,7 +141,7 @@ describe('useInmates', () => {
       vi.mocked(api.getInmate).mockResolvedValue(mockInmate);
 
       const Wrapper = createWrapper();
-      render(<InmateTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
+      await render(<InmateTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
 
       const inmate = page.getByText('Inmate: John Doe');
       await expect.element(inmate).toBeInTheDocument();
@@ -179,7 +179,7 @@ describe('useInmates', () => {
       vi.mocked(api.getInmate).mockResolvedValue(mockInmate);
 
       const Wrapper = createWrapper();
-      render(<InmateTest jurisdiction="Federal" id={67890} />, { wrapper: Wrapper });
+      await render(<InmateTest jurisdiction="Federal" id={67890} />, { wrapper: Wrapper });
 
       const inmate = page.getByText('Inmate: Jane Smith');
       await expect.element(inmate).toBeInTheDocument();
@@ -191,7 +191,7 @@ describe('useInmates', () => {
       vi.mocked(api.getInmate).mockRejectedValue(new Error('Inmate not found'));
 
       const Wrapper = createWrapper();
-      render(<InmateTest jurisdiction="Texas" id={99999} />, { wrapper: Wrapper });
+      await render(<InmateTest jurisdiction="Texas" id={99999} />, { wrapper: Wrapper });
 
       const error = page.getByText('Error: Inmate not found');
       await expect.element(error).toBeInTheDocument();
@@ -201,7 +201,7 @@ describe('useInmates', () => {
       vi.mocked(api.getInmate).mockImplementation(() => new Promise(() => {}));
 
       const Wrapper = createWrapper();
-      render(<InmateTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
+      await render(<InmateTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
 
       const loading = page.getByText('Loading...');
       await expect.element(loading).toBeInTheDocument();

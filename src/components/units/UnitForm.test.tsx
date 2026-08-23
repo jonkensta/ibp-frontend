@@ -51,7 +51,7 @@ describe('UnitForm', () => {
   });
 
   it('should render form with all fields', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -74,7 +74,7 @@ describe('UnitForm', () => {
   });
 
   it('should populate form with unit data', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -94,7 +94,7 @@ describe('UnitForm', () => {
   });
 
   it('should have save button disabled initially (form not dirty)', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -105,7 +105,7 @@ describe('UnitForm', () => {
   });
 
   it('should enable save button when form is modified', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -119,7 +119,7 @@ describe('UnitForm', () => {
   });
 
   it('should show validation error for empty required fields', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -146,7 +146,7 @@ describe('UnitForm', () => {
       })
     );
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -180,7 +180,7 @@ describe('UnitForm', () => {
       )
     );
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -214,7 +214,7 @@ describe('UnitForm', () => {
       })
     );
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -236,7 +236,7 @@ describe('UnitForm', () => {
   it('should show error message when update fails', async () => {
     mockFetch.mockRejectedValue(new Error('Network error'));
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -271,7 +271,7 @@ describe('UnitForm', () => {
         })
     );
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -306,7 +306,7 @@ describe('UnitForm', () => {
       url: 'https://example.com',
     };
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={unitWithOptionalFields} />
       </QueryWrapper>
@@ -340,7 +340,7 @@ describe('UnitForm', () => {
       shipping_method: null,
     };
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={unitWithNulls} />
       </QueryWrapper>
@@ -354,7 +354,7 @@ describe('UnitForm', () => {
   });
 
   it('should validate zipcode length', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -379,7 +379,7 @@ describe('UnitForm', () => {
       })
     );
 
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -401,7 +401,7 @@ describe('UnitForm', () => {
   });
 
   it('should have name field disabled to prevent breaking inmate associations', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>
@@ -419,7 +419,7 @@ describe('UnitForm', () => {
   });
 
   it('should have jurisdiction field disabled to prevent breaking inmate associations', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <UnitForm unit={mockUnit} />
       </QueryWrapper>

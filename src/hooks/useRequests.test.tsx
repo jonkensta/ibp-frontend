@@ -117,7 +117,7 @@ describe('useRequests', () => {
       vi.mocked(api.getInmateWarnings).mockResolvedValue(mockWarnings);
 
       const Wrapper = createWrapper();
-      render(<InmateWarningsTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
+      await render(<InmateWarningsTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
 
       const result = page.getByTestId('result');
       await expect.element(result).toHaveTextContent(JSON.stringify(mockWarnings));
@@ -134,7 +134,7 @@ describe('useRequests', () => {
       vi.mocked(api.getInmateWarnings).mockResolvedValue(mockWarnings);
 
       const Wrapper = createWrapper();
-      render(<InmateWarningsTest jurisdiction="Federal" id={67890} />, { wrapper: Wrapper });
+      await render(<InmateWarningsTest jurisdiction="Federal" id={67890} />, { wrapper: Wrapper });
 
       const result = page.getByTestId('result');
       await expect.element(result).toBeInTheDocument();
@@ -146,7 +146,7 @@ describe('useRequests', () => {
       vi.mocked(api.getInmateWarnings).mockRejectedValue(new Error('Failed to fetch warnings'));
 
       const Wrapper = createWrapper();
-      render(<InmateWarningsTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
+      await render(<InmateWarningsTest jurisdiction="Texas" id={12345} />, { wrapper: Wrapper });
 
       const error = page.getByText('Error: Failed to fetch warnings');
       await expect.element(error).toBeInTheDocument();
@@ -169,7 +169,7 @@ describe('useRequests', () => {
       vi.mocked(api.createRequest).mockResolvedValue(createdRequest);
 
       const Wrapper = createWrapper();
-      render(<CreateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, {
+      await render(<CreateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, {
         wrapper: Wrapper,
       });
 
@@ -208,7 +208,7 @@ describe('useRequests', () => {
 
       vi.mocked(api.createRequest).mockResolvedValue(createdRequest);
 
-      render(
+      await render(
         <CreateRequestTest
           jurisdiction="Texas"
           id={12345}
@@ -235,7 +235,7 @@ describe('useRequests', () => {
       vi.mocked(api.createRequest).mockRejectedValue(new Error('Failed to create request'));
 
       const Wrapper = createWrapper();
-      render(
+      await render(
         <CreateRequestTest
           jurisdiction="Texas"
           id={12345}
@@ -261,7 +261,7 @@ describe('useRequests', () => {
       vi.mocked(api.deleteRequest).mockResolvedValue(undefined);
 
       const Wrapper = createWrapper();
-      render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
+      await render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
         wrapper: Wrapper,
       });
 
@@ -290,7 +290,7 @@ describe('useRequests', () => {
 
       vi.mocked(api.deleteRequest).mockResolvedValue(undefined);
 
-      render(<DeleteRequestTest jurisdiction="Federal" id={67890} requestIndex={2} />, {
+      await render(<DeleteRequestTest jurisdiction="Federal" id={67890} requestIndex={2} />, {
         wrapper: Wrapper,
       });
 
@@ -307,7 +307,7 @@ describe('useRequests', () => {
       vi.mocked(api.deleteRequest).mockRejectedValue(new Error('Failed to delete request'));
 
       const Wrapper = createWrapper();
-      render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
+      await render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
         wrapper: Wrapper,
       });
 
@@ -336,7 +336,7 @@ describe('useRequests', () => {
       vi.mocked(api.validateRequest).mockResolvedValue(validationResult);
 
       const Wrapper = createWrapper();
-      render(<ValidateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, {
+      await render(<ValidateRequestTest jurisdiction="Texas" id={12345} data={requestData} />, {
         wrapper: Wrapper,
       });
 
@@ -356,7 +356,7 @@ describe('useRequests', () => {
       vi.mocked(api.validateRequest).mockRejectedValue(new Error('Validation failed'));
 
       const Wrapper = createWrapper();
-      render(
+      await render(
         <ValidateRequestTest
           jurisdiction="Texas"
           id={12345}
@@ -396,7 +396,7 @@ describe('useRequests', () => {
         postmarkdate: undefined,
       });
 
-      render(
+      await render(
         <ValidateRequestTest
           jurisdiction="Texas"
           id={12345}

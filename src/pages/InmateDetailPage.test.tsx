@@ -100,7 +100,7 @@ describe('InmateDetailPage', () => {
     mockFetch.mockImplementation(() => new Promise(() => {}));
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Back to search link should be present during loading
     const backLink = page.getByText(/back to search/i);
@@ -117,7 +117,7 @@ describe('InmateDetailPage', () => {
     mockFetch.mockRejectedValue(new Error('Network error'));
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     const errorMessage = page.getByText(/network error/i);
     await expect.element(errorMessage).toBeInTheDocument();
@@ -136,7 +136,7 @@ describe('InmateDetailPage', () => {
     );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     const errorMessage = page.getByText(/server error|internal server error/i);
     await expect.element(errorMessage).toBeInTheDocument();
@@ -152,7 +152,7 @@ describe('InmateDetailPage', () => {
     );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     const notFoundMessage = page.getByText(/inmate not found|not found/i);
     await expect.element(notFoundMessage).toBeInTheDocument();
@@ -178,7 +178,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Check inmate name in header (use first() as it appears in multiple places)
     const inmateName = page.getByText('Doe, John').first();
@@ -205,7 +205,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
     const inmateName = page.getByText('Doe, John').first();
@@ -232,7 +232,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
     const inmateName = page.getByText('Doe, John').first();
@@ -259,7 +259,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
     const inmateName = page.getByText('Doe, John').first();
@@ -302,7 +302,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Check that the correct inmate is displayed (use first() as name appears in multiple places)
     const inmateName = page.getByText('Smith, Jane').first();
@@ -331,7 +331,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     const backLink = page.getByText(/back to search/i);
     await expect.element(backLink).toBeInTheDocument();
@@ -358,7 +358,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     const backLink = page.getByText(/back to search/i);
     await expect.element(backLink).toBeInTheDocument();
@@ -383,7 +383,7 @@ describe('InmateDetailPage', () => {
       );
 
     const Wrapper = createTestWrapper();
-    render(<InmateDetailPage />, { wrapper: Wrapper });
+    await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
     const inmateName = page.getByText('Doe, John').first();

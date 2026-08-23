@@ -14,7 +14,7 @@ describe('ErrorBoundary', () => {
     // Prevent console.error from cluttering output
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    render(
+    await render(
       <ErrorBoundary>
         <Bomb />
       </ErrorBoundary>
@@ -30,7 +30,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('should render children when no error occurs', async () => {
-    render(
+    await render(
       <ErrorBoundary>
         <div>Safe Content</div>
       </ErrorBoundary>

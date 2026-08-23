@@ -43,7 +43,7 @@ describe('Header', () => {
 
   it('should render site title/logo link', async () => {
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     const logo = page.getByText('Inside Books Project');
     await expect.element(logo).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe('Header', () => {
 
   it('should render all navigation links', async () => {
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     const homeLink = page.getByRole('link', { name: 'Home' });
     await expect.element(homeLink).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe('Header', () => {
 
   it('should have correct href attributes for navigation links', async () => {
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     const homeLink = page.getByRole('link', { name: 'Home' });
     const homeElement = await homeLink.query();
@@ -87,7 +87,7 @@ describe('Header', () => {
     mockPathname = '/';
 
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     const homeLink = page.getByRole('link', { name: 'Home' });
     const homeElement = await homeLink.query();
@@ -99,7 +99,7 @@ describe('Header', () => {
     mockPathname = '/search';
 
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     const searchLink = page.getByRole('link', { name: 'Search' });
     const searchElement = await searchLink.query();
@@ -111,7 +111,7 @@ describe('Header', () => {
     mockPathname = '/units';
 
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     const unitsLink = page.getByRole('link', { name: 'Units' });
     const unitsElement = await unitsLink.query();
@@ -123,7 +123,7 @@ describe('Header', () => {
     mockPathname = '/';
 
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     // Search and Units should be muted when Home is active
     const searchLink = page.getByRole('link', { name: 'Search' });
@@ -137,7 +137,7 @@ describe('Header', () => {
 
   it('should render GlobalSearch component', async () => {
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     // GlobalSearch is mocked to render a search input
     const searchInput = page.getByPlaceholder('Search inmates...');
@@ -146,7 +146,7 @@ describe('Header', () => {
 
   it('should have correct header structure and styling', async () => {
     const Wrapper = createTestWrapper();
-    render(<Header />, { wrapper: Wrapper });
+    await render(<Header />, { wrapper: Wrapper });
 
     // Check that header element exists
     const header = page.getByRole('banner');

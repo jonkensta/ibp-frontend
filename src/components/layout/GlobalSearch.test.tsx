@@ -21,7 +21,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should render search input', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>
@@ -32,7 +32,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should update input value when typing', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>
@@ -45,7 +45,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should navigate to search page on form submit', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>
@@ -66,7 +66,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should trim whitespace from query', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>
@@ -86,7 +86,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should not navigate on empty query', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>
@@ -105,7 +105,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should clear input after form submit', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>
@@ -124,7 +124,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should encode special characters in URL', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>
@@ -143,7 +143,7 @@ describe('GlobalSearch', () => {
   });
 
   it('should have search icon', async () => {
-    render(
+    await render(
       <QueryWrapper>
         <GlobalSearch />
       </QueryWrapper>

@@ -40,7 +40,7 @@ const mockInmate: Inmate = {
 
 describe('InmateProfile', () => {
   it('should display basic inmate information', async () => {
-    renderWithRouter(<InmateProfile inmate={mockInmate} />);
+    await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
     const name = page.getByText(/doe, john/i);
     await expect.element(name).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe('InmateProfile', () => {
   });
 
   it('should display release date when valid', async () => {
-    renderWithRouter(<InmateProfile inmate={mockInmate} />);
+    await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
     // Should display December 24, 2025 (not Dec 23 due to timezone shift)
     const releaseDate = page.getByText(/december 24, 2025/i);
@@ -72,14 +72,14 @@ describe('InmateProfile', () => {
       release: 'LIFE',
     };
 
-    renderWithRouter(<InmateProfile inmate={inmateWithInvalidDate} />);
+    await renderWithRouter(<InmateProfile inmate={inmateWithInvalidDate} />);
 
     const release = page.getByText('LIFE');
     await expect.element(release).toBeInTheDocument();
   });
 
   it('should display data last updated', async () => {
-    renderWithRouter(<InmateProfile inmate={mockInmate} />);
+    await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
     const lastUpdated = page.getByText(/data last updated/i);
     await expect.element(lastUpdated).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('InmateProfile', () => {
   });
 
   it('should display recent lookups', async () => {
-    renderWithRouter(<InmateProfile inmate={mockInmate} />);
+    await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
     const lookupHeader = page.getByText(/recent lookups/i);
     await expect.element(lookupHeader).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('InmateProfile', () => {
   });
 
   it('should link inmate name to official record when url is provided', async () => {
-    renderWithRouter(<InmateProfile inmate={mockInmate} />);
+    await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
     const nameLink = page.getByRole('link', { name: /doe, john/i });
     const element = await nameLink.query();
@@ -119,7 +119,7 @@ describe('InmateProfile', () => {
       url: null,
     };
 
-    renderWithRouter(<InmateProfile inmate={inmateWithoutUrl} />);
+    await renderWithRouter(<InmateProfile inmate={inmateWithoutUrl} />);
 
     const name = page.getByText(/doe, john/i);
     await expect.element(name).toBeInTheDocument();
@@ -129,7 +129,7 @@ describe('InmateProfile', () => {
   });
 
   it('should link unit name to unit detail page', async () => {
-    renderWithRouter(<InmateProfile inmate={mockInmate} />);
+    await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
     const unitLink = page.getByRole('link', { name: /test unit/i });
     const element = await unitLink.query();
@@ -144,7 +144,7 @@ describe('InmateProfile', () => {
       release: null,
     };
 
-    renderWithRouter(<InmateProfile inmate={inmateWithoutOptionals} />);
+    await renderWithRouter(<InmateProfile inmate={inmateWithoutOptionals} />);
 
     const raceLabel = page.getByText(/^race$/i);
     expect(await raceLabel.query()).toBeNull();
@@ -165,7 +165,7 @@ describe('InmateProfile', () => {
       release: '2025-12-24', // Date-only string (no time component)
     };
 
-    renderWithRouter(<InmateProfile inmate={inmateWithDateOnlyRelease} />);
+    await renderWithRouter(<InmateProfile inmate={inmateWithDateOnlyRelease} />);
 
     // Verify release date displays as Dec 24, not Dec 23
     const releaseDate = page.getByText(/december 24, 2025/i);
@@ -179,7 +179,7 @@ describe('InmateProfile', () => {
       datetime_fetched: '2024-12-20T10:00:00Z', // Datetime with timezone
     };
 
-    renderWithRouter(<InmateProfile inmate={inmateWithDatetime} />);
+    await renderWithRouter(<InmateProfile inmate={inmateWithDatetime} />);
 
     // Should display "Data last updated X days ago"
     const lastUpdated = page.getByText(/data last updated/i);

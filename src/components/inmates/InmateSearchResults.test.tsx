@@ -34,14 +34,14 @@ const mockInmates: InmateSearchResult[] = [
 
 describe('InmateSearchResults', () => {
   it('should display "No inmates found" when list is empty', async () => {
-    renderWithRouter(<InmateSearchResults inmates={[]} errors={[]} />);
+    await renderWithRouter(<InmateSearchResults inmates={[]} errors={[]} />);
 
     const noResults = page.getByText(/no inmates found/i);
     await expect.element(noResults).toBeInTheDocument();
   });
 
   it('should display inmate results with correct formatting', async () => {
-    renderWithRouter(<InmateSearchResults inmates={mockInmates} errors={[]} />);
+    await renderWithRouter(<InmateSearchResults inmates={mockInmates} errors={[]} />);
 
     // Check first inmate
     const inmate1Name = page.getByText(/doe, john/i);
@@ -63,7 +63,7 @@ describe('InmateSearchResults', () => {
 
   it('should display single provider error', async () => {
     const errors = ['Provider A failed to respond'];
-    renderWithRouter(<InmateSearchResults inmates={[]} errors={errors} />);
+    await renderWithRouter(<InmateSearchResults inmates={[]} errors={errors} />);
 
     const errorTitle = page.getByText(/provider error$/i);
     await expect.element(errorTitle).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe('InmateSearchResults', () => {
 
   it('should display multiple provider errors with count', async () => {
     const errors = ['Provider A failed', 'Provider B timeout', 'Provider C error'];
-    renderWithRouter(<InmateSearchResults inmates={mockInmates} errors={errors} />);
+    await renderWithRouter(<InmateSearchResults inmates={mockInmates} errors={errors} />);
 
     const errorTitle = page.getByText(/3 provider errors/i);
     await expect.element(errorTitle).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('InmateSearchResults', () => {
   });
 
   it('should create links to inmate detail pages', async () => {
-    renderWithRouter(<InmateSearchResults inmates={[mockInmates[0]]} errors={[]} />);
+    await renderWithRouter(<InmateSearchResults inmates={[mockInmates[0]]} errors={[]} />);
 
     const link = page.getByRole('link', { name: /doe, john/i });
     const element = await link.query();
@@ -102,7 +102,7 @@ describe('InmateSearchResults', () => {
 
   it('should display both inmates and errors together', async () => {
     const errors = ['Provider timeout'];
-    renderWithRouter(<InmateSearchResults inmates={mockInmates} errors={errors} />);
+    await renderWithRouter(<InmateSearchResults inmates={mockInmates} errors={errors} />);
 
     // Should show error
     const errorTitle = page.getByText(/provider error$/i);

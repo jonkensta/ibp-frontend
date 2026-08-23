@@ -16,7 +16,7 @@ vi.mock('react-router-dom', async () => {
 
 describe('HomePage', () => {
   it('should render page title and description', async () => {
-    render(
+    await render(
       <BrowserRouter>
         <HomePage />
       </BrowserRouter>
@@ -30,7 +30,7 @@ describe('HomePage', () => {
   });
 
   it('should render search form', async () => {
-    render(
+    await render(
       <BrowserRouter>
         <HomePage />
       </BrowserRouter>
@@ -44,7 +44,7 @@ describe('HomePage', () => {
   });
 
   it('should navigate to search page when search is submitted', async () => {
-    render(
+    await render(
       <BrowserRouter>
         <HomePage />
       </BrowserRouter>
@@ -60,7 +60,7 @@ describe('HomePage', () => {
   });
 
   it('should encode special characters in search query', async () => {
-    render(
+    await render(
       <BrowserRouter>
         <HomePage />
       </BrowserRouter>
@@ -76,7 +76,7 @@ describe('HomePage', () => {
   });
 
   it('should have proper page structure with max-width constraint', async () => {
-    render(
+    await render(
       <BrowserRouter>
         <HomePage />
       </BrowserRouter>

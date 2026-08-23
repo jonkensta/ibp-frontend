@@ -6,7 +6,7 @@ import { NotFoundPage } from './NotFoundPage';
 
 describe('NotFoundPage', () => {
   it('should render 404 message', async () => {
-    render(
+    await render(
       <BrowserRouter>
         <NotFoundPage />
       </BrowserRouter>
@@ -20,7 +20,7 @@ describe('NotFoundPage', () => {
   });
 
   it('should have navigation links', async () => {
-    render(
+    await render(
       <BrowserRouter>
         <NotFoundPage />
       </BrowserRouter>
