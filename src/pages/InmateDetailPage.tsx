@@ -131,7 +131,7 @@ export function InmateDetailPage() {
       </div>
 
       {isFirefox && (
-        <Alert variant="warning" className="border-yellow-600 bg-yellow-50">
+        <Alert className="border-yellow-600 bg-yellow-50">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="text-yellow-800">
             Label printing may not work correctly in Firefox. For best results, use Chrome or
