@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { InmateProfile, InmateProfileSkeleton } from '@/components/inmates';
 import { RequestList, RequestForm, RequestListSkeleton } from '@/components/requests';
@@ -11,10 +11,11 @@ import { useInmate, useInmateWarnings } from '@/hooks';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import type { Jurisdiction } from '@/types';
 
+const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+
 export function InmateDetailPage() {
   const { jurisdiction, id } = useParams<{ jurisdiction: string; id: string }>();
   const [focusRequestIndex, setFocusRequestIndex] = useState<number | null>(null);
-  const [isFirefox, setIsFirefox] = useState(false);
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const { globalSearchRef } = useGlobalSearch();
   const location = useLocation();
@@ -29,11 +30,6 @@ export function InmateDetailPage() {
   const inmateId = id ? parseInt(id, 10) : 0;
   const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
   const { data: warnings } = useInmateWarnings(jurisdiction as Jurisdiction, inmateId);
-
-  useEffect(() => {
-    // Detect Firefox browser
-    setIsFirefox(navigator.userAgent.toLowerCase().includes('firefox'));
-  }, []);
 
   const handleRequestCreated = (requestIndex: number, action: 'Filled' | 'Tossed') => {
     if (action === 'Tossed') {
