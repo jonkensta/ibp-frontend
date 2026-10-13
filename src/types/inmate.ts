@@ -20,7 +20,7 @@ export interface InmateBase {
 
 export interface Inmate extends InmateBase {
   datetime_fetched: string | null;
-  unit: Unit;
+  unit: Unit | null;
   requests: Request[];
   comments: Comment[];
   lookups: Lookup[];

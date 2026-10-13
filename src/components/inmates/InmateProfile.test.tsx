@@ -135,6 +135,13 @@ describe('InmateProfile', () => {
     expect(element?.getAttribute('href')).toBe('/units/Texas/Test%20Unit');
   });
 
+  it('should show "Not Available" when the inmate has no unit', async () => {
+    await renderWithRouter(<InmateProfile inmate={{ ...mockInmate, unit: null }} />);
+
+    const unit = page.getByRole('definition').filter({ hasText: 'Not Available' });
+    await expect.element(unit).toBeInTheDocument();
+  });
+
   it('should show "Not Available" for optional fields that are null', async () => {
     const inmateWithoutOptionals = {
       ...mockInmate,

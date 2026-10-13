@@ -78,7 +78,9 @@ export function InmateProfile({ inmate, warnings }: InmateProfileProps) {
             </Field>
 
             <Field label="Unit">
-              {inmate.unit.url ? (
+              {!inmate.unit ? (
+                NOT_AVAILABLE
+              ) : inmate.unit.url ? (
                 <a
                   href={inmate.unit.url}
                   target="_blank"
