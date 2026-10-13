@@ -21,6 +21,9 @@ const UnitDetailPage = lazy(() =>
 const MetricsPage = lazy(() =>
   import('./pages/MetricsPage').then((m) => ({ default: m.MetricsPage }))
 );
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+);
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
 );
@@ -104,6 +107,16 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <MetricsPage />
+              </Suspense>
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <SettingsPage />
               </Suspense>
             </ErrorBoundary>
           }

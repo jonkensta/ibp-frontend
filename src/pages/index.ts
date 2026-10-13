@@ -4,3 +4,4 @@ export { InmateDetailPage } from './InmateDetailPage';
 export { UnitsPage } from './UnitsPage';
 export { UnitDetailPage } from './UnitDetailPage';
 export { NotFoundPage } from './NotFoundPage';
+export { SettingsPage } from './SettingsPage';
