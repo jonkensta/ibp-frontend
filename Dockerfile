@@ -1,5 +1,6 @@
-# Build stage
-FROM node:24-alpine AS builder
+# Build stage. The output is static files, so build on the CI runner's own
+# platform even when the final image is arm64 (much faster than emulation).
+FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
 
 WORKDIR /app
 
