@@ -8,6 +8,7 @@ const navItems = [
   { to: '/search', label: 'Search' },
   { to: '/units', label: 'Units' },
   { to: '/metrics', label: 'Metrics' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 export function Header() {

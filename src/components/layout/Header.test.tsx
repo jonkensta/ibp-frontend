@@ -64,6 +64,9 @@ describe('Header', () => {
 
     const unitsLink = page.getByRole('link', { name: 'Units' });
     await expect.element(unitsLink).toBeInTheDocument();
+
+    const settingsLink = page.getByRole('link', { name: 'Settings' });
+    await expect.element(settingsLink).toBeInTheDocument();
   });
 
   it('should have correct href attributes for navigation links', async () => {
@@ -81,6 +84,10 @@ describe('Header', () => {
     const unitsLink = page.getByRole('link', { name: 'Units' });
     const unitsElement = await unitsLink.query();
     expect(unitsElement?.getAttribute('href')).toBe('/units');
+
+    const settingsLink = page.getByRole('link', { name: 'Settings' });
+    const settingsElement = await settingsLink.query();
+    expect(settingsElement?.getAttribute('href')).toBe('/settings');
   });
 
   it('should highlight active navigation link on home page', async () => {
@@ -117,6 +124,18 @@ describe('Header', () => {
     const unitsElement = await unitsLink.query();
     expect(unitsElement?.className).toContain('text-foreground');
     expect(unitsElement?.className).not.toContain('text-muted-foreground');
+  });
+
+  it('should highlight active navigation link on settings page', async () => {
+    mockPathname = '/settings';
+
+    const Wrapper = createTestWrapper();
+    await render(<Header />, { wrapper: Wrapper });
+
+    const settingsLink = page.getByRole('link', { name: 'Settings' });
+    const settingsElement = await settingsLink.query();
+    expect(settingsElement?.className).toContain('text-foreground');
+    expect(settingsElement?.className).not.toContain('text-muted-foreground');
   });
 
   it('should render inactive navigation links with muted styling', async () => {
