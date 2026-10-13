@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Trash2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Panel, PanelBody, PanelHeading, PanelTitle } from '@/components/ui/panel';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
@@ -104,91 +103,74 @@ export function RequestList({
     }
   };
 
-  if (requests.length === 0) {
-    return (
-      <Card className="flex flex-col h-[600px]">
-        <CardHeader>
-          <CardTitle>Requests</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 gap-4 min-h-0">
-          <div className="flex-1 overflow-y-auto min-h-0">
-            <p className="text-sm text-muted-foreground">No requests yet.</p>
-          </div>
-          <div className="border-t pt-4" />
-          {children}
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <>
-      <Card className="flex flex-col h-[600px]">
-        <CardHeader>
-          <CardTitle>Requests ({requests.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 gap-4 min-h-0">
-          <div className="flex-1 overflow-y-auto min-h-0 pr-2 space-y-3">
-            {sortedRequests.map((request) => (
-              <div
-                key={request.index}
-                className="flex items-center justify-between border-b pb-3 last:border-b-0 last:pb-0"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded ${
-                        request.action === 'Filled'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {request.action}
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    <p>
-                      Postmarked: {format(new Date(request.date_postmarked + 'T00:00:00'), 'PP')}
-                    </p>
-                    <p>Processed: {format(new Date(request.date_processed + 'T00:00:00'), 'PP')}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  {request.action !== 'Tossed' && (
-                    <Button
-                      ref={(el) => {
-                        if (el) {
-                          printButtonRefs.current.set(request.index, el);
-                        } else {
-                          printButtonRefs.current.delete(request.index);
-                        }
-                      }}
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handlePrint(request.index)}
-                      aria-label="Print request label"
-                    >
-                      <Printer className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteClick(request.index)}
-                    disabled={deleteRequestMutation.isPending}
-                    aria-label="Delete request"
+      <Panel>
+        <PanelHeading>
+          <PanelTitle>Package Requests ({requests.length})</PanelTitle>
+        </PanelHeading>
+        <PanelBody className="flex flex-col gap-4">
+          <div className="flex-1 max-h-[250px] overflow-y-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left">
+                  <th className="py-2 font-semibold">Postmark</th>
+                  <th className="py-2 font-semibold">Action</th>
+                  <th className="w-10" />
+                  <th className="w-10" />
+                </tr>
+              </thead>
+              <tbody>
+                {sortedRequests.map((request) => (
+                  <tr
+                    key={request.index}
+                    className="group border-b last:border-b-0 hover:bg-muted/50"
+                    title={`Processed ${request.date_processed}`}
                   >
-                    <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+                    <td className="py-1.5">{request.date_postmarked}</td>
+                    <td className="py-1.5">{request.action}</td>
+                    <td className="py-1.5">
+                      {request.action !== 'Tossed' && (
+                        <Button
+                          ref={(el) => {
+                            if (el) {
+                              printButtonRefs.current.set(request.index, el);
+                            } else {
+                              printButtonRefs.current.delete(request.index);
+                            }
+                          }}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePrint(request.index)}
+                          aria-label="Print request label"
+                        >
+                          <Printer className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </td>
+                    <td className="py-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                        onClick={() => handleDeleteClick(request.index)}
+                        disabled={deleteRequestMutation.isPending}
+                        aria-label="Delete request"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {requests.length === 0 && (
+              <p className="pt-2 text-sm text-muted-foreground">No requests yet.</p>
+            )}
           </div>
-          <div className="border-t pt-4" />
           {children}
-        </CardContent>
-      </Card>
+        </PanelBody>
+      </Panel>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>

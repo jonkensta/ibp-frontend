@@ -225,41 +225,42 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
 
   return (
     <>
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm">Add New Request</h3>
-
+      <div className="space-y-1">
         {createRequestMutation.isError && (
           <Alert variant="destructive">
             <AlertDescription>Failed to create request. Please try again.</AlertDescription>
           </Alert>
         )}
 
-        <div className="flex items-end gap-2">
-          <div className="flex-1 space-y-1">
-            <Label className="text-xs">Date Postmarked</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal h-9"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {datePostmarked ? format(datePostmarked, 'PP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={datePostmarked}
-                  onSelect={(date) => date && setValue('date_postmarked', date)}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+        <Label className="font-semibold">USPS postmark date:</Label>
+        {/* Date picker and Fill/Toss buttons joined into one control, like a
+            Bootstrap input group. */}
+        <div className="flex">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 justify-start rounded-r-none text-left font-normal"
+              >
+                <CalendarIcon className="mr-1 h-4 w-4" />
+                {datePostmarked ? format(datePostmarked, 'yyyy-MM-dd') : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={datePostmarked}
+                onSelect={(date) => date && setValue('date_postmarked', date)}
+              />
+            </PopoverContent>
+          </Popover>
 
           <Button
             ref={fillButtonRef}
             size="sm"
+            variant="outline"
+            className="rounded-none border-l-0"
             onClick={() => handleSubmit('Filled')}
             disabled={
               !datePostmarked ||
@@ -271,7 +272,8 @@ export function RequestForm({ jurisdiction, inmateId, onRequestCreated }: Reques
           </Button>
           <Button
             size="sm"
-            variant="secondary"
+            variant="outline"
+            className="rounded-l-none border-l-0"
             onClick={() => handleSubmit('Tossed')}
             disabled={!datePostmarked || createRequestMutation.isPending}
           >

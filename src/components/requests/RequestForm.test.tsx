@@ -49,7 +49,7 @@ describe('RequestForm', () => {
       </QueryWrapper>
     );
 
-    const title = page.getByText(/add new request/i);
+    const title = page.getByText(/usps postmark date/i);
     await expect.element(title).toBeInTheDocument();
 
     const datePicker = page.getByRole('button', { name: /pick a date/i });
@@ -97,7 +97,7 @@ describe('RequestForm', () => {
       </QueryWrapper>
     );
 
-    const datePicker = page.getByText('Dec 24, 2024');
+    const datePicker = page.getByText('2024-12-24');
     await expect.element(datePicker).toBeInTheDocument();
   });
 

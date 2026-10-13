@@ -50,7 +50,7 @@ describe('RequestList', () => {
     await expect.element(noRequests).toBeInTheDocument();
   });
 
-  it('should display requests with action badges', async () => {
+  it('should display the action for each request', async () => {
     await render(
       <QueryWrapper>
         <RequestList requests={mockRequests} jurisdiction="Texas" inmateId={12345} />
@@ -84,23 +84,24 @@ describe('RequestList', () => {
     );
 
     // Requests should be sorted: Dec 22 > Dec 20 > Dec 18
-    const postmarkedLabels = page.getByText(/postmarked:/i);
-    const labels = await postmarkedLabels.all();
-    expect(labels.length).toBe(3);
+    const postmarks = page.getByText(/^2024-12-\d\d$/);
+    await expect.element(postmarks.first()).toBeInTheDocument();
+    const cells = postmarks.elements().map((el) => el.textContent);
+    expect(cells).toEqual(['2024-12-22', '2024-12-20', '2024-12-18']);
   });
 
-  it('should display formatted dates', async () => {
+  it('should display postmark date and processed date tooltip', async () => {
     await render(
       <QueryWrapper>
         <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
     );
 
-    const postmarked = page.getByText(/postmarked:/i);
+    const postmarked = page.getByText('2024-12-20');
     await expect.element(postmarked).toBeInTheDocument();
 
-    const processed = page.getByText(/processed:/i);
-    await expect.element(processed).toBeInTheDocument();
+    const row = page.getByRole('row', { name: /2024-12-20/ });
+    await expect.element(row).toHaveAttribute('title', 'Processed 2024-12-21');
   });
 
   it('should show print and delete buttons for filled requests', async () => {
@@ -174,32 +175,6 @@ describe('RequestList', () => {
     expect(await dialogTitle.query()).toBeNull();
   });
 
-  it('should apply correct styling to Filled action badge', async () => {
-    await render(
-      <QueryWrapper>
-        <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
-      </QueryWrapper>
-    );
-
-    const filledBadge = page.getByText('Filled');
-    const element = await filledBadge.query();
-    expect(element?.className).toContain('bg-green-100');
-    expect(element?.className).toContain('text-green-800');
-  });
-
-  it('should apply correct styling to Tossed action badge', async () => {
-    await render(
-      <QueryWrapper>
-        <RequestList requests={[mockRequests[1]]} jurisdiction="Texas" inmateId={12345} />
-      </QueryWrapper>
-    );
-
-    const tossedBadge = page.getByText('Tossed');
-    const element = await tossedBadge.query();
-    expect(element?.className).toContain('bg-gray-100');
-    expect(element?.className).toContain('text-gray-800');
-  });
-
   it('should render children in the form area', async () => {
     await render(
       <QueryWrapper>
@@ -211,31 +186,5 @@ describe('RequestList', () => {
 
     const child = page.getByText('Test Child Content');
     await expect.element(child).toBeInTheDocument();
-  });
-
-  it('should parse date-only strings as local dates (not UTC) to prevent timezone shift', async () => {
-    // Regression test for timezone bug where dates were displayed one day earlier
-    // The bug: new Date("2024-12-20") parses as UTC midnight, which in negative
-    // UTC offset timezones (like CST UTC-6) displays as the previous day
-    const request: Request = {
-      index: 1,
-      date_postmarked: '2024-12-20',
-      date_processed: '2024-12-21',
-      action: 'Filled',
-    };
-
-    await render(
-      <QueryWrapper>
-        <RequestList requests={[request]} jurisdiction="Texas" inmateId={12345} />
-      </QueryWrapper>
-    );
-
-    // Verify postmarked date displays as Dec 20, not Dec 19
-    const postmarked = page.getByText(/postmarked:.*dec.*20/i);
-    await expect.element(postmarked).toBeInTheDocument();
-
-    // Verify processed date displays as Dec 21, not Dec 20
-    const processed = page.getByText(/processed:.*dec.*21/i);
-    await expect.element(processed).toBeInTheDocument();
   });
 });

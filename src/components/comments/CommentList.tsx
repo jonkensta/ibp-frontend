@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Panel, PanelBody, PanelHeading, PanelTitle } from '@/components/ui/panel';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
@@ -51,64 +51,47 @@ export function CommentList({ comments, jurisdiction, inmateId, children }: Comm
     }
   };
 
-  if (comments.length === 0) {
-    return (
-      <Card className="flex flex-col h-[600px]">
-        <CardHeader>
-          <CardTitle>Comments</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 gap-4 min-h-0">
-          <div className="flex-1 overflow-y-auto min-h-0">
-            <p className="text-sm text-muted-foreground">No comments yet.</p>
-          </div>
-          <div className="border-t pt-4" />
-          {children}
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <>
-      <Card className="flex flex-col h-[600px]">
-        <CardHeader>
-          <CardTitle>Comments ({comments.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 gap-4 min-h-0">
-          <div className="flex-1 overflow-y-auto min-h-0 pr-2 space-y-3">
+      <Panel>
+        <PanelHeading>
+          <PanelTitle>Comments ({comments.length})</PanelTitle>
+        </PanelHeading>
+        <PanelBody className="flex flex-col gap-4">
+          <ul className="flex-1 max-h-[250px] overflow-y-auto rounded-md border empty:border-0">
             {sortedComments.map((comment) => (
-              <div
-                key={comment.index}
-                className="flex items-start justify-between border-b pb-3 last:border-b-0 last:pb-0"
-              >
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{comment.author}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(comment.datetime_created), {
-                        addSuffix: true,
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-sm">{comment.body}</p>
+              <li key={comment.index} className="group border-b px-3 py-2 last:border-b-0">
+                <div className="flex items-center justify-between gap-2">
+                  <small className="text-xs">
+                    {format(new Date(comment.datetime_created), 'yyyy-MM-dd')}
+                    {comment.author && (
+                      <>
+                        {' by '}
+                        <strong>{comment.author}</strong>
+                      </>
+                    )}
+                  </small>
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    className="size-6 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    onClick={() => handleDeleteClick(comment.index)}
+                    disabled={deleteCommentMutation.isPending}
+                    aria-label="Delete comment"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
-
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleDeleteClick(comment.index)}
-                  disabled={deleteCommentMutation.isPending}
-                  aria-label="Delete comment"
-                >
-                  <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                </Button>
-              </div>
+                <p className="mt-1 text-sm">{comment.body}</p>
+              </li>
             ))}
-          </div>
-          <div className="border-t pt-4" />
+          </ul>
+          {comments.length === 0 && (
+            <p className="text-sm text-muted-foreground">No comments yet.</p>
+          )}
           {children}
-        </CardContent>
-      </Card>
+        </PanelBody>
+      </Panel>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>

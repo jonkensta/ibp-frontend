@@ -106,9 +106,9 @@ describe('InmateDetailPage', () => {
     const backLink = page.getByText(/back to search/i);
     await expect.element(backLink).toBeInTheDocument();
 
-    // Check that inmate name header is not yet displayed (still loading)
+    // Check that inmate name is not yet displayed (still loading)
     await new Promise((resolve) => setTimeout(resolve, 100));
-    const heading = page.getByRole('heading', { name: 'Doe, John' });
+    const heading = page.getByText('John Doe');
     const element = await heading.query();
     expect(element).toBeNull();
   });
@@ -181,7 +181,7 @@ describe('InmateDetailPage', () => {
     await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Check inmate name in header (use first() as it appears in multiple places)
-    const inmateName = page.getByText('Doe, John').first();
+    const inmateName = page.getByText('John Doe').first();
     await expect.element(inmateName).toBeInTheDocument();
 
     // Check back link
@@ -208,7 +208,7 @@ describe('InmateDetailPage', () => {
     await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
-    const inmateName = page.getByText('Doe, John').first();
+    const inmateName = page.getByText('John Doe').first();
     await expect.element(inmateName).toBeInTheDocument();
 
     // Check for unit information
@@ -235,7 +235,7 @@ describe('InmateDetailPage', () => {
     await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
-    const inmateName = page.getByText('Doe, John').first();
+    const inmateName = page.getByText('John Doe').first();
     await expect.element(inmateName).toBeInTheDocument();
 
     // Check for request action badge
@@ -262,7 +262,7 @@ describe('InmateDetailPage', () => {
     await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
-    const inmateName = page.getByText('Doe, John').first();
+    const inmateName = page.getByText('John Doe').first();
     await expect.element(inmateName).toBeInTheDocument();
 
     // Check for comment
@@ -305,7 +305,7 @@ describe('InmateDetailPage', () => {
     await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Check that the correct inmate is displayed (use first() as name appears in multiple places)
-    const inmateName = page.getByText('Smith, Jane').first();
+    const inmateName = page.getByText('Jane Smith').first();
     await expect.element(inmateName).toBeInTheDocument();
 
     // Verify API was called with correct params
@@ -386,15 +386,15 @@ describe('InmateDetailPage', () => {
     await render(<InmateDetailPage />, { wrapper: Wrapper });
 
     // Wait for data to load (use first() as name appears in multiple places)
-    const inmateName = page.getByText('Doe, John').first();
+    const inmateName = page.getByText('John Doe').first();
     await expect.element(inmateName).toBeInTheDocument();
 
     // Check for RequestForm elements
-    const requestFormTitle = page.getByText(/add new request/i);
+    const requestFormTitle = page.getByText(/usps postmark date/i);
     await expect.element(requestFormTitle).toBeInTheDocument();
 
     // Check for CommentForm elements
-    const commentFormTitle = page.getByText('Add Comment');
+    const commentFormTitle = page.getByRole('button', { name: 'Add Comment' });
     await expect.element(commentFormTitle).toBeInTheDocument();
   });
 });

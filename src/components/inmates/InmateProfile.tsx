@@ -1,7 +1,7 @@
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { AlertCircle } from 'lucide-react';
 import { Link } from 'react-router';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Panel, PanelBody, PanelHeading, PanelTitle } from '@/components/ui/panel';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Inmate, InmateWarnings } from '@/types';
 
@@ -9,6 +9,8 @@ interface InmateProfileProps {
   inmate: Inmate;
   warnings?: InmateWarnings;
 }
+
+const NOT_AVAILABLE = 'Not Available';
 
 function parseDate(value: string | null): Date | null {
   if (!value) return null;
@@ -19,128 +21,109 @@ function parseDate(value: string | null): Date | null {
   return isNaN(date.getTime()) ? null : date;
 }
 
+function WarningIcon({ message }: { message?: string | null }) {
+  if (!message) return null;
+  return (
+    <Tooltip>
+      <TooltipTrigger aria-label={message}>
+        <AlertCircle className="h-4 w-4 text-yellow-500" />
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{message}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// One label/value row, label on the left and value right-aligned, like the
+// legacy app's horizontal definition list.
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-4 pt-2">
+      <dt className="font-semibold">{label}:</dt>
+      <dd className="flex items-center gap-2 text-right">{children}</dd>
+    </div>
+  );
+}
+
 export function InmateProfile({ inmate, warnings }: InmateProfileProps) {
   const releaseDate = parseDate(inmate.release);
   const fetchedDate = parseDate(inmate.datetime_fetched);
+  const fullName = [inmate.first_name, inmate.last_name].filter(Boolean).join(' ');
+  const linkClass = 'text-primary underline';
 
   return (
     <TooltipProvider>
-      <Card className="h-[600px] overflow-y-auto">
-        <CardHeader>
-          <CardTitle>Inmate Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <p className="text-sm text-muted-foreground">Name</p>
-            {inmate.url ? (
-              <a
-                href={inmate.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-primary underline"
-              >
-                {inmate.last_name}, {inmate.first_name}
-              </a>
-            ) : (
-              <p className="font-medium">
-                {inmate.last_name}, {inmate.first_name}
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">ID</p>
-            <p className="font-medium">
-              {inmate.jurisdiction} #{inmate.id.toString().padStart(8, '0')}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Unit</p>
-            {inmate.unit.url ? (
-              <a
-                href={inmate.unit.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-primary underline"
-              >
-                {inmate.unit.name}
-              </a>
-            ) : (
-              <Link
-                to={`/units/${encodeURIComponent(inmate.unit.jurisdiction)}/${encodeURIComponent(inmate.unit.name)}`}
-                className="font-medium text-primary underline"
-              >
-                {inmate.unit.name}
-              </Link>
-            )}
-          </div>
-          {inmate.race && (
-            <div>
-              <p className="text-sm text-muted-foreground">Race</p>
-              <p className="font-medium">{inmate.race}</p>
-            </div>
-          )}
-          {inmate.sex && (
-            <div>
-              <p className="text-sm text-muted-foreground">Sex</p>
-              <p className="font-medium">{inmate.sex}</p>
-            </div>
-          )}
-          {inmate.release && (
-            <div>
-              <p className="text-sm text-muted-foreground">Release Date</p>
-              <div className="flex items-center gap-2">
-                <p className="font-medium">
-                  {releaseDate ? format(releaseDate, 'MMMM d, yyyy') : inmate.release}
-                </p>
-                {warnings?.release && (
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <AlertCircle className="h-4 w-4 text-yellow-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{warnings.release}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-            </div>
-          )}
+      <Panel>
+        <PanelHeading>
+          <PanelTitle>Inmate Lookup</PanelTitle>
+        </PanelHeading>
+        <PanelBody className="pt-2">
+          <dl className="text-sm">
+            <Field label="Name">
+              {!fullName ? (
+                NOT_AVAILABLE
+              ) : inmate.url ? (
+                <a
+                  href={inmate.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClass}
+                >
+                  {fullName}
+                </a>
+              ) : (
+                fullName
+              )}
+            </Field>
 
-          {fetchedDate && (
-            <div>
-              <p className="text-sm text-muted-foreground">Data Last Updated</p>
-              <div className="flex items-center gap-2">
-                <p className="font-medium">
-                  {formatDistanceToNow(fetchedDate, { addSuffix: true })}
-                </p>
-                {warnings?.entry_age && (
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <AlertCircle className="h-4 w-4 text-yellow-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{warnings.entry_age}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-            </div>
-          )}
+            <Field label="Unit">
+              {inmate.unit.url ? (
+                <a
+                  href={inmate.unit.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClass}
+                >
+                  {inmate.unit.name}
+                </a>
+              ) : (
+                <Link
+                  to={`/units/${encodeURIComponent(inmate.unit.jurisdiction)}/${encodeURIComponent(inmate.unit.name)}`}
+                  className={linkClass}
+                >
+                  {inmate.unit.name}
+                </Link>
+              )}
+            </Field>
 
-          {inmate.lookups.length > 0 && (
-            <div>
-              <p className="text-sm text-muted-foreground">Recent Lookups</p>
-              <ul className="space-y-1 text-sm">
+            <Field label="Jurisdiction">{inmate.jurisdiction}</Field>
+            <Field label="ID">{inmate.id.toString().padStart(8, '0')}</Field>
+            <Field label="Race">{inmate.race || NOT_AVAILABLE}</Field>
+            <Field label="Sex">{inmate.sex || NOT_AVAILABLE}</Field>
+
+            <Field label="Release date">
+              <WarningIcon message={warnings?.release} />
+              {releaseDate ? format(releaseDate, 'yyyy-MM-dd') : inmate.release || NOT_AVAILABLE}
+            </Field>
+
+            <Field label="Date verified">
+              <WarningIcon message={warnings?.entry_age} />
+              {fetchedDate ? format(fetchedDate, 'yyyy-MM-dd') : NOT_AVAILABLE}
+            </Field>
+
+            <Field label="Lookups">
+              <ul>
                 {inmate.lookups.map((lookup, index) => (
-                  <li key={index} className="text-muted-foreground">
-                    {format(new Date(lookup.datetime_created), 'MMM d, yyyy h:mm a')}
+                  <li key={index}>
+                    {format(new Date(lookup.datetime_created), "yyyy-MM-dd 'at' HH:mm")}
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </Field>
+          </dl>
+        </PanelBody>
+      </Panel>
     </TooltipProvider>
   );
 }

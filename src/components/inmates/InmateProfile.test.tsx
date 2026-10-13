@@ -42,10 +42,10 @@ describe('InmateProfile', () => {
   it('should display basic inmate information', async () => {
     await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
-    const name = page.getByText(/doe, john/i);
+    const name = page.getByText('John Doe');
     await expect.element(name).toBeInTheDocument();
 
-    const id = page.getByText(/texas #00012345/i);
+    const id = page.getByText('00012345');
     await expect.element(id).toBeInTheDocument();
 
     const unit = page.getByText(/test unit/i);
@@ -62,7 +62,7 @@ describe('InmateProfile', () => {
     await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
     // Should display December 24, 2025 (not Dec 23 due to timezone shift)
-    const releaseDate = page.getByText(/december 24, 2025/i);
+    const releaseDate = page.getByText('2025-12-24');
     await expect.element(releaseDate).toBeInTheDocument();
   });
 
@@ -81,32 +81,31 @@ describe('InmateProfile', () => {
   it('should display data last updated', async () => {
     await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
-    const lastUpdated = page.getByText(/data last updated/i);
-    await expect.element(lastUpdated).toBeInTheDocument();
+    const verifiedLabel = page.getByText('Date verified:');
+    await expect.element(verifiedLabel).toBeInTheDocument();
 
-    // Should show "X days ago" or similar
-    const timeAgo = page.getByText(/ago$/);
-    await expect.element(timeAgo).toBeInTheDocument();
+    const verified = page.getByText('2024-12-20', { exact: true });
+    await expect.element(verified).toBeInTheDocument();
   });
 
   it('should display recent lookups', async () => {
     await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
-    const lookupHeader = page.getByText(/recent lookups/i);
+    const lookupHeader = page.getByText('Lookups:');
     await expect.element(lookupHeader).toBeInTheDocument();
 
     // Should show formatted dates
-    const lookup1 = page.getByText(/dec 20, 2024/i);
+    const lookup1 = page.getByText(/^2024-12-20 at \d\d:\d\d$/);
     await expect.element(lookup1).toBeInTheDocument();
 
-    const lookup2 = page.getByText(/dec 19, 2024/i);
+    const lookup2 = page.getByText(/^2024-12-19 at \d\d:\d\d$/);
     await expect.element(lookup2).toBeInTheDocument();
   });
 
   it('should link inmate name to official record when url is provided', async () => {
     await renderWithRouter(<InmateProfile inmate={mockInmate} />);
 
-    const nameLink = page.getByRole('link', { name: /doe, john/i });
+    const nameLink = page.getByRole('link', { name: 'John Doe' });
     const element = await nameLink.query();
     expect(element?.getAttribute('href')).toBe('https://example.com/inmate/12345');
     expect(element?.getAttribute('target')).toBe('_blank');
@@ -121,10 +120,10 @@ describe('InmateProfile', () => {
 
     await renderWithRouter(<InmateProfile inmate={inmateWithoutUrl} />);
 
-    const name = page.getByText(/doe, john/i);
+    const name = page.getByText('John Doe');
     await expect.element(name).toBeInTheDocument();
 
-    const nameLink = page.getByRole('link', { name: /doe, john/i });
+    const nameLink = page.getByRole('link', { name: 'John Doe' });
     expect(await nameLink.query()).toBeNull();
   });
 
@@ -136,7 +135,7 @@ describe('InmateProfile', () => {
     expect(element?.getAttribute('href')).toBe('/units/Texas/Test%20Unit');
   });
 
-  it('should not display optional fields when they are null', async () => {
+  it('should show "Not Available" for optional fields that are null', async () => {
     const inmateWithoutOptionals = {
       ...mockInmate,
       race: null,
@@ -146,14 +145,9 @@ describe('InmateProfile', () => {
 
     await renderWithRouter(<InmateProfile inmate={inmateWithoutOptionals} />);
 
-    const raceLabel = page.getByText(/^race$/i);
-    expect(await raceLabel.query()).toBeNull();
-
-    const sexLabel = page.getByText(/^sex$/i);
-    expect(await sexLabel.query()).toBeNull();
-
-    const releaseLabel = page.getByText(/release date/i);
-    expect(await releaseLabel.query()).toBeNull();
+    const notAvailable = page.getByText('Not Available');
+    await expect.element(notAvailable.nth(2)).toBeInTheDocument();
+    expect(notAvailable.all()).toHaveLength(3);
   });
 
   it('should parse date-only strings as local dates (not UTC) to prevent timezone shift', async () => {
@@ -168,7 +162,7 @@ describe('InmateProfile', () => {
     await renderWithRouter(<InmateProfile inmate={inmateWithDateOnlyRelease} />);
 
     // Verify release date displays as Dec 24, not Dec 23
-    const releaseDate = page.getByText(/december 24, 2025/i);
+    const releaseDate = page.getByText('2025-12-24');
     await expect.element(releaseDate).toBeInTheDocument();
   });
 
@@ -181,8 +175,8 @@ describe('InmateProfile', () => {
 
     await renderWithRouter(<InmateProfile inmate={inmateWithDatetime} />);
 
-    // Should display "Data last updated X days ago"
-    const lastUpdated = page.getByText(/data last updated/i);
-    await expect.element(lastUpdated).toBeInTheDocument();
+    // Should display the verified date
+    const verified = page.getByText('2024-12-20', { exact: true });
+    await expect.element(verified).toBeInTheDocument();
   });
 });

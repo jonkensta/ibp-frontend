@@ -12,6 +12,7 @@ import type { Jurisdiction } from '@/types';
 interface CommentFormProps {
   jurisdiction: Jurisdiction;
   inmateId: number;
+  onSuccess?: () => void;
 }
 
 const commentSchema = z.object({
@@ -24,7 +25,7 @@ const commentSchema = z.object({
 
 type CommentFormData = z.infer<typeof commentSchema>;
 
-export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
+export function CommentForm({ jurisdiction, inmateId, onSuccess }: CommentFormProps) {
   const createCommentMutation = useCreateComment(jurisdiction, inmateId);
 
   const {
@@ -49,6 +50,7 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
       await createCommentMutation.mutateAsync(data);
       reset();
       toast.success('Comment added');
+      onSuccess?.();
     } catch (error) {
       console.error('Failed to create comment:', error);
       toast.error('Failed to create comment. Please try again.');
@@ -57,8 +59,6 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-      <h3 className="font-semibold text-sm">Add Comment</h3>
-
       {createCommentMutation.isError && (
         <Alert variant="destructive">
           <AlertDescription>Failed to create comment.</AlertDescription>
@@ -99,7 +99,7 @@ export function CommentForm({ jurisdiction, inmateId }: CommentFormProps) {
           className="h-9 px-3"
           disabled={createCommentMutation.isPending}
         >
-          {createCommentMutation.isPending ? '...' : 'Add'}
+          {createCommentMutation.isPending ? '...' : 'Submit'}
         </Button>
       </div>
 

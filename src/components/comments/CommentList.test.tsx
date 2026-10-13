@@ -93,16 +93,15 @@ describe('CommentList', () => {
     await expect.element(firstComment).toBeInTheDocument();
   });
 
-  it('should display relative time for comments', async () => {
+  it('should display date and author for comments', async () => {
     await render(
       <QueryWrapper>
         <CommentList comments={mockComments} jurisdiction="Texas" inmateId={12345} />
       </QueryWrapper>
     );
 
-    // Should show "X days ago" or "X hours ago" format - check first occurrence
-    const timeAgo = page.getByText(/ago/i).first();
-    await expect.element(timeAgo).toBeInTheDocument();
+    const dated = page.getByText(/^2024-12-2\d by Jane Smith$/);
+    await expect.element(dated).toBeInTheDocument();
   });
 
   it('should show delete button for each comment', async () => {

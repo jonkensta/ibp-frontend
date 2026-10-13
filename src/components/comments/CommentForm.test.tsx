@@ -31,7 +31,7 @@ describe('CommentForm', () => {
     const commentInput = page.getByLabelText(/^comment$/i);
     await expect.element(commentInput).toBeInTheDocument();
 
-    const submitButton = page.getByRole('button', { name: /add/i });
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await expect.element(submitButton).toBeInTheDocument();
   });
 
@@ -70,7 +70,7 @@ describe('CommentForm', () => {
     const commentInput = page.getByLabelText(/^comment$/i);
     await commentInput.fill('Test comment');
 
-    const submitButton = page.getByRole('button', { name: /add/i });
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     const error = page.getByText(/author required/i);
@@ -87,7 +87,7 @@ describe('CommentForm', () => {
     const authorInput = page.getByLabelText(/author/i);
     await authorInput.fill('JD');
 
-    const submitButton = page.getByRole('button', { name: /add/i });
+    const submitButton = page.getByRole('button', { name: /submit/i });
     await submitButton.click();
 
     const error = page.getByText(/comment is required/i);

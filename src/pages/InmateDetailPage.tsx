@@ -3,7 +3,8 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import { InmateProfile, InmateProfileSkeleton } from '@/components/inmates';
 import { RequestList, RequestForm, RequestListSkeleton } from '@/components/requests';
 import { CommentList, CommentForm, CommentListSkeleton } from '@/components/comments';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { useInmate, useInmateWarnings } from '@/hooks';
@@ -14,6 +15,7 @@ export function InmateDetailPage() {
   const { jurisdiction, id } = useParams<{ jurisdiction: string; id: string }>();
   const [focusRequestIndex, setFocusRequestIndex] = useState<number | null>(null);
   const [isFirefox, setIsFirefox] = useState(false);
+  const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const { globalSearchRef } = useGlobalSearch();
   const location = useLocation();
 
@@ -52,23 +54,25 @@ export function InmateDetailPage() {
     }, 100);
   };
 
+  const pageHeader = (
+    <div className="border-b pb-2">
+      <Link
+        to={backToSearch}
+        state={backToSearchState}
+        className="text-sm text-muted-foreground hover:underline"
+      >
+        &larr; Back to search
+      </Link>
+      <h1 className="mt-2 text-3xl font-medium">Inmate Information</h1>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Link
-              to={backToSearch}
-              state={backToSearchState}
-              className="text-sm text-muted-foreground hover:underline"
-            >
-              &larr; Back to search
-            </Link>
-            <Skeleton className="h-8 w-64 mt-2" />
-          </div>
-        </div>
+        {pageHeader}
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
           <InmateProfileSkeleton />
           <RequestListSkeleton />
           <CommentListSkeleton />
@@ -105,22 +109,9 @@ export function InmateDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link
-            to={backToSearch}
-            state={backToSearchState}
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            &larr; Back to search
-          </Link>
-          <h1 className="mt-2 text-2xl font-bold">
-            {inmate.last_name}, {inmate.first_name}
-          </h1>
-        </div>
-      </div>
+      {pageHeader}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-3">
         <InmateProfile inmate={inmate} warnings={warnings} />
 
         <RequestList
@@ -142,9 +133,24 @@ export function InmateDetailPage() {
           jurisdiction={jurisdiction as Jurisdiction}
           inmateId={inmateId}
         >
-          <CommentForm jurisdiction={jurisdiction as Jurisdiction} inmateId={inmateId} />
+          <div className="text-center">
+            <Button onClick={() => setCommentDialogOpen(true)}>Add Comment</Button>
+          </div>
         </CommentList>
       </div>
+
+      <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Comment</DialogTitle>
+          </DialogHeader>
+          <CommentForm
+            jurisdiction={jurisdiction as Jurisdiction}
+            inmateId={inmateId}
+            onSuccess={() => setCommentDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {isFirefox && (
         <Alert className="border-yellow-600 bg-yellow-50">
