@@ -4,3 +4,4 @@ export * from './request';
 export * from './comment';
 export * from './inmate';
 export * from './metrics';
+export * from './shippingSettings';

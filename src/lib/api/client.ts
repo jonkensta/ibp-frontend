@@ -96,3 +96,34 @@ export async function apiDelete<T>(path: string): Promise<T> {
   });
   return handleResponse<T>(response);
 }
+
+export interface FieldValidationError {
+  /** Dotted path to the offending field, relative to the request body (e.g. `address.zipcode`). */
+  field: string;
+  message: string;
+}
+
+/**
+ * Extracts per-field errors from a FastAPI 422 validation error.
+ *
+ * FastAPI reports validation failures as `{"detail": [{"loc": ["body", ...], "msg": "..."}]}`;
+ * the client serialises that `detail` array into the ApiError message. Returns an empty array
+ * when the error is not a 422 or its body is not in that shape.
+ */
+export function getValidationErrors(error: unknown): FieldValidationError[] {
+  if (!(error instanceof ApiError) || error.status !== 422) return [];
+
+  let detail: unknown;
+  try {
+    detail = JSON.parse(error.message);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(detail)) return [];
+
+  return detail.flatMap((item) => {
+    if (!item || !Array.isArray(item.loc) || typeof item.msg !== 'string') return [];
+    const path = item.loc[0] === 'body' ? item.loc.slice(1) : item.loc;
+    return [{ field: path.join('.'), message: item.msg }];
+  });
+}
