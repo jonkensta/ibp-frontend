@@ -5,13 +5,9 @@ import { RequestList, RequestForm, RequestListSkeleton } from '@/components/requ
 import { CommentList, CommentForm, CommentListSkeleton } from '@/components/comments';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle } from 'lucide-react';
 import { useInmate, useInmateWarnings } from '@/hooks';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import type { Jurisdiction } from '@/types';
-
-const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
 
 export function InmateDetailPage() {
   const { jurisdiction, id } = useParams<{ jurisdiction: string; id: string }>();
@@ -147,16 +143,6 @@ export function InmateDetailPage() {
           />
         </DialogContent>
       </Dialog>
-
-      {isFirefox && (
-        <Alert className="border-yellow-600 bg-yellow-50">
-          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="text-yellow-800">
-            Label printing may not work correctly in Firefox. For best results, use Chrome or
-            Chromium for printing labels.
-          </AlertDescription>
-        </Alert>
-      )}
     </div>
   );
 }
