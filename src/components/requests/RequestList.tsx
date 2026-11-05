@@ -91,9 +91,9 @@ export function RequestList({
       if (result.method === 'print-server') {
         toast.success('Label sent to the label printer');
       } else {
-        // Browser print dialog provides its own feedback; just explain why it appeared
-        toast.message('Print server unavailable — using the browser print dialog', {
-          description: result.printServerError,
+        // The label PDF opened in a new tab; explain why and how to print it
+        toast.message('Print server unavailable — label opened as a PDF in a new tab', {
+          description: `Print it from there (Ctrl+P). ${result.printServerError}`,
         });
       }
       onPrintLabel?.();

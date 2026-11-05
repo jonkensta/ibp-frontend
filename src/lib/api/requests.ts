@@ -48,6 +48,18 @@ export async function getRequestLabel(
   return response.blob();
 }
 
+/**
+ * URL of a request label as a one-page PDF sized exactly to the 85 x 32 mm
+ * label stock, for printing from the browser when the print server is down.
+ */
+export function getRequestLabelPdfUrl(
+  jurisdiction: Jurisdiction,
+  inmateId: number,
+  requestIndex: number
+): string {
+  return `${API_BASE_URL}/inmates/${encodeURIComponent(jurisdiction)}/${inmateId}/requests/${requestIndex}/label.pdf`;
+}
+
 export async function getInmateWarnings(
   jurisdiction: Jurisdiction,
   inmateId: number

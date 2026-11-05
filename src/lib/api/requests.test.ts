@@ -3,6 +3,7 @@ import {
   createRequest,
   deleteRequest,
   getRequestLabel,
+  getRequestLabelPdfUrl,
   getInmateWarnings,
   validateRequest,
 } from './requests';
@@ -119,6 +120,14 @@ describe('Requests API', () => {
       );
 
       await expect(getRequestLabel('Texas', 12345, 1)).rejects.toThrow();
+    });
+  });
+
+  describe('getRequestLabelPdfUrl', () => {
+    it('should build the label.pdf URL under the API base', () => {
+      expect(getRequestLabelPdfUrl('Texas', 12345, 1)).toBe(
+        '/api/inmates/Texas/12345/requests/1/label.pdf'
+      );
     });
   });
 
