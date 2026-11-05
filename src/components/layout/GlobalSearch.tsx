@@ -31,9 +31,18 @@ export const GlobalSearch = forwardRef<GlobalSearchRef>((_props, ref) => {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Auto-redirect on single result
+  // Auto-redirect on single result, once per query: navigate() changes
+  // identity after the navigation, re-running this effect before the query is
+  // cleared below. A second redirect would add a second history entry, and
+  // the inmate page records a lookup per entry.
+  const redirectedQuery = useRef<string | null>(null);
   useEffect(() => {
-    if (data && data.inmates.length === 1 && debouncedQuery) {
+    if (!debouncedQuery) {
+      redirectedQuery.current = null;
+      return;
+    }
+    if (data && data.inmates.length === 1 && redirectedQuery.current !== debouncedQuery) {
+      redirectedQuery.current = debouncedQuery;
       const inmate = data.inmates[0];
       navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, {
         replace: true,
