@@ -4,12 +4,14 @@ import { page } from 'vitest/browser';
 import { createWrapper } from '@/test/utils';
 import { useSearchInmates, useInmate } from './useInmates';
 import * as api from '@/lib/api';
+import { ApiError } from '@/lib/api/client';
 import type { Jurisdiction } from '@/types';
 
 // Mock the API module
 vi.mock('@/lib/api', () => ({
   searchInmates: vi.fn(),
   getInmate: vi.fn(),
+  getInmateByLegacyRequest: vi.fn(),
   recordLookup: vi.fn(),
 }));
 
@@ -108,6 +110,67 @@ describe('useInmates', () => {
 
       const loading = page.getByText('Loading...');
       await expect.element(loading).toBeInTheDocument();
+    });
+  });
+
+  describe('useSearchInmates with a legacy request ID', () => {
+    const legacyInmate = {
+      jurisdiction: 'Texas' as const,
+      id: 2584921,
+      first_name: 'John',
+      last_name: 'Doe',
+      race: null,
+      sex: null,
+      release: null,
+      url: null,
+      datetime_fetched: null,
+      unit: null,
+      requests: [],
+      comments: [],
+      lookups: [],
+    };
+
+    it("resolves a recent legacy request ID to the request's inmate", async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText(/"id":2584921/)).toBeInTheDocument();
+      expect(api.getInmateByLegacyRequest).toHaveBeenCalledWith(268213);
+      expect(api.searchInmates).not.toHaveBeenCalled();
+    });
+
+    it('falls back to an inmate ID search when no request has that ID', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(404, 'Not found'));
+      vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [], errors: [] });
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(api.searchInmates).toHaveBeenCalledWith('268213');
+    });
+
+    it('surfaces other legacy lookup errors', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(500, 'Server down'));
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText('Error: Server down')).toBeInTheDocument();
+      expect(api.searchInmates).not.toHaveBeenCalled();
+    });
+
+    it('searches inmate IDs outside the legacy range or with leading zeros directly', async () => {
+      vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [], errors: [] });
+
+      await render(<SearchInmatesTest query="00268213" />, { wrapper: createWrapper() });
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+
+      await render(<SearchInmatesTest query="12345" />, { wrapper: createWrapper() });
+      await expect.element(page.getByText(/Results:/).last()).toBeInTheDocument();
+
+      expect(api.getInmateByLegacyRequest).not.toHaveBeenCalled();
+      expect(api.searchInmates).toHaveBeenCalledWith('00268213');
+      expect(api.searchInmates).toHaveBeenCalledWith('12345');
     });
   });
 

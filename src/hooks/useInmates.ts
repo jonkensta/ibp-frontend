@@ -1,12 +1,33 @@
 import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { searchInmates, getInmate, recordLookup } from '@/lib/api';
-import type { Jurisdiction } from '@/types';
+import { searchInmates, getInmate, getInmateByLegacyRequest, recordLookup } from '@/lib/api';
+import { ApiError } from '@/lib/api/client';
+import { parseLegacyRequestId } from '@/lib/legacyRequest';
+import type { InmateSearchResults, Jurisdiction } from '@/types';
+
+/**
+ * Search by name or inmate ID. A bare number in the recent legacy range is
+ * first tried as a legacy request ID (an old package label) and resolves to
+ * that request's inmate; if no request has that ID, it's searched as an
+ * inmate ID as usual.
+ */
+async function searchInmatesOrLegacyRequest(query: string): Promise<InmateSearchResults> {
+  const requestId = parseLegacyRequestId(query);
+  if (requestId !== null) {
+    try {
+      const inmate = await getInmateByLegacyRequest(requestId);
+      return { inmates: [inmate], errors: [] };
+    } catch (error) {
+      if (!(error instanceof ApiError && error.status === 404)) throw error;
+    }
+  }
+  return searchInmates(query);
+}
 
 export function useSearchInmates(query: string) {
   return useQuery({
     queryKey: ['inmates', 'search', query],
-    queryFn: () => searchInmates(query),
+    queryFn: () => searchInmatesOrLegacyRequest(query),
     enabled: query.length > 0,
   });
 }

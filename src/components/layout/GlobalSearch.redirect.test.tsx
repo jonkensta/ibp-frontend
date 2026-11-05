@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { createTestQueryClient } from '@/test/utils';
-import { searchInmates } from '@/lib/api/inmates';
+import { searchInmates, getInmateByLegacyRequest } from '@/lib/api/inmates';
 import { SearchPage } from '@/pages/SearchPage';
 import { GlobalSearch } from './GlobalSearch';
 
@@ -71,6 +71,40 @@ describe('single-result auto-redirect', () => {
     await renderApp('/inmates/Texas/1');
 
     await userEvent.type(page.getByPlaceholder(/search inmates/i), `0${INMATE_ID}{Enter}`);
+    await expect.element(page.getByText(`inmate /inmates/Texas/${INMATE_ID}`)).toBeInTheDocument();
+    await settle();
+
+    expect(inmateKeys).toHaveLength(2);
+  });
+
+  it('navigates once to the inmate of a legacy request ID', async () => {
+    vi.mocked(getInmateByLegacyRequest).mockImplementation(async (requestId: number) => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(requestId).toBe(268213);
+      return { jurisdiction: 'Texas', id: Number(INMATE_ID) } as unknown as Awaited<
+        ReturnType<typeof getInmateByLegacyRequest>
+      >;
+    });
+
+    await renderApp('/inmates/Texas/1');
+
+    await userEvent.type(page.getByPlaceholder(/search inmates/i), '268213');
+    await expect.element(page.getByText(`inmate /inmates/Texas/${INMATE_ID}`)).toBeInTheDocument();
+    await settle();
+
+    expect(inmateKeys).toHaveLength(2);
+    expect(searchInmates).not.toHaveBeenCalledWith('268213');
+  });
+
+  it('navigates once to the inmate of a legacy request ID when Enter beats the debounce', async () => {
+    vi.mocked(getInmateByLegacyRequest).mockResolvedValue({
+      jurisdiction: 'Texas',
+      id: Number(INMATE_ID),
+    } as unknown as Awaited<ReturnType<typeof getInmateByLegacyRequest>>);
+
+    await renderApp('/inmates/Texas/1');
+
+    await userEvent.type(page.getByPlaceholder(/search inmates/i), '268213{Enter}');
     await expect.element(page.getByText(`inmate /inmates/Texas/${INMATE_ID}`)).toBeInTheDocument();
     await settle();
 

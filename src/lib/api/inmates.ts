@@ -10,6 +10,14 @@ export async function getInmate(jurisdiction: Jurisdiction, id: number): Promise
 }
 
 /**
+ * Read-only: the inmate a legacy request ID (from an old package label)
+ * belongs to. Throws an ApiError with status 404 if no request has that ID.
+ */
+export async function getInmateByLegacyRequest(requestId: number): Promise<Inmate> {
+  return apiGet<Inmate>(`/inmates/by-request/${requestId}`);
+}
+
+/**
  * Record one deliberate view ("lookup") of an inmate and return the inmate,
  * refreshed from the providers if stale. Call once per inmate page view;
  * use `getInmate` (read-only) for every refetch.
