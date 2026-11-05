@@ -36,8 +36,7 @@ export function InmateSearchResults({ inmates, errors, query }: InmateSearchResu
 
       {inmates.length === 0 ? (
         <p className="text-muted-foreground">
-          No inmates found. Check the spelling, or search by the 8-digit ID
-          number.
+          No inmates found. Check the spelling, or search by the 8-digit ID number.
         </p>
       ) : (
         <div className="grid gap-3">
@@ -56,6 +55,11 @@ export function InmateSearchResults({ inmates, errors, query }: InmateSearchResu
                     <p className="text-sm text-muted-foreground">
                       {inmate.jurisdiction} #{inmate.id.toString().padStart(8, '0')}
                     </p>
+                    {inmate.via_request !== undefined && (
+                      <p className="text-sm text-muted-foreground">
+                        via request {inmate.via_request} (old package label)
+                      </p>
+                    )}
                   </div>
                   <div className="text-right text-sm text-muted-foreground">
                     {inmate.race && <p>{inmate.race}</p>}

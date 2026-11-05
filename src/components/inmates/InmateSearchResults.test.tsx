@@ -115,4 +115,18 @@ describe('InmateSearchResults', () => {
     const inmate2 = page.getByText(/smith, jane/i);
     await expect.element(inmate2).toBeInTheDocument();
   });
+
+  it('should label a result found via a legacy request ID', async () => {
+    await renderWithRouter(
+      <InmateSearchResults
+        inmates={[{ ...mockInmates[0], via_request: 268213 }, mockInmates[1]]}
+        errors={[]}
+      />
+    );
+
+    await expect
+      .element(page.getByText('via request 268213 (old package label)'))
+      .toBeInTheDocument();
+    expect(page.getByText(/via request/).elements()).toHaveLength(1);
+  });
 });

@@ -93,7 +93,8 @@ describe('single-result auto-redirect', () => {
     await settle();
 
     expect(inmateKeys).toHaveLength(2);
-    expect(searchInmates).not.toHaveBeenCalledWith('268213');
+    // Also searched as an inmate ID, which here finds no one else
+    expect(searchInmates).toHaveBeenCalledWith('268213');
   });
 
   it('navigates once to the inmate of a legacy request ID when Enter beats the debounce', async () => {
@@ -109,5 +110,30 @@ describe('single-result auto-redirect', () => {
     await settle();
 
     expect(inmateKeys).toHaveLength(2);
+  });
+
+  it('lists both inmates, without redirecting, when a legacy request ID is also an inmate ID', async () => {
+    vi.mocked(getInmateByLegacyRequest).mockResolvedValue({
+      jurisdiction: 'Texas',
+      id: Number(INMATE_ID),
+      last_name: 'Doe',
+      first_name: 'John',
+    } as unknown as Awaited<ReturnType<typeof getInmateByLegacyRequest>>);
+    vi.mocked(searchInmates).mockResolvedValue({
+      inmates: [{ jurisdiction: 'Texas', id: 268213, last_name: 'Roe', first_name: 'Jane' }],
+      errors: [],
+    } as unknown as Awaited<ReturnType<typeof searchInmates>>);
+
+    await renderApp('/inmates/Texas/1');
+
+    await userEvent.type(page.getByPlaceholder(/search inmates/i), '268213{Enter}');
+    await expect.element(page.getByText('Found 2 results')).toBeInTheDocument();
+    await settle();
+
+    await expect.element(page.getByText('Doe, John')).toBeInTheDocument();
+    await expect.element(page.getByText('Roe, Jane')).toBeInTheDocument();
+    await expect.element(page.getByText(/via request 268213/)).toBeInTheDocument();
+    // Only the starting inmate's entry: no redirect to either inmate
+    expect(inmateKeys).toHaveLength(1);
   });
 });

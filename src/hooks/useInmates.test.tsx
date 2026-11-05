@@ -130,33 +130,108 @@ describe('useInmates', () => {
       lookups: [],
     };
 
-    it("resolves a recent legacy request ID to the request's inmate", async () => {
+    const legacyResult = {
+      jurisdiction: 'Texas' as const,
+      id: 2584921,
+      first_name: 'John',
+      last_name: 'Doe',
+      race: null,
+      sex: null,
+      release: null,
+      url: null,
+    };
+    const idInmate = {
+      jurisdiction: 'Texas' as const,
+      id: 268213,
+      first_name: 'Jane',
+      last_name: 'Roe',
+      race: null,
+      sex: null,
+      release: null,
+      url: null,
+    };
+    const resultsOf = () =>
+      JSON.parse(
+        page
+          .getByText(/Results:/)
+          .element()
+          .textContent!.replace('Results: ', '')
+      );
+
+    it("resolves a legacy request ID that is no inmate's ID to the request's inmate", async () => {
       vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
+      vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [], errors: [] });
 
       await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
 
-      await expect.element(page.getByText(/"id":2584921/)).toBeInTheDocument();
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({ inmates: [legacyResult], errors: [] });
       expect(api.getInmateByLegacyRequest).toHaveBeenCalledWith(268213);
-      expect(api.searchInmates).not.toHaveBeenCalled();
+      expect(api.searchInmates).toHaveBeenCalledWith('268213');
     });
 
-    it('falls back to an inmate ID search when no request has that ID', async () => {
+    it('returns the ID search when no request has that ID', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(404, 'Not found'));
+      vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [idInmate], errors: [] });
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({ inmates: [idInmate], errors: [] });
+    });
+
+    it('returns no results when neither lookup hits', async () => {
       vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(404, 'Not found'));
       vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [], errors: [] });
 
       await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
 
       await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
-      expect(api.searchInmates).toHaveBeenCalledWith('268213');
+      expect(resultsOf()).toEqual({ inmates: [], errors: [] });
+    });
+
+    it('returns one result when both lookups find the same inmate', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
+      vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [legacyResult], errors: [] });
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({ inmates: [legacyResult], errors: [] });
+    });
+
+    it('returns both inmates, the request one marked, when the lookups differ', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
+      vi.mocked(api.searchInmates).mockResolvedValue({
+        inmates: [idInmate],
+        errors: ['Federal: timeout'],
+      });
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({
+        inmates: [{ ...legacyResult, via_request: 268213 }, idInmate],
+        errors: ['Federal: timeout'],
+      });
     });
 
     it('surfaces other legacy lookup errors', async () => {
       vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(500, 'Server down'));
+      vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [idInmate], errors: [] });
 
       await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
 
       await expect.element(page.getByText('Error: Server down')).toBeInTheDocument();
-      expect(api.searchInmates).not.toHaveBeenCalled();
+    });
+
+    it('surfaces ID search errors even when the request lookup hits', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
+      vi.mocked(api.searchInmates).mockRejectedValue(new Error('Search failed'));
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText('Error: Search failed')).toBeInTheDocument();
     });
 
     it('searches inmate IDs outside the legacy range or with leading zeros directly', async () => {
