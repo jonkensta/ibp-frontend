@@ -5,7 +5,7 @@ import { RequestList, RequestForm, RequestListSkeleton } from '@/components/requ
 import { CommentList, CommentForm, CommentListSkeleton } from '@/components/comments';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useInmate, useInmateWarnings } from '@/hooks';
+import { useInmateView, useInmateWarnings } from '@/hooks';
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 import type { Jurisdiction } from '@/types';
 
@@ -24,7 +24,13 @@ export function InmateDetailPage() {
   const backToSearchState = { fromInmateDetail: true };
 
   const inmateId = id ? parseInt(id, 10) : 0;
-  const { data: inmate, isLoading, error } = useInmate(jurisdiction as Jurisdiction, inmateId);
+  // One lookup is recorded per navigation to this page (location.key);
+  // refetches after adding/deleting requests or comments are read-only.
+  const {
+    data: inmate,
+    isLoading,
+    error,
+  } = useInmateView(jurisdiction as Jurisdiction, inmateId, location.key);
   const { data: warnings } = useInmateWarnings(jurisdiction as Jurisdiction, inmateId);
 
   const handleRequestCreated = (requestIndex: number, action: 'Filled' | 'Tossed') => {

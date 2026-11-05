@@ -10,6 +10,7 @@ import type { Jurisdiction } from '@/types';
 vi.mock('@/lib/api', () => ({
   searchInmates: vi.fn(),
   getInmate: vi.fn(),
+  recordLookup: vi.fn(),
 }));
 
 // Test component that uses useSearchInmates
