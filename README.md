@@ -48,8 +48,8 @@ npm test             # Vitest, watch mode
 Tests run in Vitest browser mode on headless Firefox via Playwright; install
 the browser once with `npx playwright install firefox`.
 
-CI (`.github/workflows/ci.yml`) runs lint, build and tests on every push and
-pull request to `main`.
+CI (`.github/workflows/ci.yml`) runs lint, format check, build and tests on every
+push and pull request to `main`.
 
 ## Build
 
