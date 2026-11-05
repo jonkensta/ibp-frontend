@@ -28,11 +28,11 @@ The dev server (http://localhost:5173) proxies `/api` to an ibp-backend on
 `http://localhost:8000` (see `server.proxy` in `vite.config.ts`), so start the
 backend first (`uv run fastapi dev ibp` in ibp-backend).
 
-Optional build-time environment variables (in a `.env.local`, say):
+Optional build-time environment variables (copy `.env.example` to `.env.local`):
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `VITE_API_BASE_URL` | `/api` | Backend base URL; leave unset to go through the proxy |
+| `VITE_API_BASE_URL` | `/api` | Backend base URL; leave unset to go through the proxy (set it only for a backend at another origin with `[server] cors_origins`) |
 | `VITE_PRINT_SERVER_URL` | `http://localhost:40121` | Intake station's [ibp-print-server](https://github.com/jonkensta/ibp-print-server) |
 
 ## Checks
