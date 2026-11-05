@@ -193,9 +193,12 @@ describe('useUnits', () => {
       const updatedUnit = { ...mockUnit, city: 'Dallas' };
       vi.mocked(api.updateUnit).mockResolvedValue(updatedUnit);
 
-      await render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
-        wrapper: Wrapper,
-      });
+      await render(
+        <UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />,
+        {
+          wrapper: Wrapper,
+        }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -212,9 +215,12 @@ describe('useUnits', () => {
       vi.mocked(api.updateUnit).mockRejectedValue(new Error('Update failed'));
 
       const Wrapper = createWrapper();
-      await render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
-        wrapper: Wrapper,
-      });
+      await render(
+        <UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />,
+        {
+          wrapper: Wrapper,
+        }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
@@ -229,9 +235,12 @@ describe('useUnits', () => {
       );
 
       const Wrapper = createWrapper();
-      await render(<UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />, {
-        wrapper: Wrapper,
-      });
+      await render(
+        <UpdateUnitTest jurisdiction="Texas" name="Test Unit" data={{ city: 'Dallas' }} />,
+        {
+          wrapper: Wrapper,
+        }
+      );
 
       const button = page.getByRole('button', { name: 'Mutate' });
       await button.click();
