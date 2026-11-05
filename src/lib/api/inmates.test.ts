@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { searchInmates, getInmate } from './inmates';
+import { searchInmates, getInmate, recordLookup } from './inmates';
 
 const mockFetch = vi.fn();
 window.fetch = mockFetch;
@@ -149,6 +149,32 @@ describe('Inmates API', () => {
       );
 
       await expect(getInmate('Texas', 99999)).rejects.toThrow();
+    });
+  });
+
+  describe('recordLookup', () => {
+    it('should POST to the lookups endpoint and return the inmate', async () => {
+      const mockInmate = { jurisdiction: 'Texas', id: 12345, lookups: [{ datetime_created: 'x' }] };
+      mockFetch.mockResolvedValue(
+        new Response(JSON.stringify(mockInmate), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+
+      const result = await recordLookup('Texas', 12345);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringMatching(/\/inmates\/Texas\/12345\/lookups$/),
+        expect.objectContaining({ method: 'POST' })
+      );
+      expect(result).toEqual(mockInmate);
+    });
+
+    it('should throw error for not found inmate', async () => {
+      mockFetch.mockResolvedValue(new Response('Not Found', { status: 404 }));
+
+      await expect(recordLookup('Texas', 99999)).rejects.toThrow();
     });
   });
 });
