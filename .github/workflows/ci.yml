@@ -1,0 +1,36 @@
+name: CI
+
+# Lint, type-check and build, and run the vitest suite (browser mode, headless
+# Firefox via Playwright) on every push and pull request to main.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same major as the Dockerfile's build stage (node:24-alpine).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run build
+
+      - name: Install Playwright Firefox
+        run: npx playwright install --with-deps firefox
+
+      - run: npm run test:run
