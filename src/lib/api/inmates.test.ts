@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { searchInmates, getInmate, recordLookup } from './inmates';
+import { searchInmates, getInmate, getInmateByLegacyRequest, recordLookup } from './inmates';
 
 const mockFetch = vi.fn();
 window.fetch = mockFetch;
@@ -78,6 +78,37 @@ describe('Inmates API', () => {
 
       expect(result.errors).toHaveLength(2);
       expect(result.errors[0]).toBe('Provider A timeout');
+    });
+  });
+
+  describe('getInmateByLegacyRequest', () => {
+    it('fetches the inmate for a legacy request ID', async () => {
+      const mockInmate = { jurisdiction: 'Texas', id: 2584921 };
+      mockFetch.mockResolvedValue(
+        new Response(JSON.stringify(mockInmate), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
+
+      const result = await getInmateByLegacyRequest(268213);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/inmates/by-request/268213'),
+        expect.objectContaining({ method: 'GET' })
+      );
+      expect(result).toEqual(mockInmate);
+    });
+
+    it('throws a 404 ApiError for an unknown request ID', async () => {
+      mockFetch.mockResolvedValue(
+        new Response(JSON.stringify({ detail: 'No request found' }), { status: 404 })
+      );
+
+      await expect(getInmateByLegacyRequest(268213)).rejects.toMatchObject({
+        status: 404,
+        message: 'No request found',
+      });
     });
   });
 
