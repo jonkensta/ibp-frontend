@@ -8,7 +8,12 @@ app built with Vite; all data comes from the FastAPI backend
 ([ibp-backend](https://github.com/jonkensta/ibp-backend)) under `/api/`.
 
 The header search takes a name, an inmate ID, or the request number printed on
-an old (pre-2026-11-02) package label.
+an old package label, but only numbers 264807-270049 (labels from roughly the
+six months before the 2026-11-02 cutover). Older request numbers look like
+6-digit TDCJ inmate IDs, so they are searched as inmate IDs only. The range is
+set in `src/lib/legacyRequest.ts` and matches ibp-book-portal-extension's. A
+number in the range is also searched as an inmate ID, and if that finds a
+different inmate, both are listed instead of redirecting.
 
 ## Development
 

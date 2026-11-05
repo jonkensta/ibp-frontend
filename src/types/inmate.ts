@@ -26,7 +26,11 @@ export interface Inmate extends InmateBase {
   lookups: Lookup[];
 }
 
-export type InmateSearchResult = InmateBase;
+export interface InmateSearchResult extends InmateBase {
+  /** Set when this result came from the legacy request ID searched for
+   *  (an old package label), not from the inmate ID search. */
+  via_request?: number;
+}
 
 export interface InmateSearchResults {
   inmates: InmateSearchResult[];

@@ -54,7 +54,9 @@ export function PrintServerSettings() {
       }
     } catch (error) {
       console.error('Print server health check failed:', error);
-      toast.error('Could not reach the print server. Labels will open as a PDF to print from the browser.');
+      toast.error(
+        'Could not reach the print server. Labels will open as a PDF to print from the browser.'
+      );
     } finally {
       setTesting(false);
     }
@@ -83,8 +85,8 @@ export function PrintServerSettings() {
           <DialogHeader>
             <DialogTitle>Print Server Settings</DialogTitle>
             <DialogDescription>
-              Labels print silently through the print server when it is reachable. If it is not,
-              the label opens as a PDF in a new tab to print from the browser.
+              Labels print silently through the print server when it is reachable. If it is not, a
+              notice links to the label as a PDF to print from the browser.
             </DialogDescription>
           </DialogHeader>
 

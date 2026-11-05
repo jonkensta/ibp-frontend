@@ -47,17 +47,20 @@ export function useValidateRequest(jurisdiction: Jurisdiction, inmateId: number)
 
 export type PrintLabelResult =
   | { method: 'print-server' }
-  | { method: 'browser'; printServerError: string };
+  | { method: 'browser'; printServerError: string; pdfUrl: string };
 
 /**
  * Print a request label.
  *
- * First tries the print server for silent one-click printing; if it is
- * unreachable or errors, falls back to opening the label as a PDF in a new
- * tab. The PDF page is exactly the label size, so the browser's PDF viewer
- * prints it without the scaling and margin problems of printing an HTML page
- * (notably in Firefox). The returned result says which path was used so
- * callers can surface appropriate feedback.
+ * First tries the print server for silent one-click printing. If it is
+ * unreachable or errors, returns the URL of the label as a PDF for the caller
+ * to offer as a link. The PDF page is exactly the label size, so the browser's
+ * PDF viewer prints it without the scaling and margin problems of printing an
+ * HTML page (notably in Firefox).
+ *
+ * The PDF is deliberately not opened here: by the time the print server has
+ * failed, the click's user activation may have expired and `window.open`
+ * would be blocked as a popup. A link the volunteer clicks never is.
  */
 export async function printRequestLabel(
   jurisdiction: Jurisdiction,
@@ -66,23 +69,15 @@ export async function printRequestLabel(
 ): Promise<PrintLabelResult> {
   const blob = await getRequestLabel(jurisdiction, inmateId, requestIndex);
 
-  let printServerError: string;
   try {
     await printLabelViaPrintServer(blob);
     return { method: 'print-server' };
   } catch (error) {
-    printServerError = error instanceof Error ? error.message : String(error);
-    console.warn('Print server unavailable, falling back to browser printing:', error);
-  }
-
-  openLabelPdf(getRequestLabelPdfUrl(jurisdiction, inmateId, requestIndex));
-  return { method: 'browser', printServerError };
-}
-
-/** Open the label PDF in a new tab for printing from the browser's PDF viewer. */
-function openLabelPdf(url: string): void {
-  const pdfWindow = window.open(url, '_blank');
-  if (!pdfWindow) {
-    throw new Error('Failed to open the label PDF. Please allow popups for this site.');
+    console.warn('Print server unavailable, falling back to the label PDF:', error);
+    return {
+      method: 'browser',
+      printServerError: error instanceof Error ? error.message : String(error),
+      pdfUrl: getRequestLabelPdfUrl(jurisdiction, inmateId, requestIndex),
+    };
   }
 }

@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { QueryWrapper } from '@/test/utils';
-import { RequestList } from './RequestList';
+import { toast } from 'sonner';
+import { RequestList, LabelPdfNotice } from './RequestList';
+import { printRequestLabel } from '@/hooks';
 import type { Request } from '@/types';
 
 vi.mock('@/lib/api/requests');
@@ -10,7 +12,12 @@ vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    warning: vi.fn(),
   },
+}));
+vi.mock('@/hooks', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks')>()),
+  printRequestLabel: vi.fn(),
 }));
 
 const mockRequests: Request[] = [
@@ -122,6 +129,61 @@ describe('RequestList', () => {
     const deletes = await deleteButtons.all();
     expect(deletes.length).toBe(3);
     await expect.element(deletes[0]).toHaveAttribute('aria-label', 'Delete request');
+  });
+
+  it('should confirm a label sent to the print server', async () => {
+    vi.mocked(printRequestLabel).mockResolvedValue({ method: 'print-server' });
+    await render(
+      <QueryWrapper>
+        <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    await page.getByRole('button', { name: /print request label/i }).click();
+
+    await expect.poll(() => vi.mocked(toast.success).mock.calls.length).toBe(1);
+    expect(printRequestLabel).toHaveBeenCalledWith('Texas', 12345, 1);
+    expect(toast.warning).not.toHaveBeenCalled();
+  });
+
+  it('should offer the label PDF as a link when the print server fails', async () => {
+    const openSpy = vi.spyOn(window, 'open');
+    vi.mocked(printRequestLabel).mockResolvedValue({
+      method: 'browser',
+      printServerError: 'Print server is unreachable',
+      pdfUrl: '/api/inmates/Texas/12345/requests/1/label.pdf',
+    });
+    await render(
+      <QueryWrapper>
+        <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    await page.getByRole('button', { name: /print request label/i }).click();
+
+    await expect.poll(() => vi.mocked(toast.warning).mock.calls.length).toBe(1);
+    const [title, options] = vi.mocked(toast.warning).mock.calls[0];
+    expect(title).toBe('Print server unavailable');
+    expect(options).toMatchObject({ duration: Infinity, closeButton: true });
+    expect(openSpy).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
+
+  it('should render the label PDF notice as a new-tab link', async () => {
+    await render(
+      <LabelPdfNotice
+        pdfUrl="/api/inmates/Texas/12345/requests/1/label.pdf"
+        printServerError="Print server is unreachable"
+      />
+    );
+
+    await expect.element(page.getByText('Print server is unreachable')).toBeInTheDocument();
+    const link = page.getByRole('link', { name: 'Open label PDF' });
+    await expect
+      .element(link)
+      .toHaveAttribute('href', '/api/inmates/Texas/12345/requests/1/label.pdf');
+    await expect.element(link).toHaveAttribute('target', '_blank');
+    await expect.element(link).toHaveAttribute('rel', 'noopener');
   });
 
   it('should not show print button for tossed requests', async () => {
