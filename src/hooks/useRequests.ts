@@ -3,6 +3,7 @@ import {
   createRequest,
   deleteRequest,
   getRequestLabel,
+  getRequestLabelPdfUrl,
   getInmateWarnings,
   validateRequest,
 } from '@/lib/api';
@@ -52,9 +53,11 @@ export type PrintLabelResult =
  * Print a request label.
  *
  * First tries the print server for silent one-click printing; if it is
- * unreachable or errors, falls back to opening the browser print dialog.
- * The returned result says which path was used so callers can surface
- * appropriate feedback.
+ * unreachable or errors, falls back to opening the label as a PDF in a new
+ * tab. The PDF page is exactly the label size, so the browser's PDF viewer
+ * prints it without the scaling and margin problems of printing an HTML page
+ * (notably in Firefox). The returned result says which path was used so
+ * callers can surface appropriate feedback.
  */
 export async function printRequestLabel(
   jurisdiction: Jurisdiction,
@@ -72,87 +75,14 @@ export async function printRequestLabel(
     console.warn('Print server unavailable, falling back to browser printing:', error);
   }
 
-  await printLabelInBrowser(blob);
+  openLabelPdf(getRequestLabelPdfUrl(jurisdiction, inmateId, requestIndex));
   return { method: 'browser', printServerError };
 }
 
-/** Open a popup window and print the label via the browser print dialog. */
-async function printLabelInBrowser(blob: Blob): Promise<void> {
-  // Convert blob to base64 data URL (may work better with Firefox printing)
-  const base64 = await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
-
-  const printWindow = window.open('', '_blank', 'width=1024,height=768,scrollbars=yes');
-
-  if (!printWindow) {
-    throw new Error('Failed to open print window. Please allow popups for this site.');
-  }
-
-  try {
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Print Label</title>
-          <style>
-            @page {
-              size: 85mm 32mm;
-              margin: 0;
-            }
-            body {
-              margin: 0;
-              padding: 0;
-            }
-            img {
-              width: 85mm;
-              height: 32mm;
-              display: block;
-              /* Ensure the image fills the printable area */
-              position: absolute;
-              top: 0;
-              left: 0;
-            }
-          </style>
-        </head>
-        <body>
-          <img id="label-img" src="${base64}" />
-          <script>
-            // Wait for window to be fully loaded, not just the image
-            window.addEventListener('load', () => {
-              // Set up handlers before printing
-              let printCompleted = false;
-
-              window.addEventListener('beforeprint', () => {
-                console.log('Print dialog opening');
-              });
-
-              window.addEventListener('afterprint', () => {
-                console.log('Print dialog closed');
-                printCompleted = true;
-                // Keep window open longer to ensure print job completes
-                setTimeout(() => window.close(), 1000);
-              });
-
-              // Trigger print
-              window.print();
-
-              // Fallback: if afterprint doesn't fire, close after timeout
-              setTimeout(() => {
-                if (!printCompleted) {
-                  console.log('Print timeout - closing window');
-                  window.close();
-                }
-              }, 30000); // 30 second timeout
-            });
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  } catch {
-    printWindow.close();
-    throw new Error('Failed to prepare print window');
+/** Open the label PDF in a new tab for printing from the browser's PDF viewer. */
+function openLabelPdf(url: string): void {
+  const pdfWindow = window.open(url, '_blank');
+  if (!pdfWindow) {
+    throw new Error('Failed to open the label PDF. Please allow popups for this site.');
   }
 }

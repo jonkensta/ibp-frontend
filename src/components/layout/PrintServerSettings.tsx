@@ -23,8 +23,8 @@ import {
  * Header affordance for configuring the label print server URL.
  *
  * Labels print silently through the print server when it is reachable;
- * otherwise the app falls back to the browser print dialog. This dialog lets
- * volunteers point the app at the right print server and test the connection.
+ * otherwise the app opens the label as a PDF to print from the browser. This
+ * dialog lets volunteers point the app at the right print server and test the connection.
  */
 export function PrintServerSettings() {
   const [open, setOpen] = useState(false);
@@ -54,7 +54,7 @@ export function PrintServerSettings() {
       }
     } catch (error) {
       console.error('Print server health check failed:', error);
-      toast.error('Could not reach the print server. Labels will use the browser print dialog.');
+      toast.error('Could not reach the print server. Labels will open as a PDF to print from the browser.');
     } finally {
       setTesting(false);
     }
@@ -84,7 +84,7 @@ export function PrintServerSettings() {
             <DialogTitle>Print Server Settings</DialogTitle>
             <DialogDescription>
               Labels print silently through the print server when it is reachable. If it is not,
-              the browser print dialog is used instead.
+              the label opens as a PDF in a new tab to print from the browser.
             </DialogDescription>
           </DialogHeader>
 
