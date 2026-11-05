@@ -15,6 +15,30 @@ import {
 import { useDeleteRequest, printRequestLabel } from '@/hooks';
 import type { Request, Jurisdiction } from '@/types';
 
+/** Toast body offering the label PDF when the print server can't print it. */
+export function LabelPdfNotice({
+  pdfUrl,
+  printServerError,
+}: {
+  pdfUrl: string;
+  printServerError: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span>{printServerError}</span>
+      <a
+        href={pdfUrl}
+        target="_blank"
+        rel="noopener"
+        className="font-medium underline underline-offset-4"
+      >
+        Open label PDF
+      </a>
+      <span>Print it from the new tab (Ctrl+P).</span>
+    </div>
+  );
+}
+
 interface RequestListProps {
   requests: Request[];
   jurisdiction: Jurisdiction;
@@ -91,9 +115,14 @@ export function RequestList({
       if (result.method === 'print-server') {
         toast.success('Label sent to the label printer');
       } else {
-        // The label PDF opened in a new tab; explain why and how to print it
-        toast.message('Print server unavailable — label opened as a PDF in a new tab', {
-          description: `Print it from there (Ctrl+P). ${result.printServerError}`,
+        // A link, not window.open: the click's user activation may have
+        // expired by now, and a popup opened without it gets blocked.
+        toast.warning('Print server unavailable', {
+          description: (
+            <LabelPdfNotice pdfUrl={result.pdfUrl} printServerError={result.printServerError} />
+          ),
+          duration: Infinity,
+          closeButton: true,
         });
       }
       onPrintLabel?.();

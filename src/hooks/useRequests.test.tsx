@@ -449,7 +449,7 @@ describe('useRequests', () => {
       expect(openSpy).not.toHaveBeenCalled();
     });
 
-    it('should open the label PDF when the print server fails', async () => {
+    it('should return the label PDF URL, not open it, when the print server fails', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
       vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
@@ -461,13 +461,11 @@ describe('useRequests', () => {
       expect(result).toEqual({
         method: 'browser',
         printServerError: 'Print server is unreachable',
+        pdfUrl: '/api/inmates/Texas/12345/requests/1/label.pdf',
       });
       expect(api.getRequestLabelPdfUrl).toHaveBeenCalledWith('Texas', 12345, 1);
-      expect(openSpy).toHaveBeenCalledTimes(1);
-      expect(openSpy).toHaveBeenCalledWith(
-        '/api/inmates/Texas/12345/requests/1/label.pdf',
-        '_blank'
-      );
+      // Opening it after the async failure could be blocked as a popup
+      expect(openSpy).not.toHaveBeenCalled();
     });
 
     it('should handle label fetch errors without trying to print', async () => {
@@ -477,19 +475,6 @@ describe('useRequests', () => {
 
       expect(printServer.printLabelViaPrintServer).not.toHaveBeenCalled();
       expect(openSpy).not.toHaveBeenCalled();
-    });
-
-    it('should handle popup blocker (window.open returns null)', async () => {
-      const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
-      vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
-      vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
-        new Error('Print server is unreachable')
-      );
-      openSpy.mockReturnValue(null);
-
-      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow(
-        'Failed to open the label PDF. Please allow popups for this site.'
-      );
     });
   });
 });
