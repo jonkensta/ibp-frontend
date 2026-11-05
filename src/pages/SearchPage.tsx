@@ -46,7 +46,8 @@ export function SearchPage() {
       <div>
         <h1 className="text-2xl font-bold">Search Inmates</h1>
         <p className="mt-1 text-muted-foreground">
-          Search by inmate name or ID number to view their information.
+          Search by inmate name or ID number, or by the request number on an old package label, to
+          view their information.
         </p>
       </div>
 
