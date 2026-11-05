@@ -35,4 +35,7 @@ export interface InmateSearchResult extends InmateBase {
 export interface InmateSearchResults {
   inmates: InmateSearchResult[];
   errors: string[];
+  /** Set (by the frontend) when a single result must not be auto-redirected
+   *  to, because a lookup that could have found someone else failed. */
+  noAutoRedirect?: boolean;
 }

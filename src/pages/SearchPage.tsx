@@ -5,7 +5,7 @@ import {
   InmateSearchResults,
   InmateSearchResultsSkeleton,
 } from '@/components/inmates';
-import { useSearchInmates } from '@/hooks';
+import { autoRedirectTarget, useSearchInmates } from '@/hooks';
 import { LEGACY_MAX_REQUEST_ID, LEGACY_RECENT_MIN } from '@/lib/legacyRequest';
 
 export function SearchPage() {
@@ -27,8 +27,8 @@ export function SearchPage() {
   // Auto-redirect on single result — but not when returning from a detail
   // page, which would immediately bounce the user back to the page they left.
   useEffect(() => {
-    if (data && data.inmates.length === 1 && !isLoading && !fromInmateDetail) {
-      const inmate = data.inmates[0];
+    const inmate = autoRedirectTarget(data);
+    if (inmate && !isLoading && !fromInmateDetail) {
       navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, {
         replace: true,
         state: { searchQuery: query },

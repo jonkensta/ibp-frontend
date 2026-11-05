@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 're
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { useSearchInmates } from '@/hooks';
+import { autoRedirectTarget, useSearchInmates } from '@/hooks';
 
 export interface GlobalSearchRef {
   focus: () => void;
@@ -41,9 +41,9 @@ export const GlobalSearch = forwardRef<GlobalSearchRef>((_props, ref) => {
       redirectedQuery.current = null;
       return;
     }
-    if (data && data.inmates.length === 1 && redirectedQuery.current !== debouncedQuery) {
+    const inmate = autoRedirectTarget(data);
+    if (inmate && redirectedQuery.current !== debouncedQuery) {
       redirectedQuery.current = debouncedQuery;
-      const inmate = data.inmates[0];
       navigate(`/inmates/${inmate.jurisdiction}/${inmate.id}`, {
         replace: true,
         state: { searchQuery: debouncedQuery },
@@ -60,7 +60,7 @@ export const GlobalSearch = forwardRef<GlobalSearchRef>((_props, ref) => {
     const trimmed = query.trim();
     if (trimmed) {
       // If we don't have a single result, navigate to search page
-      if (!data || data.inmates.length !== 1) {
+      if (!autoRedirectTarget(data)) {
         navigate(`/search?q=${encodeURIComponent(trimmed)}`);
         setQuery('');
         setDebouncedQuery('');

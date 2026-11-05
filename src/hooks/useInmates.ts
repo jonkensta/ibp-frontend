@@ -20,30 +20,48 @@ async function findInmateByLegacyRequest(requestId: number): Promise<InmateSearc
 /**
  * Search by name or inmate ID. A bare number in the recent legacy range may
  * be either a legacy request ID (an old package label) or an inmate ID, so it
- * is looked up both ways. If only one hits, or both find the same inmate,
- * that inmate is the single result; if they find different inmates, both are
- * returned, the request's inmate first and marked `via_request`, so the
- * volunteer chooses instead of being redirected to the wrong person.
+ * is looked up both ways:
+ *
+ * - If only one hits, or both find the same inmate, and both lookups fully
+ *   succeeded, that inmate is the single (auto-redirectable) result.
+ * - If they find different inmates, both are returned, the request's inmate
+ *   first and marked `via_request`, so the volunteer chooses.
+ * - If the ID search reported a provider error, the check that could have
+ *   found a different inmate is incomplete: whatever was found is returned
+ *   with the error and `noAutoRedirect`, never as a redirect to someone who
+ *   may be the wrong person.
  */
 async function searchInmatesOrLegacyRequest(query: string): Promise<InmateSearchResults> {
   const requestId = parseLegacyRequestId(query);
   if (requestId === null) return searchInmates(query);
 
-  const [requestInmate, results] = await Promise.all([
+  const [requestInmate, { inmates, errors }] = await Promise.all([
     findInmateByLegacyRequest(requestId),
     searchInmates(query),
   ]);
-  if (!requestInmate) return results;
+  if (!requestInmate) return { inmates, errors };
+  const viaRequest = { ...requestInmate, via_request: requestId };
 
-  const others = results.inmates.filter(
+  const others = inmates.filter(
     (inmate) =>
       !(inmate.jurisdiction === requestInmate.jurisdiction && inmate.id === requestInmate.id)
   );
-  if (others.length === 0) return { inmates: [requestInmate], errors: results.errors };
-  return {
-    inmates: [{ ...requestInmate, via_request: requestId }, ...others],
-    errors: results.errors,
-  };
+  // The ID search found the request's inmate too: no need to label it
+  const foundById = others.length < inmates.length;
+  const first = foundById ? requestInmate : viaRequest;
+  if (others.length === 0 && errors.length === 0) return { inmates: [requestInmate], errors };
+  return { inmates: [first, ...others], errors, noAutoRedirect: true };
+}
+
+/**
+ * The inmate a search should take the volunteer straight to: the only
+ * result, unless the search marked it as not safe to redirect to.
+ */
+export function autoRedirectTarget(
+  results: InmateSearchResults | undefined
+): InmateSearchResult | null {
+  if (!results || results.noAutoRedirect || results.inmates.length !== 1) return null;
+  return results.inmates[0];
 }
 
 export function useSearchInmates(query: string) {

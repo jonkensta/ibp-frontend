@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { createWrapper } from '@/test/utils';
-import { useSearchInmates, useInmate } from './useInmates';
+import { useSearchInmates, useInmate, autoRedirectTarget } from './useInmates';
 import * as api from '@/lib/api';
 import { ApiError } from '@/lib/api/client';
 import type { Jurisdiction } from '@/types';
@@ -213,6 +213,41 @@ describe('useInmates', () => {
       expect(resultsOf()).toEqual({
         inmates: [{ ...legacyResult, via_request: 268213 }, idInmate],
         errors: ['Federal: timeout'],
+        noAutoRedirect: true,
+      });
+    });
+
+    it('does not offer a redirect when the ID search reports a provider error', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
+      vi.mocked(api.searchInmates).mockResolvedValue({
+        inmates: [],
+        errors: ['Federal: timeout'],
+      });
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({
+        inmates: [{ ...legacyResult, via_request: 268213 }],
+        errors: ['Federal: timeout'],
+        noAutoRedirect: true,
+      });
+    });
+
+    it('does not offer a redirect when both find the same inmate but a provider errored', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
+      vi.mocked(api.searchInmates).mockResolvedValue({
+        inmates: [legacyResult],
+        errors: ['Federal: timeout'],
+      });
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({
+        inmates: [legacyResult],
+        errors: ['Federal: timeout'],
+        noAutoRedirect: true,
       });
     });
 
@@ -344,6 +379,32 @@ describe('useInmates', () => {
 
       const loading = page.getByText('Loading...');
       await expect.element(loading).toBeInTheDocument();
+    });
+  });
+
+  describe('autoRedirectTarget', () => {
+    const inmate = {
+      jurisdiction: 'Texas' as const,
+      id: 1,
+      first_name: null,
+      last_name: null,
+      race: null,
+      sex: null,
+      release: null,
+      url: null,
+    };
+
+    it('is the only result', () => {
+      expect(autoRedirectTarget({ inmates: [inmate], errors: [] })).toBe(inmate);
+    });
+
+    it('is null for no data, zero or several results, or noAutoRedirect', () => {
+      expect(autoRedirectTarget(undefined)).toBeNull();
+      expect(autoRedirectTarget({ inmates: [], errors: [] })).toBeNull();
+      expect(autoRedirectTarget({ inmates: [inmate, inmate], errors: [] })).toBeNull();
+      expect(
+        autoRedirectTarget({ inmates: [inmate], errors: ['x'], noAutoRedirect: true })
+      ).toBeNull();
     });
   });
 });

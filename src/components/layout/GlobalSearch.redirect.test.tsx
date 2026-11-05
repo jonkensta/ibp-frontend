@@ -136,4 +136,27 @@ describe('single-result auto-redirect', () => {
     // Only the starting inmate's entry: no redirect to either inmate
     expect(inmateKeys).toHaveLength(1);
   });
+
+  it("shows, without redirecting, the request's inmate when a provider errored", async () => {
+    vi.mocked(getInmateByLegacyRequest).mockResolvedValue({
+      jurisdiction: 'Texas',
+      id: Number(INMATE_ID),
+      last_name: 'Doe',
+      first_name: 'John',
+    } as unknown as Awaited<ReturnType<typeof getInmateByLegacyRequest>>);
+    vi.mocked(searchInmates).mockResolvedValue({ inmates: [], errors: ['Federal: timeout'] });
+
+    await renderApp('/inmates/Texas/1');
+
+    // Wait out the debounce without pressing Enter: the header search must not redirect
+    await userEvent.type(page.getByPlaceholder(/search inmates/i), '268213');
+    await settle();
+    expect(inmateKeys).toHaveLength(1);
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByText('Federal: timeout')).toBeInTheDocument();
+    await expect.element(page.getByText(/via request 268213/)).toBeInTheDocument();
+    await settle();
+    expect(inmateKeys).toHaveLength(1);
+  });
 });
