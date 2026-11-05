@@ -6,6 +6,7 @@ import {
   InmateSearchResultsSkeleton,
 } from '@/components/inmates';
 import { useSearchInmates } from '@/hooks';
+import { LEGACY_MAX_REQUEST_ID, LEGACY_RECENT_MIN } from '@/lib/legacyRequest';
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,8 +47,9 @@ export function SearchPage() {
       <div>
         <h1 className="text-2xl font-bold">Search Inmates</h1>
         <p className="mt-1 text-muted-foreground">
-          Search by inmate name or ID number, or by the request number on an old package label, to
-          view their information.
+          Search by inmate name or ID number, or by the request number ({LEGACY_RECENT_MIN} to{' '}
+          {LEGACY_MAX_REQUEST_ID}) on a package label printed in the six months before November 2,
+          2026, to view their information.
         </p>
       </div>
 

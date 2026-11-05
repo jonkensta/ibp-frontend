@@ -52,6 +52,8 @@ describe('SearchPage', () => {
 
     const description = page.getByText(/search by inmate name or id number/i);
     await expect.element(description).toBeInTheDocument();
+    // Only the recent legacy range is recognized, so the hint names it
+    await expect.element(description).toHaveTextContent(/264807 to 270049/);
   });
 
   it('should initialize with query from URL params', async () => {
