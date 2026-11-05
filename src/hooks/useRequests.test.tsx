@@ -22,6 +22,10 @@ vi.mock('@/lib/api', () => ({
   deleteRequest: vi.fn(),
   validateRequest: vi.fn(),
   getRequestLabel: vi.fn(),
+  getRequestLabelPdfUrl: vi.fn(
+    (jurisdiction: string, inmateId: number, requestIndex: number) =>
+      `/api/inmates/${jurisdiction}/${inmateId}/requests/${requestIndex}/label.pdf`
+  ),
 }));
 
 // Mock the print server client
@@ -422,25 +426,9 @@ describe('useRequests', () => {
 
   describe('printRequestLabel', () => {
     let openSpy: MockInstance;
-    let mockWindow: {
-      document: {
-        write: ReturnType<typeof vi.fn>;
-        close: ReturnType<typeof vi.fn>;
-      };
-      print: ReturnType<typeof vi.fn>;
-      close: ReturnType<typeof vi.fn>;
-    };
 
     beforeEach(() => {
-      mockWindow = {
-        document: {
-          write: vi.fn(),
-          close: vi.fn(),
-        },
-        print: vi.fn(),
-        close: vi.fn(),
-      };
-      openSpy = vi.spyOn(window, 'open').mockReturnValue(mockWindow as unknown as Window);
+      openSpy = vi.spyOn(window, 'open').mockReturnValue({} as Window);
     });
 
     afterEach(() => {
@@ -461,7 +449,7 @@ describe('useRequests', () => {
       expect(openSpy).not.toHaveBeenCalled();
     });
 
-    it('should fall back to a print window when the print server fails', async () => {
+    it('should open the label PDF when the print server fails', async () => {
       const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
       vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
@@ -474,24 +462,12 @@ describe('useRequests', () => {
         method: 'browser',
         printServerError: 'Print server is unreachable',
       });
-      expect(openSpy).toHaveBeenCalledWith('', '_blank', expect.stringContaining('width='));
-    });
-
-    it('should write image content to the fallback print window', async () => {
-      const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
-      vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
-      vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
-        new Error('Print server is unreachable')
+      expect(api.getRequestLabelPdfUrl).toHaveBeenCalledWith('Texas', 12345, 1);
+      expect(openSpy).toHaveBeenCalledTimes(1);
+      expect(openSpy).toHaveBeenCalledWith(
+        '/api/inmates/Texas/12345/requests/1/label.pdf',
+        '_blank'
       );
-
-      await printRequestLabel('Texas', 12345, 1);
-
-      const writeCall = mockWindow.document.write.mock.calls[0][0];
-      expect(writeCall).toContain('<img');
-      expect(writeCall).toContain('src="data:image/png;base64');
-      expect(writeCall).toContain('window.print()');
-      expect(writeCall).toContain('afterprint');
-      expect(mockWindow.document.close).toHaveBeenCalled();
     });
 
     it('should handle label fetch errors without trying to print', async () => {
@@ -512,26 +488,8 @@ describe('useRequests', () => {
       openSpy.mockReturnValue(null);
 
       await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow(
-        'Failed to open print window. Please allow popups for this site.'
+        'Failed to open the label PDF. Please allow popups for this site.'
       );
-    });
-
-    it('should handle document.write errors', async () => {
-      const mockBlob = new Blob(['fake image data'], { type: 'image/png' });
-      vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
-      vi.mocked(printServer.printLabelViaPrintServer).mockRejectedValue(
-        new Error('Print server is unreachable')
-      );
-      mockWindow.document.write.mockImplementation(() => {
-        throw new Error('Document write failed');
-      });
-
-      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow(
-        'Failed to prepare print window'
-      );
-
-      // Should cleanup resources on error
-      expect(mockWindow.close).toHaveBeenCalled();
     });
   });
 });
