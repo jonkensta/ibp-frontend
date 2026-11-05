@@ -251,22 +251,50 @@ describe('useInmates', () => {
       });
     });
 
-    it('surfaces other legacy lookup errors', async () => {
+    it('returns the ID search with the error when the request lookup fails', async () => {
       vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(500, 'Server down'));
       vi.mocked(api.searchInmates).mockResolvedValue({ inmates: [idInmate], errors: [] });
 
       await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
 
-      await expect.element(page.getByText('Error: Server down')).toBeInTheDocument();
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({
+        inmates: [idInmate],
+        errors: ['Old label request lookup failed: Server down'],
+        noAutoRedirect: true,
+      });
     });
 
-    it('surfaces ID search errors even when the request lookup hits', async () => {
+    it("returns the request's inmate with the error when the ID search fails", async () => {
       vi.mocked(api.getInmateByLegacyRequest).mockResolvedValue(legacyInmate);
       vi.mocked(api.searchInmates).mockRejectedValue(new Error('Search failed'));
 
       await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
 
+      await expect.element(page.getByText(/Results:/)).toBeInTheDocument();
+      expect(resultsOf()).toEqual({
+        inmates: [{ ...legacyResult, via_request: 268213 }],
+        errors: ['Inmate ID search failed: Search failed'],
+        noAutoRedirect: true,
+      });
+    });
+
+    it('fails when the ID search fails and no request has that ID', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(404, 'Not found'));
+      vi.mocked(api.searchInmates).mockRejectedValue(new Error('Search failed'));
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
       await expect.element(page.getByText('Error: Search failed')).toBeInTheDocument();
+    });
+
+    it('fails when both lookups fail', async () => {
+      vi.mocked(api.getInmateByLegacyRequest).mockRejectedValue(new ApiError(500, 'Server down'));
+      vi.mocked(api.searchInmates).mockRejectedValue(new Error('Search failed'));
+
+      await render(<SearchInmatesTest query="268213" />, { wrapper: createWrapper() });
+
+      await expect.element(page.getByText('Error: Server down')).toBeInTheDocument();
     });
 
     it('searches inmate IDs outside the legacy range or with leading zeros directly', async () => {

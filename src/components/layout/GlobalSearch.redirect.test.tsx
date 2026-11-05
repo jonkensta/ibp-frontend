@@ -137,6 +137,29 @@ describe('single-result auto-redirect', () => {
     expect(inmateKeys).toHaveLength(1);
   });
 
+  it("shows, without redirecting, the request's inmate when the ID search fails", async () => {
+    vi.mocked(getInmateByLegacyRequest).mockResolvedValue({
+      jurisdiction: 'Texas',
+      id: Number(INMATE_ID),
+      last_name: 'Doe',
+      first_name: 'John',
+    } as unknown as Awaited<ReturnType<typeof getInmateByLegacyRequest>>);
+    vi.mocked(searchInmates).mockRejectedValue(new Error('Search failed'));
+
+    await renderApp('/inmates/Texas/1');
+
+    await userEvent.type(page.getByPlaceholder(/search inmates/i), '268213{Enter}');
+    await expect.element(page.getByText('Found 1 result', { exact: false })).toBeInTheDocument();
+    await settle();
+
+    await expect.element(page.getByText('Doe, John')).toBeInTheDocument();
+    await expect.element(page.getByText(/via request 268213/)).toBeInTheDocument();
+    await expect
+      .element(page.getByText('Inmate ID search failed: Search failed'))
+      .toBeInTheDocument();
+    expect(inmateKeys).toHaveLength(1);
+  });
+
   it("shows, without redirecting, the request's inmate when a provider errored", async () => {
     vi.mocked(getInmateByLegacyRequest).mockResolvedValue({
       jurisdiction: 'Texas',
