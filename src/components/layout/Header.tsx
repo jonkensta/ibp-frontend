@@ -6,6 +6,7 @@ import { useGlobalSearch } from '@/contexts/GlobalSearchContext';
 const navItems = [
   { to: '/', label: 'Home' },
   { to: '/search', label: 'Search' },
+  { to: '/packages', label: 'Packages' },
   { to: '/units', label: 'Units' },
   { to: '/metrics', label: 'Metrics' },
   { to: '/settings', label: 'Settings' },

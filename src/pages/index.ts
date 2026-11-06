@@ -5,3 +5,5 @@ export { UnitsPage } from './UnitsPage';
 export { UnitDetailPage } from './UnitDetailPage';
 export { NotFoundPage } from './NotFoundPage';
 export { SettingsPage } from './SettingsPage';
+export { PackageStationPage } from './PackageStationPage';
+export { PackagePage } from './PackagePage';
