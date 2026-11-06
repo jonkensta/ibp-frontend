@@ -30,18 +30,31 @@ import type { Book, Package, PackageItem, PackageItemCreate, PackageItemCreated 
 /** `/packages/:code`: record the books in one package. */
 export function PackagePage() {
   const { code = '' } = useParams<{ code: string }>();
-  const { data: pkg, isLoading, error } = usePackage(code);
+  const { data: pkg, isLoading, error, fetchStatus, refetch } = usePackage(code);
 
   if (isLoading) {
     return <div className="py-12 text-center text-muted-foreground">Loading package...</div>;
   }
 
-  if (error || !pkg) {
+  // A reload that fails for a network or server error keeps the page (and
+  // its scans not yet resolved) on the last list, marked out of date. Only a
+  // package that's gone (404) or tossed (409) replaces it.
+  const status = error instanceof ApiError ? error.status : null;
+  if (!pkg || status === 404 || status === 409) {
     return <PackageError code={code} error={error} />;
   }
 
   // Keyed by code: scanning another label from here starts afresh.
-  return <PackageWorkspace key={code} code={code} pkg={pkg} />;
+  return (
+    <PackageWorkspace
+      key={code}
+      code={code}
+      pkg={pkg}
+      reloadError={error}
+      reloadPaused={fetchStatus === 'paused'}
+      onReload={async () => (await refetch()).status === 'success'}
+    />
+  );
 }
 
 function PackageError({ code, error }: { code: string; error: Error | null }) {
@@ -112,6 +125,21 @@ interface ScanState {
 const IDLE: ScanState = { current: null, waiting: 0, held: false, scanForm: false };
 
 /**
+ * A looked-up book whose add failed for a reason other than validation (a
+ * network error, a 5xx). The add may still have been saved (only the response
+ * lost), so it stays on screen until the packer checks the list: it's there,
+ * or add it again. Checking needs a list loaded after the add failed.
+ */
+interface FailedAdd {
+  id: number;
+  book: Book;
+  title: string;
+  error: string;
+  /** A list reload finished after the add failed, so the list shows it if it was saved. */
+  checked: boolean;
+}
+
+/**
  * Scanned books not yet resolved: queued, being looked up or added, held for
  * the form, or in the open form (typing in, or saving).
  */
@@ -156,7 +184,22 @@ function ScanStatus({ current, waiting, held }: ScanState) {
   return null;
 }
 
-function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
+function PackageWorkspace({
+  code,
+  pkg,
+  reloadError,
+  reloadPaused,
+  onReload,
+}: {
+  code: string;
+  pkg: Package;
+  /** The last reload failed: `pkg` may be out of date. */
+  reloadError: Error | null;
+  /** A reload is waiting for the network to come back. */
+  reloadPaused: boolean;
+  /** Reload the list; true once a reload succeeded. */
+  onReload: () => Promise<boolean>;
+}) {
   const navigate = useNavigate();
   const lookupBook = useLookupBook();
   const addItem = useAddPackageItem(code);
@@ -178,6 +221,10 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const [alertIds, setAlertIds] = useState<number[]>([]);
   const [scans, setScans] = useState<ScanState>(IDLE);
   const [labelHint, setLabelHint] = useState(false);
+  const [failedAdds, setFailedAdds] = useState<FailedAdd[]>([]);
+  // Mirrors `failedAdds` synchronously, for checks made between renders.
+  const failedRef = useRef<FailedAdd[]>([]);
+  const nextFailedId = useRef(0);
 
   // Scans wait in a queue and are looked up one at a time, so a book scanned
   // while another is being looked up isn't lost. A lookup result that needs
@@ -218,7 +265,8 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         scanQueue.length +
         (held.current ? 1 : 0) +
         (current.current ? 1 : 0) +
-        (scanFormOpen.current ? 1 : 0);
+        (scanFormOpen.current ? 1 : 0) +
+        failedRef.current.length;
       if (unresolved > 0) {
         toast.warning(
           `${booksText(unresolved)} may not have been recorded. Check this package's list.`,
@@ -236,7 +284,26 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     };
   }, [code]);
 
-  const pending = pendingScans(scans);
+  const pending = pendingScans(scans) + failedAdds.length;
+
+  const updateFailedAdds = (update: (current: FailedAdd[]) => FailedAdd[]) => {
+    failedRef.current = update(failedRef.current);
+    if (alive.current) setFailedAdds(failedRef.current);
+  };
+
+  // The last reload failed or is waiting for the network: no failed add can be
+  // checked against the list until a reload succeeds.
+  const listStale = !!reloadError || reloadPaused;
+
+  /** Reload the list; the failed adds known before it count as checked once it lands. */
+  const checkFailedAdds = async () => {
+    const ids = failedRef.current.filter((failed) => !failed.checked).map((failed) => failed.id);
+    const reloaded = await onReload();
+    if (!reloaded || !alive.current || ids.length === 0) return;
+    updateFailedAdds((current) =>
+      current.map((failed) => (ids.includes(failed.id) ? { ...failed, checked: true } : failed))
+    );
+  };
 
   const focusIsbnInput = () => isbnInputRef.current?.focus();
 
@@ -360,10 +427,29 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
           validateOnOpen: true,
           fromScan: true,
         });
-      } else {
-        toast.error(`Couldn't add “${data.title}”: ${errorMessage(error)}`);
+      } else if (alive.current) {
+        const failed = { id: ++nextFailedId.current, book, title: data.title };
+        updateFailedAdds((current) => [
+          ...current,
+          { ...failed, error: errorMessage(error), checked: false },
+        ]);
+        void checkFailedAdds();
       }
     }
+  };
+
+  const dismissFailedAdd = (id: number) => {
+    updateFailedAdds((current) => current.filter((failed) => failed.id !== id));
+    focusIsbnInput();
+  };
+
+  /** Add it again as a fresh scan of its ISBN (the lookup is cached). */
+  const retryFailedAdd = (failed: FailedAdd) => {
+    updateFailedAdds((current) => current.filter((entry) => entry.id !== failed.id));
+    queue.current.push(failed.book.isbn);
+    syncScans();
+    focusIsbnInput();
+    void drain();
   };
 
   const processScan = async (isbn: string) => {
@@ -563,6 +649,73 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         <Alert>
           <AlertDescription className="text-foreground">
             That's a package label. Press Done to finish this package first.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {(reloadError || reloadPaused) && (
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>The book list couldn't be reloaded</AlertTitle>
+          <AlertDescription className="text-foreground">
+            <p>
+              {reloadPaused
+                ? 'This computer seems to be offline, so the list may be out of date.'
+                : `It may be out of date (${reloadError?.message}).`}
+            </p>
+            <Button size="sm" variant="outline" onClick={() => void checkFailedAdds()}>
+              Reload the list
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {failedAdds.length > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>
+            {failedAdds.length === 1
+              ? 'A book may not have been added'
+              : `${failedAdds.length} books may not have been added`}
+          </AlertTitle>
+          <AlertDescription className="text-foreground">
+            <p>
+              {listStale || failedAdds.some((failed) => !failed.checked)
+                ? 'Adding failed, but it may have been saved anyway. The list must reload before it can be checked.'
+                : "Adding failed, but it may have been saved anyway. Check the list below: if the book is there, press “It's in the list”; if not, press “Add again”."}
+            </p>
+            <ul className="w-full space-y-2">
+              {failedAdds.map((failed) => (
+                <li key={failed.id} className="flex flex-wrap items-center gap-2">
+                  <span className="mr-auto">
+                    “{failed.title}” by {failed.book.author || 'unknown author'}{' '}
+                    <span className="text-muted-foreground">
+                      (ISBN {failed.book.isbn}; {failed.error})
+                    </span>
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!failed.checked || listStale}
+                    onClick={() => dismissFailedAdd(failed.id)}
+                  >
+                    It's in the list
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={!failed.checked || listStale}
+                    onClick={() => retryFailedAdd(failed)}
+                  >
+                    Add again
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            {!listStale && failedAdds.some((failed) => !failed.checked) && (
+              <Button size="sm" variant="outline" onClick={() => void checkFailedAdds()}>
+                Reload the list
+              </Button>
+            )}
           </AlertDescription>
         </Alert>
       )}

@@ -39,7 +39,11 @@ export function useAddPackageItem(code: string) {
 
   return useMutation({
     mutationFn: (data: PackageItemCreate) => addPackageItem(code, data),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: packageQueryKey(code) }),
+    // Not awaited: a reload that hangs (offline) mustn't hold back the add's
+    // own result, which the package page needs to show a failed add.
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: packageQueryKey(code) });
+    },
   });
 }
 
