@@ -170,7 +170,11 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   // Books added here that the inmate was already sent, by item id: each row
   // keeps its marker until the book is removed; the alert lists them all
   // until dismissed.
-  const [sentBefore, setSentBefore] = useState<Record<number, string[]>>({});
+  // Each warning is about the ISBN the book was added with (ISBN-13, as the
+  // backend returns it): it applies only while the item still has that ISBN.
+  const [sentBefore, setSentBefore] = useState<
+    Record<number, { isbn: string | null; codes: string[] }>
+  >({});
   const [alertIds, setAlertIds] = useState<number[]>([]);
   const [scans, setScans] = useState<ScanState>(IDLE);
   const [labelHint, setLabelHint] = useState(false);
@@ -298,7 +302,10 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     if (!alive.current) return;
     toast.success(`Added “${item.title}”`);
     if (item.previously_sent.length > 0) {
-      setSentBefore((current) => ({ ...current, [item.id]: item.previously_sent }));
+      setSentBefore((current) => ({
+        ...current,
+        [item.id]: { isbn: item.isbn, codes: item.previously_sent },
+      }));
       setAlertIds((current) => [...current, item.id]);
     }
   };
@@ -477,7 +484,14 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   };
 
   // Books still in the package (one removed elsewhere drops out).
-  const flagged = pkg.items.filter((item) => alertIds.includes(item.id) && sentBefore[item.id]);
+  // Warnings for books still in the package with the ISBN they were flagged
+  // for: changing a book's ISBN makes it a different book, so its warning goes.
+  const sentBeforeNow: Record<number, string[]> = {};
+  for (const item of pkg.items) {
+    const warning = sentBefore[item.id];
+    if (warning && warning.isbn === item.isbn) sentBeforeNow[item.id] = warning.codes;
+  }
+  const flagged = pkg.items.filter((item) => alertIds.includes(item.id) && sentBeforeNow[item.id]);
 
   const formProps: Omit<ItemFormDialogProps, 'open' | 'onOpenChange' | 'onSubmit'> | null =
     form === null
@@ -551,7 +565,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
             <ul className="list-disc pl-4">
               {flagged.map((item) => (
                 <li key={item.id}>
-                  “{item.title}” was also in {sentBefore[item.id].join(', ')}.
+                  “{item.title}” was also in {sentBeforeNow[item.id].join(', ')}.
                 </li>
               ))}
             </ul>
@@ -568,7 +582,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         jurisdiction={pkg.inmate.jurisdiction}
         onEdit={(item) => openForm({ mode: 'edit', item })}
         onDelete={openDelete}
-        sentBefore={sentBefore}
+        sentBefore={sentBeforeNow}
       />
 
       <div className="flex items-center justify-end gap-3">
