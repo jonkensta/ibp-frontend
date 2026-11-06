@@ -23,7 +23,7 @@ import {
  * Header affordance for configuring the label print server URL.
  *
  * Labels print silently through the print server when it is reachable;
- * otherwise the app opens the label as a PDF to print from the browser. This
+ * otherwise the app shows a link to the label as a PDF to print from the browser. This
  * dialog lets volunteers point the app at the right print server and test the connection.
  */
 export function PrintServerSettings() {
@@ -55,7 +55,7 @@ export function PrintServerSettings() {
     } catch (error) {
       console.error('Print server health check failed:', error);
       toast.error(
-        'Could not reach the print server. Labels will open as a PDF to print from the browser.'
+        'Could not reach the print server. Labels will offer a PDF link to print from the browser.'
       );
     } finally {
       setTesting(false);

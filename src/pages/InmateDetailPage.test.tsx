@@ -81,6 +81,7 @@ const mockInmate = {
   requests: [
     {
       index: 1,
+      code: 'TEX-12345-1',
       date_postmarked: '2024-12-20',
       date_processed: '2024-12-21',
       action: 'Filled',

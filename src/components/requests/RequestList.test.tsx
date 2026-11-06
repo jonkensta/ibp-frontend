@@ -5,6 +5,7 @@ import { QueryWrapper } from '@/test/utils';
 import { toast } from 'sonner';
 import { RequestList, LabelPdfNotice } from './RequestList';
 import { printRequestLabel } from '@/hooks';
+import { deleteRequest } from '@/lib/api/requests';
 import type { Request } from '@/types';
 
 vi.mock('@/lib/api/requests');
@@ -23,18 +24,21 @@ vi.mock('@/hooks', async (importOriginal) => ({
 const mockRequests: Request[] = [
   {
     index: 1,
+    code: 'TEX-12345-1',
     date_postmarked: '2024-12-20',
     date_processed: '2024-12-21',
     action: 'Filled',
   },
   {
     index: 2,
+    code: 'TEX-12345-2',
     date_postmarked: '2024-12-22',
     date_processed: '2024-12-23',
     action: 'Tossed',
   },
   {
     index: 3,
+    code: 'TEX-12345-3',
     date_postmarked: '2024-12-18',
     date_processed: '2024-12-19',
     action: 'Filled',
@@ -142,7 +146,7 @@ describe('RequestList', () => {
     await page.getByRole('button', { name: /print request label/i }).click();
 
     await expect.poll(() => vi.mocked(toast.success).mock.calls.length).toBe(1);
-    expect(printRequestLabel).toHaveBeenCalledWith('Texas', 12345, 1);
+    expect(printRequestLabel).toHaveBeenCalledWith('TEX-12345-1');
     expect(toast.warning).not.toHaveBeenCalled();
   });
 
@@ -151,7 +155,7 @@ describe('RequestList', () => {
     vi.mocked(printRequestLabel).mockResolvedValue({
       method: 'browser',
       printServerError: 'Print server is unreachable',
-      pdfUrl: '/api/inmates/Texas/12345/requests/1/label.pdf',
+      pdfUrl: '/api/requests/TEX-12345-1/label.pdf',
     });
     await render(
       <QueryWrapper>
@@ -172,18 +176,31 @@ describe('RequestList', () => {
   it('should render the label PDF notice as a new-tab link', async () => {
     await render(
       <LabelPdfNotice
-        pdfUrl="/api/inmates/Texas/12345/requests/1/label.pdf"
+        pdfUrl="/api/requests/TEX-12345-1/label.pdf"
         printServerError="Print server is unreachable"
       />
     );
 
     await expect.element(page.getByText('Print server is unreachable')).toBeInTheDocument();
     const link = page.getByRole('link', { name: 'Open label PDF' });
-    await expect
-      .element(link)
-      .toHaveAttribute('href', '/api/inmates/Texas/12345/requests/1/label.pdf');
+    await expect.element(link).toHaveAttribute('href', '/api/requests/TEX-12345-1/label.pdf');
     await expect.element(link).toHaveAttribute('target', '_blank');
     await expect.element(link).toHaveAttribute('rel', 'noopener');
+  });
+
+  it('should delete a request by its code after confirmation', async () => {
+    vi.mocked(deleteRequest).mockResolvedValue(undefined);
+    await render(
+      <QueryWrapper>
+        <RequestList requests={[mockRequests[0]]} jurisdiction="Texas" inmateId={12345} />
+      </QueryWrapper>
+    );
+
+    await page.getByRole('button', { name: /delete request/i }).click();
+    await page.getByRole('button', { name: 'Delete', exact: true }).click();
+
+    await expect.poll(() => vi.mocked(toast.success).mock.calls.length).toBe(1);
+    expect(deleteRequest).toHaveBeenCalledWith('TEX-12345-1');
   });
 
   it('should not show print button for tossed requests', async () => {

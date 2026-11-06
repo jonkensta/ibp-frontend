@@ -18,27 +18,14 @@ export async function createRequest(
   );
 }
 
-export async function deleteRequest(
-  jurisdiction: Jurisdiction,
-  inmateId: number,
-  requestIndex: number
-): Promise<void> {
-  return apiDelete<void>(
-    `/inmates/${encodeURIComponent(jurisdiction)}/${inmateId}/requests/${requestIndex}`
-  );
+export async function deleteRequest(code: string): Promise<void> {
+  return apiDelete<void>(`/requests/${encodeURIComponent(code)}`);
 }
 
-export async function getRequestLabel(
-  jurisdiction: Jurisdiction,
-  inmateId: number,
-  requestIndex: number
-): Promise<Blob> {
-  const response = await fetch(
-    `${API_BASE_URL}/inmates/${encodeURIComponent(jurisdiction)}/${inmateId}/requests/${requestIndex}/label`,
-    {
-      method: 'GET',
-    }
-  );
+export async function getRequestLabel(code: string): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/requests/${encodeURIComponent(code)}/label`, {
+    method: 'GET',
+  });
 
   if (!response.ok) {
     const message = await response.text().catch(() => response.statusText);
@@ -52,12 +39,8 @@ export async function getRequestLabel(
  * URL of a request label as a one-page PDF sized exactly to the 85 x 32 mm
  * label stock, for printing from the browser when the print server is down.
  */
-export function getRequestLabelPdfUrl(
-  jurisdiction: Jurisdiction,
-  inmateId: number,
-  requestIndex: number
-): string {
-  return `${API_BASE_URL}/inmates/${encodeURIComponent(jurisdiction)}/${inmateId}/requests/${requestIndex}/label.pdf`;
+export function getRequestLabelPdfUrl(code: string): string {
+  return `${API_BASE_URL}/requests/${encodeURIComponent(code)}/label.pdf`;
 }
 
 export async function getInmateWarnings(

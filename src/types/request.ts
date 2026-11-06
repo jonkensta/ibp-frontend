@@ -2,6 +2,8 @@ import type { Action } from './common';
 
 export interface Request {
   index: number;
+  /** Label text identifying the request, e.g. "TEX-1234567-2". Opaque: never build or parse it. */
+  code: string;
   date_processed: string;
   date_postmarked: string;
   action: Action;

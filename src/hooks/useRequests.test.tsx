@@ -22,10 +22,7 @@ vi.mock('@/lib/api', () => ({
   deleteRequest: vi.fn(),
   validateRequest: vi.fn(),
   getRequestLabel: vi.fn(),
-  getRequestLabelPdfUrl: vi.fn(
-    (jurisdiction: string, inmateId: number, requestIndex: number) =>
-      `/api/inmates/${jurisdiction}/${inmateId}/requests/${requestIndex}/label.pdf`
-  ),
+  getRequestLabelPdfUrl: vi.fn((code: string) => `/api/requests/${code}/label.pdf`),
 }));
 
 // Mock the print server client
@@ -66,16 +63,16 @@ function CreateRequestTest({
 function DeleteRequestTest({
   jurisdiction,
   id,
-  requestIndex = 1,
+  code = 'TEX-12345-1',
 }: {
   jurisdiction: Jurisdiction;
   id: number;
-  requestIndex?: number;
+  code?: string;
 }) {
   const mutation = useDeleteRequest(jurisdiction, id);
   return (
     <div>
-      <button data-testid="delete-btn" onClick={() => mutation.mutate(requestIndex)}>
+      <button data-testid="delete-btn" onClick={() => mutation.mutate(code)}>
         Delete
       </button>
       {mutation.isPending && <div>Pending</div>}
@@ -167,6 +164,7 @@ describe('useRequests', () => {
 
       const createdRequest = {
         index: 1,
+        code: 'TEX-12345-1',
         ...requestData,
       };
 
@@ -205,6 +203,7 @@ describe('useRequests', () => {
 
       const createdRequest = {
         index: 1,
+        code: 'TEX-12345-1',
         date_postmarked: '2024-12-20',
         date_processed: '2024-12-21',
         action: 'Filled' as const,
@@ -265,7 +264,7 @@ describe('useRequests', () => {
       vi.mocked(api.deleteRequest).mockResolvedValue(undefined);
 
       const Wrapper = createWrapper();
-      await render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
+      await render(<DeleteRequestTest jurisdiction="Texas" id={12345} code="TEX-12345-1" />, {
         wrapper: Wrapper,
       });
 
@@ -275,7 +274,7 @@ describe('useRequests', () => {
       const success = page.getByText('Success');
       await expect.element(success).toBeInTheDocument();
 
-      expect(api.deleteRequest).toHaveBeenCalledWith('Texas', 12345, 1);
+      expect(api.deleteRequest).toHaveBeenCalledWith('TEX-12345-1');
     });
 
     it('should invalidate inmate query on success', async () => {
@@ -294,7 +293,7 @@ describe('useRequests', () => {
 
       vi.mocked(api.deleteRequest).mockResolvedValue(undefined);
 
-      await render(<DeleteRequestTest jurisdiction="Federal" id={67890} requestIndex={2} />, {
+      await render(<DeleteRequestTest jurisdiction="Federal" id={67890} code="FED-67890-2" />, {
         wrapper: Wrapper,
       });
 
@@ -311,7 +310,7 @@ describe('useRequests', () => {
       vi.mocked(api.deleteRequest).mockRejectedValue(new Error('Failed to delete request'));
 
       const Wrapper = createWrapper();
-      await render(<DeleteRequestTest jurisdiction="Texas" id={12345} requestIndex={1} />, {
+      await render(<DeleteRequestTest jurisdiction="Texas" id={12345} code="TEX-12345-1" />, {
         wrapper: Wrapper,
       });
 
@@ -441,10 +440,10 @@ describe('useRequests', () => {
       vi.mocked(api.getRequestLabel).mockResolvedValue(mockBlob);
       vi.mocked(printServer.printLabelViaPrintServer).mockResolvedValue(undefined);
 
-      const result = await printRequestLabel('Texas', 12345, 1);
+      const result = await printRequestLabel('TEX-12345-1');
 
       expect(result).toEqual({ method: 'print-server' });
-      expect(api.getRequestLabel).toHaveBeenCalledWith('Texas', 12345, 1);
+      expect(api.getRequestLabel).toHaveBeenCalledWith('TEX-12345-1');
       expect(printServer.printLabelViaPrintServer).toHaveBeenCalledWith(mockBlob);
       expect(openSpy).not.toHaveBeenCalled();
     });
@@ -456,14 +455,14 @@ describe('useRequests', () => {
         new Error('Print server is unreachable')
       );
 
-      const result = await printRequestLabel('Texas', 12345, 1);
+      const result = await printRequestLabel('TEX-12345-1');
 
       expect(result).toEqual({
         method: 'browser',
         printServerError: 'Print server is unreachable',
-        pdfUrl: '/api/inmates/Texas/12345/requests/1/label.pdf',
+        pdfUrl: '/api/requests/TEX-12345-1/label.pdf',
       });
-      expect(api.getRequestLabelPdfUrl).toHaveBeenCalledWith('Texas', 12345, 1);
+      expect(api.getRequestLabelPdfUrl).toHaveBeenCalledWith('TEX-12345-1');
       // Opening it after the async failure could be blocked as a popup
       expect(openSpy).not.toHaveBeenCalled();
     });
@@ -471,7 +470,7 @@ describe('useRequests', () => {
     it('should handle label fetch errors without trying to print', async () => {
       vi.mocked(api.getRequestLabel).mockRejectedValue(new Error('Failed to get label'));
 
-      await expect(printRequestLabel('Texas', 12345, 1)).rejects.toThrow('Failed to get label');
+      await expect(printRequestLabel('TEX-12345-1')).rejects.toThrow('Failed to get label');
 
       expect(printServer.printLabelViaPrintServer).not.toHaveBeenCalled();
       expect(openSpy).not.toHaveBeenCalled();

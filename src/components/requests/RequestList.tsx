@@ -57,7 +57,7 @@ export function RequestList({
   onPrintLabel,
 }: RequestListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [requestToDelete, setRequestToDelete] = useState<number | null>(null);
+  const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
   const deleteRequestMutation = useDeleteRequest(jurisdiction, inmateId);
   const printButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
 
@@ -89,8 +89,8 @@ export function RequestList({
     }
   }, [focusRequestIndex, requests]);
 
-  const handleDeleteClick = (requestIndex: number) => {
-    setRequestToDelete(requestIndex);
+  const handleDeleteClick = (code: string) => {
+    setRequestToDelete(code);
     setDeleteDialogOpen(true);
   };
 
@@ -109,9 +109,9 @@ export function RequestList({
     }
   };
 
-  const handlePrint = async (requestIndex: number) => {
+  const handlePrint = async (code: string) => {
     try {
-      const result = await printRequestLabel(jurisdiction, inmateId, requestIndex);
+      const result = await printRequestLabel(code);
       if (result.method === 'print-server') {
         toast.success('Label sent to the label printer');
       } else {
@@ -170,7 +170,7 @@ export function RequestList({
                           }}
                           size="sm"
                           variant="outline"
-                          onClick={() => handlePrint(request.index)}
+                          onClick={() => handlePrint(request.code)}
                           aria-label="Print request label"
                         >
                           <Printer className="h-4 w-4" />
@@ -182,7 +182,7 @@ export function RequestList({
                         size="sm"
                         variant="outline"
                         className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
-                        onClick={() => handleDeleteClick(request.index)}
+                        onClick={() => handleDeleteClick(request.code)}
                         disabled={deleteRequestMutation.isPending}
                         aria-label="Delete request"
                       >

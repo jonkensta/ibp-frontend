@@ -32,7 +32,7 @@ export function useDeleteRequest(jurisdiction: Jurisdiction, inmateId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (requestIndex: number) => deleteRequest(jurisdiction, inmateId, requestIndex),
+    mutationFn: (code: string) => deleteRequest(code),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inmates', jurisdiction, inmateId] });
     },
@@ -50,7 +50,7 @@ export type PrintLabelResult =
   | { method: 'browser'; printServerError: string; pdfUrl: string };
 
 /**
- * Print a request label.
+ * Print a request label, given its code (e.g. `TEX-1234567-2`).
  *
  * First tries the print server for silent one-click printing. If it is
  * unreachable or errors, returns the URL of the label as a PDF for the caller
@@ -62,12 +62,8 @@ export type PrintLabelResult =
  * failed, the click's user activation may have expired and `window.open`
  * would be blocked as a popup. A link the volunteer clicks never is.
  */
-export async function printRequestLabel(
-  jurisdiction: Jurisdiction,
-  inmateId: number,
-  requestIndex: number
-): Promise<PrintLabelResult> {
-  const blob = await getRequestLabel(jurisdiction, inmateId, requestIndex);
+export async function printRequestLabel(code: string): Promise<PrintLabelResult> {
+  const blob = await getRequestLabel(code);
 
   try {
     await printLabelViaPrintServer(blob);
@@ -77,7 +73,7 @@ export async function printRequestLabel(
     return {
       method: 'browser',
       printServerError: error instanceof Error ? error.message : String(error),
-      pdfUrl: getRequestLabelPdfUrl(jurisdiction, inmateId, requestIndex),
+      pdfUrl: getRequestLabelPdfUrl(code),
     };
   }
 }
