@@ -485,15 +485,18 @@ describe('PackagePage', () => {
       await scanIsbn('0441172717');
       await expect.element(page.getByRole('button', { name: "It's in the list" })).toBeEnabled();
 
+      // Another book fails and its reload fails too: the first, checked row
+      // must not be actionable against the now-stale list.
       vi.mocked(getPackage).mockRejectedValue(new TypeError('Failed to fetch'));
-      await page.getByRole('button', { name: 'Add again' }).click();
+      await scanIsbn('0441172717');
+      await expect.element(page.getByText('2 books may not have been added')).toBeInTheDocument();
 
       await expect
         .element(page.getByText("The book list couldn't be reloaded"))
         .toBeInTheDocument();
-      for (const button of page.getByRole('button', { name: "It's in the list" }).all()) {
-        await expect.element(button).toBeDisabled();
-      }
+      const checkedRow = page.getByRole('button', { name: "It's in the list" }).first();
+      await expect.element(checkedRow).toBeDisabled();
+      await expect.element(page.getByRole('button', { name: 'Add again' }).first()).toBeDisabled();
     });
 
     it('offers a reload while a failure is unchecked, even after the list error clears', async () => {
