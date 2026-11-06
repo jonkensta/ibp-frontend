@@ -358,10 +358,13 @@ describe('PackagePage', () => {
       ]);
     });
 
-    it('opens the next package when its label is scanned here', async () => {
+    it('drops a package label scanned here, with a hint', async () => {
       await renderPage();
       await scanIsbn('TEX-7654321-0');
-      expect(mockNavigate).toHaveBeenCalledWith('/packages/TEX-7654321-0');
+      await expect
+        .element(page.getByText("That's a package label. Press Done to finish this package first."))
+        .toBeInTheDocument();
+      expect(mockNavigate).not.toHaveBeenCalled();
       expect(getBook).not.toHaveBeenCalled();
     });
   });

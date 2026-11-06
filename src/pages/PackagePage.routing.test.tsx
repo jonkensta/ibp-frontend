@@ -3,8 +3,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { page, userEvent } from 'vitest/browser';
+import { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { createQueryClient } from '@/lib/queryClient';
 import { ApiError } from '@/lib/api/client';
@@ -92,10 +93,21 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
+/** Browser Back, captured from the router. */
+const back = { go: () => {} };
+function BackHandle() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    back.go = () => navigate(-1);
+  }, [navigate]);
+  return null;
+}
+
 async function renderApp(path = '/packages/TEX-1234567-2') {
   await render(
     <QueryClientProvider client={createQueryClient()}>
-      <MemoryRouter initialEntries={[path]}>
+      <MemoryRouter initialEntries={['/units', path]} initialIndex={1}>
+        <BackHandle />
         <Link to="/units">Leave</Link>
         <Routes>
           <Route path="/packages" element={<p>Station page</p>} />
@@ -184,42 +196,35 @@ describe('PackagePage with real routing', () => {
     await expect.element(page.getByText('Station page')).toBeInTheDocument();
   });
 
-  it('opens a package label scanned here only after pending scans are recorded', async () => {
+  it('drops a package label scanned in the ISBN box and keeps scanning into this package', async () => {
     const lookup = deferred<Book>();
-    vi.mocked(getBook).mockReturnValue(lookup.promise);
+    vi.mocked(getBook)
+      .mockReturnValueOnce(lookup.promise)
+      .mockResolvedValueOnce({ ...dune, isbn: '9780140449136', title: 'The Iliad' });
     await renderApp();
 
     await scanIsbn(dune.isbn);
     await scanIsbn('TEX-7654321-0');
-    await expect.element(page.getByText('Opening TEX-7654321-0 next')).toBeInTheDocument();
-    expect(getPackage).not.toHaveBeenCalledWith('TEX-7654321-0');
+    await expect
+      .element(page.getByText("That's a package label. Press Done to finish this package first."))
+      .toBeInTheDocument();
+    await scanIsbn('9780140449136');
+    await expect
+      .element(page.getByText("That's a package label. Press Done to finish this package first."))
+      .not.toBeInTheDocument();
 
     lookup.resolve(dune);
 
-    await vi.waitFor(() => expect(getPackage).toHaveBeenCalledWith('TEX-7654321-0'));
-    expect(addPackageItem).toHaveBeenCalledWith(
-      'TEX-1234567-2',
-      expect.objectContaining({ title: 'Dune' })
-    );
-    await expect.element(page.getByText('Opening TEX-7654321-0 next')).not.toBeInTheDocument();
-    expect(toast.warning).not.toHaveBeenCalled();
-  });
-
-  it('can stay on the package instead of opening the scanned label', async () => {
-    const lookup = deferred<Book>();
-    vi.mocked(getBook).mockReturnValue(lookup.promise);
-    await renderApp();
-
-    await scanIsbn(dune.isbn);
-    await scanIsbn('TEX-7654321-0');
-    await page.getByRole('button', { name: 'Stay on this package' }).click();
-    lookup.resolve(dune);
-
-    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(addPackageItem).mock.calls.map(([code, data]) => [code, data.title])).toEqual([
+      ['TEX-1234567-2', 'Dune'],
+      ['TEX-1234567-2', 'The Iliad'],
+    ]);
     expect(getPackage).not.toHaveBeenCalledWith('TEX-7654321-0');
+    await expect.element(page.getByRole('heading', { name: 'John Doe' })).toBeInTheDocument();
   });
 
-  it('warns when leaving loses pending scans, and drops their late results', async () => {
+  it('warns when leaving with scans pending, and drops their late results', async () => {
     const lookup = deferred<Book>();
     vi.mocked(getBook).mockReturnValue(lookup.promise);
     await renderApp();
@@ -229,7 +234,8 @@ describe('PackagePage with real routing', () => {
     await page.getByRole('link', { name: 'Leave' }).click();
     await expect.element(page.getByText('Units page')).toBeInTheDocument();
     expect(toast.warning).toHaveBeenCalledWith(
-      "2 scanned books weren't recorded. Scan them again."
+      "2 scanned books may not have been recorded. Check this package's list.",
+      expect.objectContaining({ description: expect.anything() })
     );
 
     lookup.reject(new ApiError(404, 'Book not found.'));
@@ -239,10 +245,98 @@ describe('PackagePage with real routing', () => {
     expect(addPackageItem).not.toHaveBeenCalled();
   });
 
-  it('looks a book up again after its title was fixed for all future scans', async () => {
-    vi.mocked(getBook)
-      .mockResolvedValueOnce({ ...dune, title: 'Dune (wrong)' })
-      .mockResolvedValueOnce(dune);
+  it('counts an add in flight as pending, and when leaving points back to the list', async () => {
+    const post = deferred<PackageItemCreated>();
+    vi.mocked(getBook).mockResolvedValue(dune);
+    vi.mocked(addPackageItem).mockReturnValue(post.promise);
+    await renderApp();
+
+    await scanIsbn(dune.isbn);
+    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(1));
+    await expect.element(page.getByRole('button', { name: 'Done' })).toBeDisabled();
+
+    await page.getByRole('link', { name: 'Leave' }).click();
+    await expect.element(page.getByText('Units page')).toBeInTheDocument();
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+    const [message, options] = vi.mocked(toast.warning).mock.calls[0];
+    expect(message).toBe("1 scanned book may not have been recorded. Check this package's list.");
+    const link = (options as { description: React.ReactElement<{ to: string }> }).description;
+    expect(link.props.to).toBe('/packages/TEX-1234567-2');
+
+    // The add still completes server-side; the package's list (refetched when
+    // it's reopened) shows it.
+    post.resolve(created({ isbn: dune.isbn, title: 'Dune', author: 'Frank Herbert' }));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('counts a form opened for a scanned book as pending, and warns on leaving it', async () => {
+    vi.mocked(getBook).mockRejectedValue(new ApiError(404, 'Book not found.'));
+    await renderApp();
+
+    await scanIsbn('9780000000002');
+    await expect.element(page.getByRole('heading', { name: 'Add a book' })).toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', { name: 'Done', includeHidden: true }))
+      .toBeDisabled();
+
+    // Back while the form is open.
+    back.go();
+    await expect.element(page.getByText('Units page')).toBeInTheDocument();
+    expect(toast.warning).toHaveBeenCalledWith(
+      "1 scanned book may not have been recorded. Check this package's list.",
+      expect.anything()
+    );
+  });
+
+  it('does not count an add without ISBN as a pending scan', async () => {
+    await renderApp();
+    await page.getByRole('button', { name: 'Add without ISBN' }).click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect.element(page.getByRole('button', { name: 'Done' })).toBeEnabled();
+  });
+
+  it('frees Done once the form for a scanned book is closed', async () => {
+    vi.mocked(getBook).mockRejectedValue(new ApiError(404, 'Book not found.'));
+    await renderApp();
+
+    await scanIsbn('9780000000002');
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Done' })).toBeEnabled();
+  });
+
+  it('serves the fixed title to scans after a title is fixed for all future scans', async () => {
+    vi.mocked(getBook).mockResolvedValue({ ...dune, title: 'Dune (wrong)' });
+    vi.mocked(getPackage).mockImplementation(async (code) =>
+      makePackage(code, [
+        makeItem({ isbn: dune.isbn, title: 'Dune (wrong)', author: 'Frank Herbert' }),
+      ])
+    );
+    vi.mocked(updatePackageItem).mockResolvedValue(
+      makeItem({ isbn: dune.isbn, title: 'Dune', author: 'Frank Herbert', revision: 1 })
+    );
+    await renderApp();
+
+    // Caches the wrong title for 5 minutes.
+    await scanIsbn(dune.isbn);
+    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(1));
+
+    await page.getByRole('button', { name: 'Edit Dune (wrong)' }).click();
+    await titleInput().fill('Dune');
+    await page.getByLabelText('Fix this title for all future scans').click();
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+
+    await scanIsbn('0441172717');
+    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(addPackageItem).mock.calls[1][1]).toMatchObject({ title: 'Dune' });
+  });
+
+  it('retries a lookup in flight when its title is fixed meanwhile, getting the fix', async () => {
+    const lookup = deferred<Book>();
+    // After the fix the backend's cache answers with it (a retry may ask).
+    vi.mocked(getBook).mockReturnValueOnce(lookup.promise).mockResolvedValue(dune);
     vi.mocked(getPackage).mockImplementation(async (code) =>
       makePackage(code, [
         makeItem({ isbn: dune.isbn, title: 'Dune (wrong)', author: 'Frank Herbert' }),
@@ -254,20 +348,25 @@ describe('PackagePage with real routing', () => {
     await renderApp();
 
     await scanIsbn(dune.isbn);
-    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(1));
-
     await page.getByRole('button', { name: 'Edit Dune (wrong)' }).click();
     await titleInput().fill('Dune');
     await page.getByLabelText('Fix this title for all future scans').click();
     await page.getByRole('button', { name: 'Save' }).click();
-    await vi.waitFor(() => expect(updatePackageItem).toHaveBeenCalledTimes(1));
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
 
-    // Without the refresh, this scan would get the cached old title.
+    // The old answer lands late: it was cancelled, and doesn't count.
+    lookup.resolve({ ...dune, title: 'Dune (wrong)' });
+
+    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(addPackageItem).mock.calls[0][1]).toMatchObject({ title: 'Dune' });
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+
+    // Later scans get the fix too, from the cache.
+    const lookups = vi.mocked(getBook).mock.calls.length;
     await scanIsbn(dune.isbn);
     await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(2));
-    expect(getBook).toHaveBeenCalledTimes(2);
     expect(vi.mocked(addPackageItem).mock.calls[1][1]).toMatchObject({ title: 'Dune' });
+    expect(getBook).toHaveBeenCalledTimes(lookups);
   });
 
   it('shares one cached lookup between the ISBN-10 and ISBN-13 scans', async () => {
