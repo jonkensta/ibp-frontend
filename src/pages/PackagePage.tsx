@@ -90,6 +90,8 @@ type FormRequest =
       validateOnOpen?: boolean;
       /** The lookup the form was prefilled from, if any. */
       lookup?: Book;
+      /** Opened for a scanned book, which stays pending until the form closes. */
+      fromScan?: boolean;
     }
   | { mode: 'edit'; item: PackageItem };
 
@@ -103,12 +105,18 @@ interface ScanState {
   waiting: number;
   /** A lookup result needing the form, held until the open dialog closes. */
   held: boolean;
+  /** The open form is for a scanned book (its lookup failed). */
+  scanForm: boolean;
 }
 
-const IDLE: ScanState = { current: null, waiting: 0, held: false };
+const IDLE: ScanState = { current: null, waiting: 0, held: false, scanForm: false };
 
-function pendingScans({ current, waiting, held }: ScanState): number {
-  return waiting + (current ? 1 : 0) + (held ? 1 : 0);
+/**
+ * Scanned books not yet resolved: queued, being looked up or added, held for
+ * the form, or in the open form (typing in, or saving).
+ */
+function pendingScans({ current, waiting, held, scanForm }: ScanState): number {
+  return waiting + (current ? 1 : 0) + (held ? 1 : 0) + (scanForm ? 1 : 0);
 }
 
 function booksText(count: number): string {
@@ -164,8 +172,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     codes: string[];
   } | null>(null);
   const [scans, setScans] = useState<ScanState>(IDLE);
-  /** A package label scanned here while scans were pending: opened once they're done. */
-  const [nextLabel, setNextLabel] = useState<string | null>(null);
+  const [labelHint, setLabelHint] = useState(false);
 
   // Scans wait in a queue and are looked up one at a time, so a book scanned
   // while another is being looked up isn't lost. A lookup result that needs
@@ -179,6 +186,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const deleteOpen = useRef(false);
   const alive = useRef(true);
   const current = useRef<string | null>(null);
+  const scanFormOpen = useRef(false);
 
   const dialogOpen = () => currentFormId.current !== null || deleteOpen.current;
 
@@ -188,35 +196,42 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
       current: current.current,
       waiting: queue.current.length,
       held: held.current !== null,
+      scanForm: scanFormOpen.current,
     });
   };
 
-  // Leaving with scans pending (a header link, Back) loses them: say so.
+  // Leaving with scans pending (a header link, Back): their results are
+  // dropped, but an add already sent may still land, so point the packer at
+  // the package's list (refetched when it opens) rather than say to rescan.
   useEffect(() => {
     alive.current = true;
     // The queue array is only ever mutated in place, never replaced.
     const scanQueue = queue.current;
     return () => {
       alive.current = false;
-      const lost = scanQueue.length + (held.current ? 1 : 0) + (current.current ? 1 : 0);
-      if (lost > 0) {
+      const unresolved =
+        scanQueue.length +
+        (held.current ? 1 : 0) +
+        (current.current ? 1 : 0) +
+        (scanFormOpen.current ? 1 : 0);
+      if (unresolved > 0) {
         toast.warning(
-          lost === 1
-            ? "1 scanned book wasn't recorded. Scan it again."
-            : `${lost} scanned books weren't recorded. Scan them again.`
+          `${booksText(unresolved)} may not have been recorded. Check this package's list.`,
+          {
+            description: (
+              <Link to={`/packages/${encodeURIComponent(code)}`} className="underline">
+                Open {code}
+              </Link>
+            ),
+            duration: Infinity,
+            closeButton: true,
+          }
         );
       }
     };
-  }, []);
+  }, [code]);
 
   const pending = pendingScans(scans);
-
-  // A package label scanned while busy here opens once everything is recorded.
-  useEffect(() => {
-    if (nextLabel !== null && pending === 0 && form === null && deleting === null) {
-      navigate(`/packages/${encodeURIComponent(nextLabel)}`);
-    }
-  }, [nextLabel, pending, form, deleting, navigate]);
 
   const focusIsbnInput = () => isbnInputRef.current?.focus();
 
@@ -228,7 +243,9 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const openForm = (request: FormRequest) => {
     const id = ++nextFormId.current;
     currentFormId.current = id;
+    scanFormOpen.current = request.mode === 'add' && !!request.fromScan;
     setForm({ ...request, id });
+    syncScans();
   };
 
   /** Open the form for a lookup result, or hold it while a dialog is open. */
@@ -259,7 +276,9 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const closeForm = (id: number) => {
     if (currentFormId.current !== id) return;
     currentFormId.current = null;
+    scanFormOpen.current = false;
     setForm(null);
+    syncScans();
     resume();
   };
 
@@ -275,8 +294,9 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   };
 
   const recordAdded = (title: string, codes: string[]) => {
+    if (!alive.current) return;
     toast.success(`Added “${title}”`);
-    if (alive.current) setPreviouslySent(codes.length > 0 ? { title, codes } : null);
+    setPreviouslySent(codes.length > 0 ? { title, codes } : null);
   };
 
   const addFromLookup = async (book: Book) => {
@@ -298,6 +318,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
           note: `The book couldn't be added as looked up: ${error.message}`,
           lookup: book,
           validateOnOpen: true,
+          fromScan: true,
         });
       } else {
         toast.error(`Couldn't add “${data.title}”: ${errorMessage(error)}`);
@@ -321,6 +342,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
               ? 'No book was found for this ISBN. Type the title and author.'
               : `The lookup failed (${errorMessage(error)}). Type the title and author.`,
         initialErrors: status === 422 ? { isbn: 'Not a valid ISBN.' } : undefined,
+        fromScan: true,
       });
       return;
     }
@@ -338,6 +360,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         : 'Check the title and author: the portal needs each to be 3 to 100 characters.',
       validateOnOpen: true,
       lookup: book,
+      fromScan: true,
     });
   };
 
@@ -363,16 +386,11 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     const text = isbnValue.trim();
     setIsbnValue('');
     if (!text) return;
-    if (looksLikePackageCode(text)) {
-      // The next package's label, scanned without pressing Done: open it,
-      // once the books scanned here are recorded.
-      if (pending === 0) {
-        navigate(`/packages/${encodeURIComponent(text)}`);
-      } else {
-        setNextLabel(text);
-      }
-      return;
-    }
+    // Packages are opened from the station page only: a label scanned here
+    // is dropped, so nothing scanned next can land in the wrong package.
+    const isLabel = looksLikePackageCode(text);
+    setLabelHint(isLabel);
+    if (isLabel) return;
     queue.current.push(text);
     syncScans();
     void drain();
@@ -500,14 +518,10 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         </p>
       </form>
 
-      {nextLabel !== null && (
+      {labelHint && (
         <Alert>
-          <AlertTitle>Opening {nextLabel} next</AlertTitle>
-          <AlertDescription className="flex flex-wrap items-center gap-2 text-foreground">
-            It opens once the books scanned here are recorded.
-            <Button size="sm" variant="outline" onClick={() => setNextLabel(null)}>
-              Stay on this package
-            </Button>
+          <AlertDescription className="text-foreground">
+            That's a package label. Press Done to finish this package first.
           </AlertDescription>
         </Alert>
       )}
