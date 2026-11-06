@@ -8,6 +8,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Link, MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { createQueryClient } from '@/lib/queryClient';
+import { normalizeIsbn } from '@/lib/isbn';
 import { ApiError } from '@/lib/api/client';
 import { getPackage } from '@/lib/api/packages';
 import { addPackageItem, deletePackageItem, updatePackageItem } from '@/lib/api/items';
@@ -220,6 +221,18 @@ describe('PackagePage with real routing', () => {
     vi.mocked(deletePackageItem).mockImplementation(async (_code, itemId) => {
       items = items.filter((item) => item.id !== itemId);
     });
+    vi.mocked(updatePackageItem).mockImplementation(async (_code, itemId, data) => {
+      const edited = items.find((item) => item.id === itemId)!;
+      const updated = {
+        ...edited,
+        isbn: data.isbn ? normalizeIsbn(data.isbn) : null,
+        title: data.title,
+        author: data.author,
+        revision: edited.revision + 1,
+      };
+      items = items.map((item) => (item.id === itemId ? updated : item));
+      return updated;
+    });
     const lookup = deferred<Book>();
     vi.mocked(getBook)
       .mockReturnValueOnce(lookup.promise)
@@ -254,6 +267,52 @@ describe('PackagePage with real routing', () => {
     await alert.getByRole('button', { name: 'Dismiss' }).click();
     await expect.element(page.getByText('Already sent to this inmate')).not.toBeInTheDocument();
     await expect.element(page.getByText('Already sent in TEX-1234567-1')).toBeInTheDocument();
+
+    // A title-only edit is the same book: the marker stays.
+    await page.getByRole('button', { name: 'Edit Brave New World' }).click();
+    await titleInput().fill('Brave New World (Revisited)');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect.element(page.getByText('Brave New World (Revisited)')).toBeInTheDocument();
+    await expect.element(page.getByText('Already sent in TEX-1234567-1')).toBeInTheDocument();
+
+    // A new ISBN makes it a different book: the warning goes.
+    await page.getByRole('button', { name: 'Edit Brave New World (Revisited)' }).click();
+    await page.getByLabelText('ISBN (optional)').fill('0-14-044913-2');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect.element(page.getByText('9780140449136').first()).toBeInTheDocument();
+    await expect.element(page.getByText(/Already sent in/)).not.toBeInTheDocument();
+  });
+
+  it('drops an already-sent warning from the alert when the book gets another ISBN', async () => {
+    let items: PackageItem[] = [];
+    vi.mocked(getPackage).mockImplementation(async (code) => makePackage(code, items));
+    vi.mocked(getBook).mockResolvedValue(dune);
+    vi.mocked(addPackageItem).mockImplementation(async (_code, data) => {
+      const item = makeItem({
+        id: 10,
+        isbn: data.isbn ?? null,
+        title: data.title,
+        author: data.author,
+      });
+      items = [item];
+      return { ...item, previously_sent: ['TEX-1234567-0'] };
+    });
+    vi.mocked(updatePackageItem).mockImplementation(async (_code, _itemId, data) => {
+      const updated = { ...items[0], isbn: data.isbn, title: data.title, revision: 1 };
+      items = [updated];
+      return updated;
+    });
+    await renderApp();
+
+    await scanIsbn(dune.isbn);
+    await expect.element(page.getByText('Already sent to this inmate')).toBeInTheDocument();
+
+    await page.getByRole('button', { name: 'Edit Dune' }).click();
+    await page.getByLabelText('ISBN (optional)').fill('9780140449136');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+    await expect.element(page.getByText('Already sent to this inmate')).not.toBeInTheDocument();
+    await expect.element(page.getByText(/Already sent in/)).not.toBeInTheDocument();
   });
 
   it('drops a package label scanned in the ISBN box and keeps scanning into this package', async () => {
