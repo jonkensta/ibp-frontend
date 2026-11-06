@@ -21,6 +21,7 @@ describe('Requests API', () => {
     it('should create a request with correct URL and data', async () => {
       const mockRequest = {
         index: 1,
+        code: 'TEX-12345-1',
         date_postmarked: '2024-12-20',
         date_processed: '2024-12-21',
         action: 'Filled' as const,
@@ -79,10 +80,10 @@ describe('Requests API', () => {
         })
       );
 
-      await deleteRequest('Texas', 12345, 1);
+      await deleteRequest('TEX-12345-1');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/inmates/Texas/12345/requests/1'),
+        '/api/requests/TEX-12345-1',
         expect.objectContaining({
           method: 'DELETE',
         })
@@ -100,10 +101,10 @@ describe('Requests API', () => {
         })
       );
 
-      const result = await getRequestLabel('Texas', 12345, 1);
+      const result = await getRequestLabel('TEX-12345-1');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/inmates/Texas/12345/requests/1/label'),
+        '/api/requests/TEX-12345-1/label',
         expect.objectContaining({
           method: 'GET',
         })
@@ -119,15 +120,17 @@ describe('Requests API', () => {
         })
       );
 
-      await expect(getRequestLabel('Texas', 12345, 1)).rejects.toThrow();
+      await expect(getRequestLabel('TEX-12345-1')).rejects.toThrow();
     });
   });
 
   describe('getRequestLabelPdfUrl', () => {
     it('should build the label.pdf URL under the API base', () => {
-      expect(getRequestLabelPdfUrl('Texas', 12345, 1)).toBe(
-        '/api/inmates/Texas/12345/requests/1/label.pdf'
-      );
+      expect(getRequestLabelPdfUrl('TEX-12345-1')).toBe('/api/requests/TEX-12345-1/label.pdf');
+    });
+
+    it('should URL-encode the code', () => {
+      expect(getRequestLabelPdfUrl('A B/C')).toBe('/api/requests/A%20B%2FC/label.pdf');
     });
   });
 
