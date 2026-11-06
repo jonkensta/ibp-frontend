@@ -6,6 +6,7 @@ import {
   updatePackageItem,
   deletePackageItem,
 } from '@/lib/api';
+import { bookQueryKey } from './useBooks';
 import type { PackageItemCreate, PackageItemUpdate } from '@/types';
 
 export function packageQueryKey(code: string) {
@@ -48,6 +49,12 @@ export function useUpdatePackageItem(code: string) {
   return useMutation({
     mutationFn: ({ itemId, data }: { itemId: number; data: PackageItemUpdate }) =>
       updatePackageItem(code, itemId, data),
+    onSuccess: (item, { data }) => {
+      // "Fix this title for all future scans" changed the lookup's answer.
+      if (data.update_cache && item.isbn) {
+        return queryClient.invalidateQueries({ queryKey: bookQueryKey(item.isbn), exact: true });
+      }
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: packageQueryKey(code) }),
   });
 }

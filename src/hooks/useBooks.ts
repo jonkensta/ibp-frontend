@@ -1,6 +1,15 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getBook } from '@/lib/api';
+import { normalizeIsbn } from '@/lib/isbn';
+
+/**
+ * The query key of a book lookup: by ISBN-13 when the ISBN is valid, so the
+ * ISBN-10 and ISBN-13 scans of a book share one answer (and one invalidation).
+ */
+export function bookQueryKey(isbn: string) {
+  return ['books', normalizeIsbn(isbn) ?? isbn.trim()] as const;
+}
 
 /**
  * A function looking up a book by ISBN, for the packing station's scans.
@@ -14,7 +23,7 @@ export function useLookupBook() {
   return useCallback(
     (isbn: string) =>
       queryClient.fetchQuery({
-        queryKey: ['books', isbn],
+        queryKey: bookQueryKey(isbn),
         queryFn: () => getBook(isbn),
         retry: false,
       }),
