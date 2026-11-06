@@ -14,13 +14,21 @@ function isbn13CheckDigit(first12: string): string {
   return String((10 - (total % 10)) % 10);
 }
 
+/**
+ * Strip what an ISBN may come with: spaces, dashes and invisible characters
+ * (the left-to-right marks a copy from a web page brings along), and a leading
+ * "ISBN", "ISBN-10" or "ISBN-13" label.
+ */
 function compact(raw: string): string {
-  return raw.replace(/[\s-]/g, '').toUpperCase();
+  return raw
+    .replace(/[\s\p{Cf}\p{Z}\p{Pd}]/gu, '')
+    .replace(/^ISBN(?:1[03])?:?/i, '')
+    .toUpperCase();
 }
 
 /**
  * The ISBN-13 for an ISBN-10, ISBN-13 or 18-digit EAN (ISBN-13 plus a price
- * add-on), or null. Hyphens and spaces are ignored; bad check digits are
+ * add-on), or null. See `compact` for what is ignored; bad check digits are
  * rejected.
  */
 export function normalizeIsbn(raw: string): string | null {
