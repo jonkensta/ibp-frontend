@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -66,9 +66,14 @@ export function ItemFormDialog({
   onCloseAutoFocus,
   ...props
 }: ItemFormDialogProps) {
+  // While saving, the dialog can't be dismissed (Cancel, Escape, a click
+  // outside, the close button): the save's outcome belongs to this form.
+  const [saving, setSaving] = useState(false);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => (next || !saving) && onOpenChange(next)}>
       <DialogContent
+        showCloseButton={!saving}
         // The form focuses the field that needs typing.
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={onCloseAutoFocus}
@@ -83,7 +88,7 @@ export function ItemFormDialog({
           </DialogDescription>
         </DialogHeader>
         {/* Mounted only while open, so each opening starts from its defaults. */}
-        <ItemForm {...props} onCancel={() => onOpenChange(false)} />
+        <ItemForm {...props} onCancel={() => onOpenChange(false)} onSavingChange={setSaving} />
       </DialogContent>
     </Dialog>
   );
@@ -96,8 +101,10 @@ function ItemForm({
   validateOnOpen,
   onSubmit,
   onCancel,
+  onSavingChange,
 }: Omit<ItemFormDialogProps, 'open' | 'onOpenChange' | 'onCloseAutoFocus' | 'note'> & {
   onCancel: () => void;
+  onSavingChange: (saving: boolean) => void;
 }) {
   const {
     register,
@@ -112,6 +119,8 @@ function ItemForm({
     defaultValues,
     mode: 'onTouched',
   });
+
+  useEffect(() => onSavingChange(isSubmitting), [isSubmitting, onSavingChange]);
 
   // On opening: show the errors already known and focus the first field the
   // packer has to fix or fill (the ISBN only when it's what's wrong).
@@ -220,6 +229,7 @@ function ItemForm({
           // appearing moves this button out from under the pointer.
           onMouseDown={(e) => e.preventDefault()}
           onClick={onCancel}
+          disabled={isSubmitting}
         >
           Cancel
         </Button>
