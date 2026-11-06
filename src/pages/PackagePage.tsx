@@ -25,7 +25,7 @@ import { ApiError } from '@/lib/api';
 import { normalizeIsbn } from '@/lib/isbn';
 import { looksLikePackageCode } from '@/lib/packageScan';
 import { cleanPortalText, isPortalLength } from '@/lib/portalText';
-import type { Book, Package, PackageItem, PackageItemCreate } from '@/types';
+import type { Book, Package, PackageItem, PackageItemCreate, PackageItemCreated } from '@/types';
 
 /** `/packages/:code`: record the books in one package. */
 export function PackagePage() {
@@ -167,10 +167,11 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const [isbnValue, setIsbnValue] = useState('');
   const [form, setForm] = useState<FormState | null>(null);
   const [deleting, setDeleting] = useState<PackageItem | null>(null);
-  const [previouslySent, setPreviouslySent] = useState<{
-    title: string;
-    codes: string[];
-  } | null>(null);
+  // Books added here that the inmate was already sent, by item id: each row
+  // keeps its marker until the book is removed; the alert lists them all
+  // until dismissed.
+  const [sentBefore, setSentBefore] = useState<Record<number, string[]>>({});
+  const [alertIds, setAlertIds] = useState<number[]>([]);
   const [scans, setScans] = useState<ScanState>(IDLE);
   const [labelHint, setLabelHint] = useState(false);
 
@@ -293,10 +294,22 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     resume();
   };
 
-  const recordAdded = (title: string, codes: string[]) => {
+  const recordAdded = (item: PackageItemCreated) => {
     if (!alive.current) return;
-    toast.success(`Added “${title}”`);
-    setPreviouslySent(codes.length > 0 ? { title, codes } : null);
+    toast.success(`Added “${item.title}”`);
+    if (item.previously_sent.length > 0) {
+      setSentBefore((current) => ({ ...current, [item.id]: item.previously_sent }));
+      setAlertIds((current) => [...current, item.id]);
+    }
+  };
+
+  const forgetSentBefore = (itemId: number) => {
+    setSentBefore((current) => {
+      const rest = { ...current };
+      delete rest[itemId];
+      return rest;
+    });
+    setAlertIds((current) => current.filter((id) => id !== itemId));
   };
 
   const addFromLookup = async (book: Book) => {
@@ -308,7 +321,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     };
     try {
       const created = await addItem.mutateAsync(data);
-      recordAdded(created.title, created.previously_sent);
+      recordAdded(created);
     } catch (error) {
       if (error instanceof ApiError && error.status === 422) {
         // The backend's checks disagreed with ours: let the packer fix it.
@@ -416,7 +429,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
           author: values.author,
           source: itemSource(values, open.lookup),
         });
-        recordAdded(created.title, created.previously_sent);
+        recordAdded(created);
         closeForm(open.id);
       } catch (error) {
         if (!isConflict(error)) throw error;
@@ -451,6 +464,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     try {
       await deleteItem.mutateAsync({ itemId: item.id, confirmRegistered: !!item.registered_at });
       toast.success(`Removed “${item.title}”`);
+      if (alive.current) forgetSentBefore(item.id);
     } catch (error) {
       if (isConflict(error)) {
         toast.error(`${error.message} The list has been reloaded.`);
@@ -461,6 +475,9 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
       if (alive.current) closeDelete();
     }
   };
+
+  // Books still in the package (one removed elsewhere drops out).
+  const flagged = pkg.items.filter((item) => alertIds.includes(item.id) && sentBefore[item.id]);
 
   const formProps: Omit<ItemFormDialogProps, 'open' | 'onOpenChange' | 'onSubmit'> | null =
     form === null
@@ -526,13 +543,22 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         </Alert>
       )}
 
-      {previouslySent && (
+      {flagged.length > 0 && (
         <Alert className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/30">
           <AlertTriangle className="text-yellow-600" />
           <AlertTitle>Already sent to this inmate</AlertTitle>
           <AlertDescription className="text-foreground">
-            “{previouslySent.title}” was also in {previouslySent.codes.join(', ')}. Check whether
-            they should get it again.
+            <ul className="list-disc pl-4">
+              {flagged.map((item) => (
+                <li key={item.id}>
+                  “{item.title}” was also in {sentBefore[item.id].join(', ')}.
+                </li>
+              ))}
+            </ul>
+            <span>Check whether they should get these again.</span>
+            <Button size="sm" variant="outline" onClick={() => setAlertIds([])}>
+              Dismiss
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -542,6 +568,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         jurisdiction={pkg.inmate.jurisdiction}
         onEdit={(item) => openForm({ mode: 'edit', item })}
         onDelete={openDelete}
+        sentBefore={sentBefore}
       />
 
       <div className="flex items-center justify-end gap-3">

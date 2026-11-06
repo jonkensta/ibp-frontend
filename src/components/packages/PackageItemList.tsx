@@ -21,13 +21,21 @@ interface PackageItemListProps {
   jurisdiction: Jurisdiction;
   onEdit: (item: PackageItem) => void;
   onDelete: (item: PackageItem) => void;
+  /** Codes of the inmate's other requests with the same book, by item id. */
+  sentBefore?: Record<number, string[]>;
 }
 
 /**
  * The books recorded in a package. Only Texas books are registered on the
  * portal, so only they show a status; a registered book is read-only.
  */
-export function PackageItemList({ items, jurisdiction, onEdit, onDelete }: PackageItemListProps) {
+export function PackageItemList({
+  items,
+  jurisdiction,
+  onEdit,
+  onDelete,
+  sentBefore = {},
+}: PackageItemListProps) {
   const showStatus = jurisdiction === 'Texas';
 
   return (
@@ -54,7 +62,14 @@ export function PackageItemList({ items, jurisdiction, onEdit, onDelete }: Packa
             <tbody>
               {items.map((item) => (
                 <tr key={item.id} className="border-b last:border-b-0">
-                  <td className="py-2 pr-2 font-medium">{item.title}</td>
+                  <td className="py-2 pr-2 font-medium">
+                    {item.title}
+                    {sentBefore[item.id] && (
+                      <span className="ml-2 inline-flex rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200">
+                        Already sent in {sentBefore[item.id].join(', ')}
+                      </span>
+                    )}
+                  </td>
                   <td className="py-2 pr-2">{item.author}</td>
                   <td className="py-2 pr-2 font-mono text-xs">{item.isbn ?? '—'}</td>
                   {showStatus && (
