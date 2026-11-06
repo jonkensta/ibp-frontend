@@ -10,6 +10,17 @@ describe('portal text', () => {
     expect(cleanPortalText('a\u0007b')).toBe('ab');
   });
 
+  it("treats exactly Python's whitespace as whitespace", () => {
+    // Whitespace in Python but not in JS's \s: become spaces, not dropped.
+    expect(cleanPortalText('War\u0085and\u001CPeace')).toBe('War and Peace');
+    expect(cleanPortalText('a\u001Db\u001Ec\u001Fd')).toBe('a b c d');
+    // Whitespace in JS's \s but a format character in Python: dropped.
+    expect(cleanPortalText('Ho\uFEFFmer')).toBe('Homer');
+    expect(cleanPortalText('\u00A0Dune\u3000\u2028Messiah\u202F')).toBe('Dune Messiah');
+    expect(isPortalLength('ab\u0085')).toBe(false);
+    expect(isPortalLength('a\u0085b')).toBe(true);
+  });
+
   it('checks 3 to 100 UTF-16 units after cleaning', () => {
     expect(isPortalLength('Al')).toBe(false);
     expect(isPortalLength('  Al  ')).toBe(false);

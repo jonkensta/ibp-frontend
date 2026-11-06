@@ -6,22 +6,24 @@ export const PORTAL_MIN_LENGTH = 3;
 export const PORTAL_MAX_LENGTH = 100;
 export const PORTAL_LENGTH_MESSAGE = `Must be ${PORTAL_MIN_LENGTH} to ${PORTAL_MAX_LENGTH} characters.`;
 
+// Exactly the characters Python's str.isspace() accepts (the backend's test),
+// spelled out because JS's \s differs: it lacks U+001C to U+001F and U+0085,
+// and includes U+FEFF, which Python treats as a format character to drop.
+const PYTHON_WHITESPACE =
+  // eslint-disable-next-line no-control-regex -- matching them is the point
+  /[\t\n\v\f\r\x1C-\x1F \x85\xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]/g;
+
 /**
  * Drop control and format characters and collapse whitespace, as the backend
  * does. Whitespace controls (tabs, newlines) become spaces first.
  */
 export function cleanPortalText(value: string): string {
-  return (
-    value
-      // Python's str.isspace(): JS whitespace minus U+FEFF (a format
-      // character), plus the separators U+001C to U+001F.
-      // eslint-disable-next-line no-control-regex -- matching them is the point
-      .replace(/[^\S\uFEFF]|[\x1C-\x1F]/g, ' ')
-      .replace(/[\p{Cc}\p{Cf}]/gu, '')
-      .split(' ')
-      .filter(Boolean)
-      .join(' ')
-  );
+  return value
+    .replace(PYTHON_WHITESPACE, ' ')
+    .replace(/[\p{Cc}\p{Cf}]/gu, '')
+    .split(' ')
+    .filter(Boolean)
+    .join(' ');
 }
 
 /** True if the portal would take `value` (after cleaning) as a title or author. */
