@@ -7,7 +7,7 @@ import {
   deletePackageItem,
 } from '@/lib/api';
 import { bookQueryKey } from './useBooks';
-import type { PackageItemCreate, PackageItemUpdate } from '@/types';
+import type { Book, PackageItemCreate, PackageItemUpdate } from '@/types';
 
 export function packageQueryKey(code: string) {
   return ['packages', code] as const;
@@ -49,10 +49,20 @@ export function useUpdatePackageItem(code: string) {
   return useMutation({
     mutationFn: ({ itemId, data }: { itemId: number; data: PackageItemUpdate }) =>
       updatePackageItem(code, itemId, data),
-    onSuccess: (item, { data }) => {
+    onSuccess: async (item, { data }) => {
       // "Fix this title for all future scans" changed the lookup's answer.
+      // A lookup still in flight would land with the old title afterwards,
+      // so cancel it (scans retry a cancelled lookup) and cache the fix.
       if (data.update_cache && item.isbn) {
-        return queryClient.invalidateQueries({ queryKey: bookQueryKey(item.isbn), exact: true });
+        const queryKey = bookQueryKey(item.isbn);
+        await queryClient.cancelQueries({ queryKey, exact: true });
+        queryClient.setQueryData<Book>(queryKey, {
+          isbn: item.isbn,
+          title: item.title,
+          author: item.author,
+          source: 'manual',
+          confidence: null,
+        });
       }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: packageQueryKey(code) }),
