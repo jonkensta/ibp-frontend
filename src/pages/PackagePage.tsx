@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AlertTriangle, PackageX } from 'lucide-react';
@@ -81,7 +81,7 @@ function PackageError({ code, error }: { code: string; error: Error | null }) {
 
 const EMPTY_FORM: ItemFormValues = { isbn: '', title: '', author: '', updateCache: false };
 
-type FormState =
+type FormRequest =
   | {
       mode: 'add';
       defaults: ItemFormValues;
@@ -92,6 +92,28 @@ type FormState =
       lookup?: Book;
     }
   | { mode: 'edit'; item: PackageItem };
+
+/** An open form; `id` is new for every opening (the form's identity). */
+type FormState = FormRequest & { id: number };
+
+interface ScanState {
+  /** The ISBN being looked up (or added), if any. */
+  current: string | null;
+  /** Scans queued behind it. */
+  waiting: number;
+  /** A lookup result needing the form, held until the open dialog closes. */
+  held: boolean;
+}
+
+const IDLE: ScanState = { current: null, waiting: 0, held: false };
+
+function pendingScans({ current, waiting, held }: ScanState): number {
+  return waiting + (current ? 1 : 0) + (held ? 1 : 0);
+}
+
+function booksText(count: number): string {
+  return count === 1 ? '1 scanned book' : `${count} scanned books`;
+}
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -113,15 +135,17 @@ function itemSource(values: ItemFormValues, lookup?: Book): PackageItemCreate['s
   return 'isbn';
 }
 
-function ScanStatus({ isbn, waiting }: { isbn: string | null; waiting: number }) {
-  if (isbn === null) {
-    return <>{waiting === 1 ? '1 book' : `${waiting} books`} waiting to be looked up</>;
+function ScanStatus({ current, waiting, held }: ScanState) {
+  if (current) {
+    return (
+      <>
+        Looking up {current}...{waiting > 0 && ` (${waiting} more waiting)`}
+      </>
+    );
   }
-  return (
-    <>
-      Looking up {isbn}...{waiting > 0 && ` (${waiting} more waiting)`}
-    </>
-  );
+  if (held) return <>A scanned book needs typing in once this dialog is closed.</>;
+  if (waiting > 0) return <>{booksText(waiting)} waiting to be looked up</>;
+  return null;
 }
 
 function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
@@ -139,17 +163,60 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     title: string;
     codes: string[];
   } | null>(null);
+  const [scans, setScans] = useState<ScanState>(IDLE);
+  /** A package label scanned here while scans were pending: opened once they're done. */
+  const [nextLabel, setNextLabel] = useState<string | null>(null);
 
   // Scans wait in a queue and are looked up one at a time, so a book scanned
-  // while another is being looked up isn't lost. The queue pauses while the
-  // form is open (a lookup that failed) and resumes when it closes.
+  // while another is being looked up isn't lost. A lookup result that needs
+  // the form never replaces an open dialog (an edit, a delete, another add):
+  // it's held, and the queue pauses until the dialog closes.
   const queue = useRef<string[]>([]);
   const draining = useRef(false);
-  const formOpen = useRef(false);
-  const [lookingUp, setLookingUp] = useState<{
-    isbn: string | null;
-    waiting: number;
-  } | null>(null);
+  const held = useRef<FormRequest | null>(null);
+  const currentFormId = useRef<number | null>(null);
+  const nextFormId = useRef(0);
+  const deleteOpen = useRef(false);
+  const alive = useRef(true);
+  const current = useRef<string | null>(null);
+
+  const dialogOpen = () => currentFormId.current !== null || deleteOpen.current;
+
+  const syncScans = () => {
+    if (!alive.current) return;
+    setScans({
+      current: current.current,
+      waiting: queue.current.length,
+      held: held.current !== null,
+    });
+  };
+
+  // Leaving with scans pending (a header link, Back) loses them: say so.
+  useEffect(() => {
+    alive.current = true;
+    // The queue array is only ever mutated in place, never replaced.
+    const scanQueue = queue.current;
+    return () => {
+      alive.current = false;
+      const lost = scanQueue.length + (held.current ? 1 : 0) + (current.current ? 1 : 0);
+      if (lost > 0) {
+        toast.warning(
+          lost === 1
+            ? "1 scanned book wasn't recorded. Scan it again."
+            : `${lost} scanned books weren't recorded. Scan them again.`
+        );
+      }
+    };
+  }, []);
+
+  const pending = pendingScans(scans);
+
+  // A package label scanned while busy here opens once everything is recorded.
+  useEffect(() => {
+    if (nextLabel !== null && pending === 0 && form === null && deleting === null) {
+      navigate(`/packages/${encodeURIComponent(nextLabel)}`);
+    }
+  }, [nextLabel, pending, form, deleting, navigate]);
 
   const focusIsbnInput = () => isbnInputRef.current?.focus();
 
@@ -158,20 +225,58 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     focusIsbnInput();
   };
 
-  const openForm = (state: FormState) => {
-    formOpen.current = true;
-    setForm(state);
+  const openForm = (request: FormRequest) => {
+    const id = ++nextFormId.current;
+    currentFormId.current = id;
+    setForm({ ...request, id });
   };
 
-  const closeForm = () => {
-    formOpen.current = false;
-    setForm(null);
+  /** Open the form for a lookup result, or hold it while a dialog is open. */
+  const openOrHold = (request: FormRequest) => {
+    if (!alive.current) return;
+    if (dialogOpen()) {
+      held.current = request;
+      syncScans();
+    } else {
+      openForm(request);
+    }
+  };
+
+  /** Continue with held or queued scans once no dialog is open. */
+  const resume = () => {
+    if (!alive.current || dialogOpen()) return;
+    if (held.current) {
+      const request = held.current;
+      held.current = null;
+      openForm(request);
+      syncScans();
+      return;
+    }
     void drain();
+  };
+
+  /** Close the form with `id`; a no-op if another form has replaced it. */
+  const closeForm = (id: number) => {
+    if (currentFormId.current !== id) return;
+    currentFormId.current = null;
+    setForm(null);
+    resume();
+  };
+
+  const openDelete = (item: PackageItem) => {
+    deleteOpen.current = true;
+    setDeleting(item);
+  };
+
+  const closeDelete = () => {
+    deleteOpen.current = false;
+    setDeleting(null);
+    resume();
   };
 
   const recordAdded = (title: string, codes: string[]) => {
     toast.success(`Added “${title}”`);
-    setPreviouslySent(codes.length > 0 ? { title, codes } : null);
+    if (alive.current) setPreviouslySent(codes.length > 0 ? { title, codes } : null);
   };
 
   const addFromLookup = async (book: Book) => {
@@ -187,7 +292,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     } catch (error) {
       if (error instanceof ApiError && error.status === 422) {
         // The backend's checks disagreed with ours: let the packer fix it.
-        openForm({
+        openOrHold({
           mode: 'add',
           defaults: { ...EMPTY_FORM, isbn: book.isbn, title: data.title, author: data.author },
           note: `The book couldn't be added as looked up: ${error.message}`,
@@ -206,7 +311,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
       book = await lookupBook(isbn);
     } catch (error) {
       const status = error instanceof ApiError ? error.status : null;
-      openForm({
+      openOrHold({
         mode: 'add',
         defaults: { ...EMPTY_FORM, isbn },
         note:
@@ -219,12 +324,13 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
       });
       return;
     }
+    if (!alive.current) return;
 
     if (isPortalLength(book.title) && isPortalLength(book.author)) {
       await addFromLookup(book);
       return;
     }
-    openForm({
+    openOrHold({
       mode: 'add',
       defaults: { ...EMPTY_FORM, isbn: book.isbn, title: book.title, author: book.author ?? '' },
       note: !book.author?.trim()
@@ -239,16 +345,16 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     if (draining.current) return;
     draining.current = true;
     try {
-      while (queue.current.length > 0 && !formOpen.current) {
-        const isbn = queue.current.shift()!;
-        setLookingUp({ isbn, waiting: queue.current.length });
-        await processScan(isbn);
+      while (alive.current && queue.current.length > 0 && !held.current && !dialogOpen()) {
+        current.current = queue.current.shift()!;
+        syncScans();
+        await processScan(current.current);
+        current.current = null;
       }
     } finally {
       draining.current = false;
-      // Scans left while the form is open wait for it to close.
-      const waiting = queue.current.length;
-      setLookingUp(waiting > 0 ? { isbn: null, waiting } : null);
+      current.current = null;
+      syncScans();
     }
   };
 
@@ -258,65 +364,68 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     setIsbnValue('');
     if (!text) return;
     if (looksLikePackageCode(text)) {
-      // The next package's label, scanned without pressing Done.
-      navigate(`/packages/${encodeURIComponent(text)}`);
+      // The next package's label, scanned without pressing Done: open it,
+      // once the books scanned here are recorded.
+      if (pending === 0) {
+        navigate(`/packages/${encodeURIComponent(text)}`);
+      } else {
+        setNextLabel(text);
+      }
       return;
     }
     queue.current.push(text);
-    const waiting = queue.current.length;
-    setLookingUp((current) => ({ isbn: current?.isbn ?? null, waiting }));
+    syncScans();
     void drain();
   };
 
   // Keep the focus for the scanner unless it moved somewhere on purpose.
   const handleIsbnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (e.relatedTarget === null && !formOpen.current && deleting === null) {
+    if (e.relatedTarget === null && !dialogOpen()) {
       setTimeout(() => {
-        if (!formOpen.current) focusIsbnInput();
+        if (!dialogOpen()) focusIsbnInput();
       }, 0);
     }
   };
 
-  const handleFormSubmit = async (values: ItemFormValues) => {
-    if (!form) return;
+  const handleFormSubmit = async (open: FormState, values: ItemFormValues) => {
     const isbn = values.isbn || null;
 
-    if (form.mode === 'add') {
+    if (open.mode === 'add') {
       try {
         const created = await addItem.mutateAsync({
           isbn,
           title: values.title,
           author: values.author,
-          source: itemSource(values, form.lookup),
+          source: itemSource(values, open.lookup),
         });
         recordAdded(created.title, created.previously_sent);
-        closeForm();
+        closeForm(open.id);
       } catch (error) {
         if (!isConflict(error)) throw error;
         toast.error(error.message);
-        closeForm();
+        closeForm(open.id);
       }
       return;
     }
 
     try {
       await updateItem.mutateAsync({
-        itemId: form.item.id,
+        itemId: open.item.id,
         data: {
           isbn,
           title: values.title,
           author: values.author,
-          revision: form.item.revision,
+          revision: open.item.revision,
           update_cache: !!isbn && values.updateCache,
         },
       });
       toast.success(`Saved “${values.title}”`);
-      closeForm();
+      closeForm(open.id);
     } catch (error) {
       if (!isConflict(error)) throw error;
       // Edited elsewhere or registered meanwhile; the list is being reloaded.
       toast.error(`${error.message} The list has been reloaded.`);
-      closeForm();
+      closeForm(open.id);
     }
   };
 
@@ -331,7 +440,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         toast.error(`Couldn't remove “${item.title}”: ${errorMessage(error)}`);
       }
     } finally {
-      setDeleting(null);
+      if (alive.current) closeDelete();
     }
   };
 
@@ -387,9 +496,21 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
           </Button>
         </div>
         <p className="h-5 text-sm text-muted-foreground" aria-live="polite">
-          {lookingUp && <ScanStatus {...lookingUp} />}
+          <ScanStatus {...scans} />
         </p>
       </form>
+
+      {nextLabel !== null && (
+        <Alert>
+          <AlertTitle>Opening {nextLabel} next</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center gap-2 text-foreground">
+            It opens once the books scanned here are recorded.
+            <Button size="sm" variant="outline" onClick={() => setNextLabel(null)}>
+              Stay on this package
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {previouslySent && (
         <Alert className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/30">
@@ -406,28 +527,35 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         items={pkg.items}
         jurisdiction={pkg.inmate.jurisdiction}
         onEdit={(item) => openForm({ mode: 'edit', item })}
-        onDelete={setDeleting}
+        onDelete={openDelete}
       />
 
-      <div className="flex justify-end">
-        <Button size="lg" onClick={() => navigate('/packages')}>
+      <div className="flex items-center justify-end gap-3">
+        {pending > 0 && (
+          <span className="text-sm text-muted-foreground">
+            Waiting for {booksText(pending)} to be recorded...
+          </span>
+        )}
+        <Button size="lg" disabled={pending > 0} onClick={() => navigate('/packages')}>
           Done
         </Button>
       </div>
 
-      {formProps && (
+      {form && formProps && (
         <ItemFormDialog
+          // A new form (another book, or add instead of edit) starts afresh.
+          key={form.id}
           {...formProps}
           open
-          onOpenChange={(open) => !open && closeForm()}
-          onSubmit={handleFormSubmit}
+          onOpenChange={(open) => !open && closeForm(form.id)}
+          onSubmit={(values) => handleFormSubmit(form, values)}
           onCloseAutoFocus={returnFocus}
         />
       )}
 
       <DeleteItemDialog
         item={deleting}
-        onCancel={() => setDeleting(null)}
+        onCancel={closeDelete}
         onConfirm={handleConfirmDelete}
         isDeleting={deleteItem.isPending}
         onCloseAutoFocus={returnFocus}
