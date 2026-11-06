@@ -379,6 +379,66 @@ describe('PackagePage', () => {
     });
   });
 
+  describe('an add that fails', () => {
+    it('keeps the book on screen and Done disabled until it is checked', async () => {
+      vi.mocked(getBook).mockResolvedValue(book);
+      vi.mocked(addPackageItem).mockRejectedValue(new TypeError('Failed to fetch'));
+      await renderPage();
+
+      await scanIsbn('0441172717');
+
+      await expect.element(page.getByText('A book may not have been added')).toBeInTheDocument();
+      await expect.element(page.getByText('“Dune”')).toBeInTheDocument();
+      await expect.element(page.getByText('(Failed to fetch)')).toBeInTheDocument();
+      await expect.element(page.getByRole('button', { name: 'Done' })).toBeDisabled();
+      await expect
+        .element(page.getByText('Waiting for 1 scanned book to be recorded...'))
+        .toBeInTheDocument();
+      expect(toast.error).not.toHaveBeenCalled();
+
+      await page.getByRole('button', { name: "It's in the list" }).click();
+
+      await expect
+        .element(page.getByText('A book may not have been added'))
+        .not.toBeInTheDocument();
+      await expect.element(page.getByRole('button', { name: 'Done' })).toBeEnabled();
+      await expect.element(isbnInput()).toHaveFocus();
+    });
+
+    it('adds the book again on Add again', async () => {
+      vi.mocked(getBook).mockResolvedValue(book);
+      vi.mocked(addPackageItem)
+        .mockRejectedValueOnce(new ApiError(502, 'Bad Gateway'))
+        .mockResolvedValueOnce(
+          created({ id: 2, isbn: book.isbn, title: 'Dune', author: 'Frank Herbert' })
+        );
+      await renderPage();
+
+      await scanIsbn('0441172717');
+      await page.getByRole('button', { name: 'Add again' }).click();
+
+      await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(2));
+      expect(toast.success).toHaveBeenCalledWith('Added “Dune”');
+      await expect
+        .element(page.getByText('A book may not have been added'))
+        .not.toBeInTheDocument();
+      await expect.element(page.getByRole('button', { name: 'Done' })).toBeEnabled();
+    });
+
+    it('counts each failed book', async () => {
+      vi.mocked(getBook).mockResolvedValue(book);
+      vi.mocked(addPackageItem).mockRejectedValue(new TypeError('Failed to fetch'));
+      await renderPage();
+
+      await scanIsbn('0441172717');
+      await expect.element(page.getByText('A book may not have been added')).toBeInTheDocument();
+      await scanIsbn('0441172717');
+
+      await expect.element(page.getByText('2 books may not have been added')).toBeInTheDocument();
+      await expect.element(page.getByRole('button', { name: 'Done' })).toBeDisabled();
+    });
+  });
+
   describe('the item form', () => {
     it('checks title and author lengths before submitting', async () => {
       await renderPage();

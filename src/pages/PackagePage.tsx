@@ -112,6 +112,19 @@ interface ScanState {
 const IDLE: ScanState = { current: null, waiting: 0, held: false, scanForm: false };
 
 /**
+ * A looked-up book whose add failed for a reason other than validation (a
+ * network error, a 5xx). The add may still have been saved (only the response
+ * lost), so it stays on screen until the packer checks the list: it's there,
+ * or add it again.
+ */
+interface FailedAdd {
+  id: number;
+  book: Book;
+  title: string;
+  error: string;
+}
+
+/**
  * Scanned books not yet resolved: queued, being looked up or added, held for
  * the form, or in the open form (typing in, or saving).
  */
@@ -178,6 +191,9 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const [alertIds, setAlertIds] = useState<number[]>([]);
   const [scans, setScans] = useState<ScanState>(IDLE);
   const [labelHint, setLabelHint] = useState(false);
+  const [failedAdds, setFailedAdds] = useState<FailedAdd[]>([]);
+  const failedCount = useRef(0);
+  const nextFailedId = useRef(0);
 
   // Scans wait in a queue and are looked up one at a time, so a book scanned
   // while another is being looked up isn't lost. A lookup result that needs
@@ -218,7 +234,8 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         scanQueue.length +
         (held.current ? 1 : 0) +
         (current.current ? 1 : 0) +
-        (scanFormOpen.current ? 1 : 0);
+        (scanFormOpen.current ? 1 : 0) +
+        failedCount.current;
       if (unresolved > 0) {
         toast.warning(
           `${booksText(unresolved)} may not have been recorded. Check this package's list.`,
@@ -236,7 +253,15 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     };
   }, [code]);
 
-  const pending = pendingScans(scans);
+  const pending = pendingScans(scans) + failedAdds.length;
+
+  const updateFailedAdds = (update: (current: FailedAdd[]) => FailedAdd[]) => {
+    setFailedAdds((current) => {
+      const next = update(current);
+      failedCount.current = next.length;
+      return next;
+    });
+  };
 
   const focusIsbnInput = () => isbnInputRef.current?.focus();
 
@@ -360,10 +385,25 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
           validateOnOpen: true,
           fromScan: true,
         });
-      } else {
-        toast.error(`Couldn't add “${data.title}”: ${errorMessage(error)}`);
+      } else if (alive.current) {
+        const failed = { id: ++nextFailedId.current, book, title: data.title };
+        updateFailedAdds((current) => [...current, { ...failed, error: errorMessage(error) }]);
       }
     }
+  };
+
+  const dismissFailedAdd = (id: number) => {
+    updateFailedAdds((current) => current.filter((failed) => failed.id !== id));
+    focusIsbnInput();
+  };
+
+  /** Add it again as a fresh scan of its ISBN (the lookup is cached). */
+  const retryFailedAdd = (failed: FailedAdd) => {
+    updateFailedAdds((current) => current.filter((entry) => entry.id !== failed.id));
+    queue.current.push(failed.book.isbn);
+    syncScans();
+    focusIsbnInput();
+    void drain();
   };
 
   const processScan = async (isbn: string) => {
@@ -563,6 +603,38 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         <Alert>
           <AlertDescription className="text-foreground">
             That's a package label. Press Done to finish this package first.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {failedAdds.length > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>
+            {failedAdds.length === 1
+              ? 'A book may not have been added'
+              : `${failedAdds.length} books may not have been added`}
+          </AlertTitle>
+          <AlertDescription className="text-foreground">
+            <p>
+              Adding failed, but it may have been saved anyway. Check the list below: if the book is
+              there, press “It's in the list”; if not, press “Add again”.
+            </p>
+            <ul className="w-full space-y-2">
+              {failedAdds.map((failed) => (
+                <li key={failed.id} className="flex flex-wrap items-center gap-2">
+                  <span className="mr-auto">
+                    “{failed.title}” <span className="text-muted-foreground">({failed.error})</span>
+                  </span>
+                  <Button size="sm" variant="outline" onClick={() => dismissFailedAdd(failed.id)}>
+                    It's in the list
+                  </Button>
+                  <Button size="sm" onClick={() => retryFailedAdd(failed)}>
+                    Add again
+                  </Button>
+                </li>
+              ))}
+            </ul>
           </AlertDescription>
         </Alert>
       )}
