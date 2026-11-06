@@ -113,6 +113,17 @@ function itemSource(values: ItemFormValues, lookup?: Book): PackageItemCreate['s
   return 'isbn';
 }
 
+function ScanStatus({ isbn, waiting }: { isbn: string | null; waiting: number }) {
+  if (isbn === null) {
+    return <>{waiting === 1 ? '1 book' : `${waiting} books`} waiting to be looked up</>;
+  }
+  return (
+    <>
+      Looking up {isbn}...{waiting > 0 && ` (${waiting} more waiting)`}
+    </>
+  );
+}
+
 function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const navigate = useNavigate();
   const lookupBook = useLookupBook();
@@ -135,7 +146,10 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
   const queue = useRef<string[]>([]);
   const draining = useRef(false);
   const formOpen = useRef(false);
-  const [lookingUp, setLookingUp] = useState<{ isbn: string; waiting: number } | null>(null);
+  const [lookingUp, setLookingUp] = useState<{
+    isbn: string | null;
+    waiting: number;
+  } | null>(null);
 
   const focusIsbnInput = () => isbnInputRef.current?.focus();
 
@@ -232,7 +246,9 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
       }
     } finally {
       draining.current = false;
-      setLookingUp(null);
+      // Scans left while the form is open wait for it to close.
+      const waiting = queue.current.length;
+      setLookingUp(waiting > 0 ? { isbn: null, waiting } : null);
     }
   };
 
@@ -247,6 +263,8 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
       return;
     }
     queue.current.push(text);
+    const waiting = queue.current.length;
+    setLookingUp((current) => ({ isbn: current?.isbn ?? null, waiting }));
     void drain();
   };
 
@@ -369,8 +387,7 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
           </Button>
         </div>
         <p className="h-5 text-sm text-muted-foreground" aria-live="polite">
-          {lookingUp &&
-            `Looking up ${lookingUp.isbn}...${lookingUp.waiting > 0 ? ` (${lookingUp.waiting} more waiting)` : ''}`}
+          {lookingUp && <ScanStatus {...lookingUp} />}
         </p>
       </form>
 
