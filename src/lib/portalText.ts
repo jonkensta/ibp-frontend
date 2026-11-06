@@ -15,6 +15,7 @@ export function cleanPortalText(value: string): string {
     value
       // Python's str.isspace(): JS whitespace minus U+FEFF (a format
       // character), plus the separators U+001C to U+001F.
+      // eslint-disable-next-line no-control-regex -- matching them is the point
       .replace(/[^\S\uFEFF]|[\x1C-\x1F]/g, ' ')
       .replace(/[\p{Cc}\p{Cf}]/gu, '')
       .split(' ')
