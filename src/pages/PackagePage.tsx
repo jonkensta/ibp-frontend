@@ -30,18 +30,30 @@ import type { Book, Package, PackageItem, PackageItemCreate, PackageItemCreated 
 /** `/packages/:code`: record the books in one package. */
 export function PackagePage() {
   const { code = '' } = useParams<{ code: string }>();
-  const { data: pkg, isLoading, error } = usePackage(code);
+  const { data: pkg, isLoading, error, refetch } = usePackage(code);
 
   if (isLoading) {
     return <div className="py-12 text-center text-muted-foreground">Loading package...</div>;
   }
 
-  if (error || !pkg) {
+  // A reload that fails for a network or server error keeps the page (and
+  // its scans not yet resolved) on the last list, marked out of date. Only a
+  // package that's gone (404) or tossed (409) replaces it.
+  const status = error instanceof ApiError ? error.status : null;
+  if (!pkg || status === 404 || status === 409) {
     return <PackageError code={code} error={error} />;
   }
 
   // Keyed by code: scanning another label from here starts afresh.
-  return <PackageWorkspace key={code} code={code} pkg={pkg} />;
+  return (
+    <PackageWorkspace
+      key={code}
+      code={code}
+      pkg={pkg}
+      reloadError={error}
+      onReload={() => void refetch()}
+    />
+  );
 }
 
 function PackageError({ code, error }: { code: string; error: Error | null }) {
@@ -169,7 +181,18 @@ function ScanStatus({ current, waiting, held }: ScanState) {
   return null;
 }
 
-function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
+function PackageWorkspace({
+  code,
+  pkg,
+  reloadError,
+  onReload,
+}: {
+  code: string;
+  pkg: Package;
+  /** The last reload failed: `pkg` may be out of date. */
+  reloadError: Error | null;
+  onReload: () => void;
+}) {
   const navigate = useNavigate();
   const lookupBook = useLookupBook();
   const addItem = useAddPackageItem(code);
@@ -607,6 +630,19 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
         </Alert>
       )}
 
+      {reloadError && (
+        <Alert variant="destructive">
+          <AlertTriangle />
+          <AlertTitle>The book list couldn't be reloaded</AlertTitle>
+          <AlertDescription className="text-foreground">
+            <p>It may be out of date ({reloadError.message}).</p>
+            <Button size="sm" variant="outline" onClick={onReload}>
+              Reload the list
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {failedAdds.length > 0 && (
         <Alert variant="destructive">
           <AlertTriangle />
@@ -617,19 +653,28 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
           </AlertTitle>
           <AlertDescription className="text-foreground">
             <p>
-              Adding failed, but it may have been saved anyway. Check the list below: if the book is
-              there, press “It's in the list”; if not, press “Add again”.
+              {reloadError
+                ? 'Adding failed, but it may have been saved anyway. Reload the list, then check it.'
+                : "Adding failed, but it may have been saved anyway. Check the list below: if the book is there, press “It's in the list”; if not, press “Add again”."}
             </p>
             <ul className="w-full space-y-2">
               {failedAdds.map((failed) => (
                 <li key={failed.id} className="flex flex-wrap items-center gap-2">
                   <span className="mr-auto">
-                    “{failed.title}” <span className="text-muted-foreground">({failed.error})</span>
+                    “{failed.title}” by {failed.book.author || 'unknown author'}{' '}
+                    <span className="text-muted-foreground">
+                      (ISBN {failed.book.isbn}; {failed.error})
+                    </span>
                   </span>
-                  <Button size="sm" variant="outline" onClick={() => dismissFailedAdd(failed.id)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!!reloadError}
+                    onClick={() => dismissFailedAdd(failed.id)}
+                  >
                     It's in the list
                   </Button>
-                  <Button size="sm" onClick={() => retryFailedAdd(failed)}>
+                  <Button size="sm" disabled={!!reloadError} onClick={() => retryFailedAdd(failed)}>
                     Add again
                   </Button>
                 </li>

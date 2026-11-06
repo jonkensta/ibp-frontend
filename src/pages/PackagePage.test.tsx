@@ -388,8 +388,10 @@ describe('PackagePage', () => {
       await scanIsbn('0441172717');
 
       await expect.element(page.getByText('A book may not have been added')).toBeInTheDocument();
-      await expect.element(page.getByText('“Dune”')).toBeInTheDocument();
-      await expect.element(page.getByText('(Failed to fetch)')).toBeInTheDocument();
+      await expect.element(page.getByText('“Dune” by Frank Herbert')).toBeInTheDocument();
+      await expect
+        .element(page.getByText('(ISBN 9780441172719; Failed to fetch)'))
+        .toBeInTheDocument();
       await expect.element(page.getByRole('button', { name: 'Done' })).toBeDisabled();
       await expect
         .element(page.getByText('Waiting for 1 scanned book to be recorded...'))
@@ -423,6 +425,31 @@ describe('PackagePage', () => {
         .element(page.getByText('A book may not have been added'))
         .not.toBeInTheDocument();
       await expect.element(page.getByRole('button', { name: 'Done' })).toBeEnabled();
+    });
+
+    it('keeps the page and its failed books when the list reload fails too', async () => {
+      vi.mocked(getBook).mockResolvedValue(book);
+      vi.mocked(addPackageItem).mockRejectedValue(new TypeError('Failed to fetch'));
+      await renderPage();
+      vi.mocked(getPackage).mockRejectedValue(new TypeError('Failed to fetch'));
+
+      await scanIsbn('0441172717');
+
+      await expect
+        .element(page.getByText("The book list couldn't be reloaded"))
+        .toBeInTheDocument();
+      await expect.element(page.getByText('A book may not have been added')).toBeInTheDocument();
+      await expect.element(page.getByRole('button', { name: "It's in the list" })).toBeDisabled();
+      await expect.element(page.getByRole('button', { name: 'Add again' })).toBeDisabled();
+      await expect.element(page.getByRole('button', { name: 'Done' })).toBeDisabled();
+
+      vi.mocked(getPackage).mockResolvedValue(makePackage());
+      await page.getByRole('button', { name: 'Reload the list' }).click();
+
+      await expect
+        .element(page.getByText("The book list couldn't be reloaded"))
+        .not.toBeInTheDocument();
+      await expect.element(page.getByRole('button', { name: "It's in the list" })).toBeEnabled();
     });
 
     it('counts each failed book', async () => {
