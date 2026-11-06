@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { createQueryClient } from '@/lib/queryClient';
 import { ApiError } from '@/lib/api/client';
 import { getPackage } from '@/lib/api/packages';
-import { addPackageItem, updatePackageItem } from '@/lib/api/items';
+import { addPackageItem, deletePackageItem, updatePackageItem } from '@/lib/api/items';
 import { getBook } from '@/lib/api/books';
 import type { Book, Package, PackageItem, PackageItemCreated } from '@/types';
 import { PackagePage } from './PackagePage';
@@ -135,6 +135,7 @@ describe('PackagePage with real routing', () => {
     vi.mocked(getBook).mockReset();
     vi.mocked(addPackageItem).mockReset();
     vi.mocked(updatePackageItem).mockReset();
+    vi.mocked(deletePackageItem).mockReset();
     vi.mocked(getPackage).mockImplementation(async (code) => makePackage(code));
     vi.mocked(addPackageItem).mockImplementation(async (_code, data) => created(data));
   });
@@ -194,6 +195,65 @@ describe('PackagePage with real routing', () => {
     await expect.element(done).toBeEnabled();
     await done.click();
     await expect.element(page.getByText('Station page')).toBeInTheDocument();
+  });
+
+  it('keeps every already-sent warning when ordinary adds follow, until removed or dismissed', async () => {
+    // A server-like package: adds and deletes change what the refetch returns.
+    let items: PackageItem[] = [];
+    let nextId = 10;
+    const previous: Record<string, string[]> = {
+      [dune.isbn]: ['TEX-1234567-0'],
+      '9780140449136': [],
+      '9780060850524': ['TEX-1234567-1'],
+    };
+    vi.mocked(getPackage).mockImplementation(async (code) => makePackage(code, items));
+    vi.mocked(addPackageItem).mockImplementation(async (_code, data) => {
+      const item = makeItem({
+        id: nextId++,
+        isbn: data.isbn ?? null,
+        title: data.title,
+        author: data.author,
+      });
+      items = [...items, item];
+      return { ...item, previously_sent: previous[data.isbn ?? ''] ?? [] };
+    });
+    vi.mocked(deletePackageItem).mockImplementation(async (_code, itemId) => {
+      items = items.filter((item) => item.id !== itemId);
+    });
+    const lookup = deferred<Book>();
+    vi.mocked(getBook)
+      .mockReturnValueOnce(lookup.promise)
+      .mockResolvedValueOnce({ ...dune, isbn: '9780140449136', title: 'The Iliad' })
+      .mockResolvedValueOnce({ ...dune, isbn: '9780060850524', title: 'Brave New World' });
+    await renderApp();
+
+    // A duplicate, then an ordinary book, then another duplicate, all queued.
+    await scanIsbn(dune.isbn);
+    await scanIsbn('9780140449136');
+    await scanIsbn('9780060850524');
+    lookup.resolve(dune);
+    await vi.waitFor(() => expect(addPackageItem).toHaveBeenCalledTimes(3));
+
+    const alert = page.getByRole('alert').filter({ hasText: 'Already sent to this inmate' });
+    await expect.element(alert.getByText('“Dune” was also in TEX-1234567-0.')).toBeInTheDocument();
+    await expect
+      .element(alert.getByText('“Brave New World” was also in TEX-1234567-1.'))
+      .toBeInTheDocument();
+    await expect.element(alert.getByText(/The Iliad/)).not.toBeInTheDocument();
+    await expect.element(page.getByText('Already sent in TEX-1234567-0')).toBeInTheDocument();
+    await expect.element(page.getByText('Already sent in TEX-1234567-1')).toBeInTheDocument();
+
+    // Removing a book drops its warning.
+    await page.getByRole('button', { name: 'Delete Dune' }).click();
+    await page.getByRole('button', { name: 'Remove' }).click();
+    await expect.element(page.getByText('Already sent in TEX-1234567-0')).not.toBeInTheDocument();
+    await expect.element(alert.getByText(/“Dune”/)).not.toBeInTheDocument();
+    await expect.element(alert.getByText(/Brave New World/)).toBeInTheDocument();
+
+    // Dismissing hides the alert; the row marker stays.
+    await alert.getByRole('button', { name: 'Dismiss' }).click();
+    await expect.element(page.getByText('Already sent to this inmate')).not.toBeInTheDocument();
+    await expect.element(page.getByText('Already sent in TEX-1234567-1')).toBeInTheDocument();
   });
 
   it('drops a package label scanned in the ISBN box and keeps scanning into this package', async () => {

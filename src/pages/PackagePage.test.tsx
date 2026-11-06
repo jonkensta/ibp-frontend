@@ -248,11 +248,21 @@ describe('PackagePage', () => {
         ])
       );
       await renderPage();
+      // The refetch after the add includes the new book.
+      vi.mocked(getPackage).mockResolvedValue(
+        makePackage({
+          items: [
+            makeItem(),
+            makeItem({ id: 2, isbn: book.isbn, title: 'Dune', author: 'Frank Herbert' }),
+          ],
+        })
+      );
 
       await scanIsbn(book.isbn);
 
       await expect.element(page.getByText('Already sent to this inmate')).toBeInTheDocument();
       await expect.element(page.getByText(/“Dune” was also in TEX-1234567-0/)).toBeInTheDocument();
+      await expect.element(page.getByText('Already sent in TEX-1234567-0')).toBeInTheDocument();
     });
 
     it('opens the form with the ISBN kept when the book is not found', async () => {
