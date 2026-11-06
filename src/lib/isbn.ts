@@ -14,13 +14,29 @@ function isbn13CheckDigit(first12: string): string {
   return String((10 - (total % 10)) % 10);
 }
 
+// A leading label such as "ISBN", "ISBN-13:" or "isbn 10". The 10/13 only
+// counts as part of the label when no digit follows it, so an ISBN-10 that
+// starts with 10 or 13 ("ISBN 1305504917") keeps its digits.
+const ISBN_LABEL = /^ISBN(?:[- ]?1[03](?!\d))?[ :]*/i;
+
+/**
+ * Strip what an ISBN may come with: invisible characters (the left-to-right
+ * marks a copy from a web page brings along) are dropped, any dash reads as a
+ * hyphen and any space as a space; then a leading label goes, then the
+ * hyphens and spaces.
+ */
 function compact(raw: string): string {
-  return raw.replace(/[\s-]/g, '').toUpperCase();
+  const text = raw
+    .replace(/\p{Cf}/gu, '')
+    .replace(/\p{Pd}/gu, '-')
+    .replace(/[\s\p{Z}]/gu, ' ')
+    .trim();
+  return text.replace(ISBN_LABEL, '').replace(/[ -]/g, '').toUpperCase();
 }
 
 /**
  * The ISBN-13 for an ISBN-10, ISBN-13 or 18-digit EAN (ISBN-13 plus a price
- * add-on), or null. Hyphens and spaces are ignored; bad check digits are
+ * add-on), or null. See `compact` for what is ignored; bad check digits are
  * rejected.
  */
 export function normalizeIsbn(raw: string): string | null {
