@@ -291,6 +291,10 @@ function PackageWorkspace({
     if (alive.current) setFailedAdds(failedRef.current);
   };
 
+  // The last reload failed or is waiting for the network: no failed add can be
+  // checked against the list until a reload succeeds.
+  const listStale = !!reloadError || reloadPaused;
+
   /** Reload the list; the failed adds known before it count as checked once it lands. */
   const checkFailedAdds = async () => {
     const ids = failedRef.current.filter((failed) => !failed.checked).map((failed) => failed.id);
@@ -676,8 +680,8 @@ function PackageWorkspace({
           </AlertTitle>
           <AlertDescription className="text-foreground">
             <p>
-              {failedAdds.some((failed) => !failed.checked)
-                ? 'Adding failed, but it may have been saved anyway. Reloading the list to check...'
+              {listStale || failedAdds.some((failed) => !failed.checked)
+                ? 'Adding failed, but it may have been saved anyway. The list must reload before it can be checked.'
                 : "Adding failed, but it may have been saved anyway. Check the list below: if the book is there, press “It's in the list”; if not, press “Add again”."}
             </p>
             <ul className="w-full space-y-2">
@@ -692,14 +696,14 @@ function PackageWorkspace({
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={!failed.checked}
+                    disabled={!failed.checked || listStale}
                     onClick={() => dismissFailedAdd(failed.id)}
                   >
                     It's in the list
                   </Button>
                   <Button
                     size="sm"
-                    disabled={!failed.checked}
+                    disabled={!failed.checked || listStale}
                     onClick={() => retryFailedAdd(failed)}
                   >
                     Add again
@@ -707,6 +711,11 @@ function PackageWorkspace({
                 </li>
               ))}
             </ul>
+            {!listStale && failedAdds.some((failed) => !failed.checked) && (
+              <Button size="sm" variant="outline" onClick={() => void checkFailedAdds()}>
+                Reload the list
+              </Button>
+            )}
           </AlertDescription>
         </Alert>
       )}
