@@ -213,7 +213,14 @@ function ItemForm({
       )}
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="outline"
+          // Keep the field focused: its blur would validate it, and the error
+          // appearing moves this button out from under the pointer.
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={onCancel}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
