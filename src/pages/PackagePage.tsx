@@ -30,7 +30,7 @@ import type { Book, Package, PackageItem, PackageItemCreate, PackageItemCreated 
 /** `/packages/:code`: record the books in one package. */
 export function PackagePage() {
   const { code = '' } = useParams<{ code: string }>();
-  const { data: pkg, isLoading, error, refetch } = usePackage(code);
+  const { data: pkg, isLoading, error, fetchStatus, refetch } = usePackage(code);
 
   if (isLoading) {
     return <div className="py-12 text-center text-muted-foreground">Loading package...</div>;
@@ -51,7 +51,8 @@ export function PackagePage() {
       code={code}
       pkg={pkg}
       reloadError={error}
-      onReload={() => void refetch()}
+      reloadPaused={fetchStatus === 'paused'}
+      onReload={async () => (await refetch()).status === 'success'}
     />
   );
 }
@@ -127,13 +128,15 @@ const IDLE: ScanState = { current: null, waiting: 0, held: false, scanForm: fals
  * A looked-up book whose add failed for a reason other than validation (a
  * network error, a 5xx). The add may still have been saved (only the response
  * lost), so it stays on screen until the packer checks the list: it's there,
- * or add it again.
+ * or add it again. Checking needs a list loaded after the add failed.
  */
 interface FailedAdd {
   id: number;
   book: Book;
   title: string;
   error: string;
+  /** A list reload finished after the add failed, so the list shows it if it was saved. */
+  checked: boolean;
 }
 
 /**
@@ -185,13 +188,17 @@ function PackageWorkspace({
   code,
   pkg,
   reloadError,
+  reloadPaused,
   onReload,
 }: {
   code: string;
   pkg: Package;
   /** The last reload failed: `pkg` may be out of date. */
   reloadError: Error | null;
-  onReload: () => void;
+  /** A reload is waiting for the network to come back. */
+  reloadPaused: boolean;
+  /** Reload the list; true once a reload succeeded. */
+  onReload: () => Promise<boolean>;
 }) {
   const navigate = useNavigate();
   const lookupBook = useLookupBook();
@@ -215,7 +222,8 @@ function PackageWorkspace({
   const [scans, setScans] = useState<ScanState>(IDLE);
   const [labelHint, setLabelHint] = useState(false);
   const [failedAdds, setFailedAdds] = useState<FailedAdd[]>([]);
-  const failedCount = useRef(0);
+  // Mirrors `failedAdds` synchronously, for checks made between renders.
+  const failedRef = useRef<FailedAdd[]>([]);
   const nextFailedId = useRef(0);
 
   // Scans wait in a queue and are looked up one at a time, so a book scanned
@@ -258,7 +266,7 @@ function PackageWorkspace({
         (held.current ? 1 : 0) +
         (current.current ? 1 : 0) +
         (scanFormOpen.current ? 1 : 0) +
-        failedCount.current;
+        failedRef.current.length;
       if (unresolved > 0) {
         toast.warning(
           `${booksText(unresolved)} may not have been recorded. Check this package's list.`,
@@ -279,11 +287,18 @@ function PackageWorkspace({
   const pending = pendingScans(scans) + failedAdds.length;
 
   const updateFailedAdds = (update: (current: FailedAdd[]) => FailedAdd[]) => {
-    setFailedAdds((current) => {
-      const next = update(current);
-      failedCount.current = next.length;
-      return next;
-    });
+    failedRef.current = update(failedRef.current);
+    if (alive.current) setFailedAdds(failedRef.current);
+  };
+
+  /** Reload the list; the failed adds known before it count as checked once it lands. */
+  const checkFailedAdds = async () => {
+    const ids = failedRef.current.filter((failed) => !failed.checked).map((failed) => failed.id);
+    const reloaded = await onReload();
+    if (!reloaded || !alive.current || ids.length === 0) return;
+    updateFailedAdds((current) =>
+      current.map((failed) => (ids.includes(failed.id) ? { ...failed, checked: true } : failed))
+    );
   };
 
   const focusIsbnInput = () => isbnInputRef.current?.focus();
@@ -410,7 +425,11 @@ function PackageWorkspace({
         });
       } else if (alive.current) {
         const failed = { id: ++nextFailedId.current, book, title: data.title };
-        updateFailedAdds((current) => [...current, { ...failed, error: errorMessage(error) }]);
+        updateFailedAdds((current) => [
+          ...current,
+          { ...failed, error: errorMessage(error), checked: false },
+        ]);
+        void checkFailedAdds();
       }
     }
   };
@@ -630,13 +649,17 @@ function PackageWorkspace({
         </Alert>
       )}
 
-      {reloadError && (
+      {(reloadError || reloadPaused) && (
         <Alert variant="destructive">
           <AlertTriangle />
           <AlertTitle>The book list couldn't be reloaded</AlertTitle>
           <AlertDescription className="text-foreground">
-            <p>It may be out of date ({reloadError.message}).</p>
-            <Button size="sm" variant="outline" onClick={onReload}>
+            <p>
+              {reloadPaused
+                ? 'This computer seems to be offline, so the list may be out of date.'
+                : `It may be out of date (${reloadError?.message}).`}
+            </p>
+            <Button size="sm" variant="outline" onClick={() => void checkFailedAdds()}>
               Reload the list
             </Button>
           </AlertDescription>
@@ -653,8 +676,8 @@ function PackageWorkspace({
           </AlertTitle>
           <AlertDescription className="text-foreground">
             <p>
-              {reloadError
-                ? 'Adding failed, but it may have been saved anyway. Reload the list, then check it.'
+              {failedAdds.some((failed) => !failed.checked)
+                ? 'Adding failed, but it may have been saved anyway. Reloading the list to check...'
                 : "Adding failed, but it may have been saved anyway. Check the list below: if the book is there, press “It's in the list”; if not, press “Add again”."}
             </p>
             <ul className="w-full space-y-2">
@@ -669,12 +692,16 @@ function PackageWorkspace({
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={!!reloadError}
+                    disabled={!failed.checked}
                     onClick={() => dismissFailedAdd(failed.id)}
                   >
                     It's in the list
                   </Button>
-                  <Button size="sm" disabled={!!reloadError} onClick={() => retryFailedAdd(failed)}>
+                  <Button
+                    size="sm"
+                    disabled={!failed.checked}
+                    onClick={() => retryFailedAdd(failed)}
+                  >
                     Add again
                   </Button>
                 </li>

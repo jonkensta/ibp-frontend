@@ -452,6 +452,31 @@ describe('PackagePage', () => {
       await expect.element(page.getByRole('button', { name: "It's in the list" })).toBeEnabled();
     });
 
+    it('waits for a list reloaded after the failure before offering the checks', async () => {
+      vi.mocked(getBook).mockResolvedValue(book);
+      vi.mocked(addPackageItem).mockRejectedValue(new TypeError('Failed to fetch'));
+      await renderPage();
+      let finishReload: (pkg: Package) => void = () => {};
+      vi.mocked(getPackage).mockReturnValue(
+        new Promise<Package>((resolve) => {
+          finishReload = resolve;
+        })
+      );
+
+      await scanIsbn('0441172717');
+
+      await expect
+        .element(page.getByText('Reloading the list to check...', { exact: false }))
+        .toBeInTheDocument();
+      await expect.element(page.getByRole('button', { name: "It's in the list" })).toBeDisabled();
+      await expect.element(page.getByRole('button', { name: 'Add again' })).toBeDisabled();
+
+      finishReload(makePackage());
+
+      await expect.element(page.getByRole('button', { name: "It's in the list" })).toBeEnabled();
+      await expect.element(page.getByRole('button', { name: 'Add again' })).toBeEnabled();
+    });
+
     it('counts each failed book', async () => {
       vi.mocked(getBook).mockResolvedValue(book);
       vi.mocked(addPackageItem).mockRejectedValue(new TypeError('Failed to fetch'));
