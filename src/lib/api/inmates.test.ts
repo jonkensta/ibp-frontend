@@ -94,7 +94,7 @@ describe('Inmates API', () => {
       const result = await getInmateByLegacyRequest(268213);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/inmates/by-request/268213'),
+        expect.stringContaining('/requests/legacy/268213/inmate'),
         expect.objectContaining({ method: 'GET' })
       );
       expect(result).toEqual(mockInmate);

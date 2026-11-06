@@ -14,7 +14,7 @@ export async function getInmate(jurisdiction: Jurisdiction, id: number): Promise
  * belongs to. Throws an ApiError with status 404 if no request has that ID.
  */
 export async function getInmateByLegacyRequest(requestId: number): Promise<Inmate> {
-  return apiGet<Inmate>(`/inmates/by-request/${requestId}`);
+  return apiGet<Inmate>(`/requests/legacy/${requestId}/inmate`);
 }
 
 /**
