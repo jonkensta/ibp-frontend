@@ -240,6 +240,26 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
 
   const focusIsbnInput = () => isbnInputRef.current?.focus();
 
+  // Keep the focus for the scanner: whenever no dialog is open and the focus
+  // is lost to the page (its element removed, a background click, a toast
+  // closed), give it back to the ISBN input. Focus moved somewhere on purpose
+  // (a button, a link) stays. Checked a tick after each focusout, and before
+  // each keystroke, since a removed element doesn't always fire focusout.
+  useEffect(() => {
+    const refocusIfLost = () => {
+      const noDialog = currentFormId.current === null && !deleteOpen.current;
+      const lost = document.activeElement === null || document.activeElement === document.body;
+      if (noDialog && lost) isbnInputRef.current?.focus();
+    };
+    const onFocusOut = () => setTimeout(refocusIfLost, 0);
+    document.addEventListener('focusout', onFocusOut);
+    document.addEventListener('keydown', refocusIfLost, true);
+    return () => {
+      document.removeEventListener('focusout', onFocusOut);
+      document.removeEventListener('keydown', refocusIfLost, true);
+    };
+  }, []);
+
   const returnFocus = (event: Event) => {
     event.preventDefault();
     focusIsbnInput();
@@ -416,15 +436,6 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
     void drain();
   };
 
-  // Keep the focus for the scanner unless it moved somewhere on purpose.
-  const handleIsbnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (e.relatedTarget === null && !dialogOpen()) {
-      setTimeout(() => {
-        if (!dialogOpen()) focusIsbnInput();
-      }, 0);
-    }
-  };
-
   const handleFormSubmit = async (open: FormState, values: ItemFormValues) => {
     const isbn = values.isbn || null;
 
@@ -532,7 +543,6 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
             placeholder="Scan the barcode on the back of the book"
             value={isbnValue}
             onChange={(e) => setIsbnValue(e.target.value)}
-            onBlur={handleIsbnBlur}
             className="h-14 text-xl md:text-xl"
           />
           <Button
@@ -570,7 +580,14 @@ function PackageWorkspace({ code, pkg }: { code: string; pkg: Package }) {
               ))}
             </ul>
             <span>Check whether they should get these again.</span>
-            <Button size="sm" variant="outline" onClick={() => setAlertIds([])}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setAlertIds([]);
+                focusIsbnInput();
+              }}
+            >
               Dismiss
             </Button>
           </AlertDescription>
