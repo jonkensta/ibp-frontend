@@ -5,3 +5,6 @@ export * from './comments';
 export * from './units';
 export * from './metrics';
 export * from './shippingSettings';
+export * from './packages';
+export * from './items';
+export * from './books';

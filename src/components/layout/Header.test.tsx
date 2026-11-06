@@ -65,6 +65,9 @@ describe('Header', () => {
     const unitsLink = page.getByRole('link', { name: 'Units' });
     await expect.element(unitsLink).toBeInTheDocument();
 
+    const packagesLink = page.getByRole('link', { name: 'Packages' });
+    await expect.element(packagesLink).toHaveAttribute('href', '/packages');
+
     const settingsLink = page.getByRole('link', { name: 'Settings' });
     await expect.element(settingsLink).toBeInTheDocument();
   });

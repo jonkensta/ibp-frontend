@@ -18,6 +18,12 @@ const CreateUnitPage = lazy(() =>
 const UnitDetailPage = lazy(() =>
   import('./pages/UnitDetailPage').then((m) => ({ default: m.UnitDetailPage }))
 );
+const PackageStationPage = lazy(() =>
+  import('./pages/PackageStationPage').then((m) => ({ default: m.PackageStationPage }))
+);
+const PackagePage = lazy(() =>
+  import('./pages/PackagePage').then((m) => ({ default: m.PackagePage }))
+);
 const MetricsPage = lazy(() =>
   import('./pages/MetricsPage').then((m) => ({ default: m.MetricsPage }))
 );
@@ -67,6 +73,26 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <InmateDetailPage />
+              </Suspense>
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="packages"
+          element={
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <PackageStationPage />
+              </Suspense>
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="packages/:code"
+          element={
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <PackagePage />
               </Suspense>
             </ErrorBoundary>
           }
