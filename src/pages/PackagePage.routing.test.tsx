@@ -315,6 +315,75 @@ describe('PackagePage with real routing', () => {
     await expect.element(page.getByText(/Already sent in/)).not.toBeInTheDocument();
   });
 
+  describe('keeping the focus for the scanner (keystrokes only, no fill)', () => {
+    /** What a scanner does: type into whatever has the focus, then Enter. */
+    async function scannerTypes(text: string) {
+      await userEvent.keyboard(`${text}{Enter}`);
+    }
+
+    it('takes the focus back after Dismiss removes the focused button', async () => {
+      vi.mocked(getBook)
+        .mockResolvedValueOnce(dune)
+        .mockResolvedValueOnce({ ...dune, isbn: '9780140449136', title: 'The Iliad' });
+      vi.mocked(addPackageItem).mockImplementationOnce(async (_code, data) => ({
+        ...created(data),
+        id: 1,
+        previously_sent: ['TEX-1234567-0'],
+      }));
+      vi.mocked(getPackage).mockImplementation(async (code) =>
+        makePackage(code, [
+          makeItem({ id: 1, isbn: dune.isbn, title: 'Dune', author: 'Frank Herbert' }),
+        ])
+      );
+      await renderApp();
+
+      await scannerTypes(dune.isbn);
+      const dismiss = page.getByRole('button', { name: 'Dismiss' });
+      await dismiss.click();
+      await expect.element(dismiss).not.toBeInTheDocument();
+
+      await scannerTypes('9780140449136');
+      await vi.waitFor(() => expect(getBook).toHaveBeenCalledWith('9780140449136'));
+    });
+
+    it('takes the focus back after deleting a row', async () => {
+      vi.mocked(deletePackageItem).mockResolvedValue(undefined);
+      vi.mocked(getBook).mockResolvedValue(dune);
+      await renderApp();
+
+      await page.getByRole('button', { name: 'Delete The Odyssey' }).click();
+      vi.mocked(getPackage).mockImplementation(async (code) => makePackage(code, []));
+      await page.getByRole('button', { name: 'Remove' }).click();
+      await expect
+        .element(page.getByRole('button', { name: 'Delete The Odyssey' }))
+        .not.toBeInTheDocument();
+
+      await scannerTypes(dune.isbn);
+      await vi.waitFor(() => expect(getBook).toHaveBeenCalledWith(dune.isbn));
+    });
+
+    it('takes the focus back after a click on the page background', async () => {
+      vi.mocked(getBook).mockResolvedValue(dune);
+      await renderApp();
+
+      await page.getByRole('heading', { name: 'John Doe' }).click();
+      await scannerTypes(dune.isbn);
+      await vi.waitFor(() => expect(getBook).toHaveBeenCalledWith(dune.isbn));
+    });
+
+    it('takes the focus back when the focused element is removed', async () => {
+      vi.mocked(getBook).mockResolvedValue(dune);
+      await renderApp();
+
+      // A focused button vanishing without a focusout (as Firefox does).
+      const edit = page.getByRole('button', { name: 'Edit The Odyssey' }).element() as HTMLElement;
+      edit.focus();
+      edit.remove();
+      await scannerTypes(dune.isbn);
+      await vi.waitFor(() => expect(getBook).toHaveBeenCalledWith(dune.isbn));
+    });
+  });
+
   it('drops a package label scanned in the ISBN box and keeps scanning into this package', async () => {
     const lookup = deferred<Book>();
     vi.mocked(getBook)
